@@ -1,13 +1,31 @@
+import 'dart:async';
+
+import 'package:finova_ai/pages/onBoarding/onboarding.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Timer(const Duration(seconds: 3), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => OnboardingScreen()),
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       body: Stack(
@@ -24,28 +42,22 @@ class SplashScreen extends StatelessWidget {
                       width: 66,
                       fit: BoxFit.contain,
                     ),
-                    RichText(
-                      text: TextSpan(
-                        style: GoogleFonts.unbounded(
-                          textStyle: const TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 44,
-                          ),
+                    Text(
+                      "Finova AI",
+                      style: GoogleFonts.unbounded(
+                        textStyle: TextStyle(
+                          fontSize: 44,
+                          fontWeight: FontWeight.w500,
                         ),
-                        text: "Finova Ai",
                       ),
                     ),
-                    RichText(
-                      text: TextSpan(
-                        style: GoogleFonts.unbounded(
-                          textStyle: const TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w300,
-                            fontSize: 12,
-                          ),
-                        ),
-                        text: "Smart Expense Tracking App",
+                    Text(
+                      "Smart Expense Tracking App",
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontFamily: 'SFProText',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w300,
                       ),
                     ),
                   ],
