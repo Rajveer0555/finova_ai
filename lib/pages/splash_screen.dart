@@ -1,26 +1,25 @@
 import 'dart:async';
 
 import 'package:finova_ai/pages/onBoarding/onboarding.dart';
+import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => OnboardingScreen()),
-      );
+    Future.delayed((const Duration(seconds: 5)), () {
+      ref.read(appFlowProvider.notifier).state = AppStatus.onboarding;
     });
   }
 

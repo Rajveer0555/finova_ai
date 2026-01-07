@@ -1,23 +1,32 @@
 import 'package:finova_ai/pages/onBoarding/screen1.dart';
 import 'package:finova_ai/pages/onBoarding/screen2.dart';
 import 'package:finova_ai/pages/onBoarding/screen3.dart';
+import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   PageController _controller = PageController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -57,7 +66,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         height: screenHeight * 0.06,
                         width: screenWidth * 0.9,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            ref.read(appFlowProvider.notifier).state =
+                                AppStatus.unauthenticated;
+                          },
                           style: ElevatedButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(18),
