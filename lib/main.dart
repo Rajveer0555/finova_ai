@@ -5,6 +5,7 @@
 import 'package:finova_ai/pages/forget_password.dart';
 import 'package:finova_ai/pages/auth_screen.dart';
 import 'package:finova_ai/pages/home_screen.dart';
+import 'package:finova_ai/pages/info_screen.dart';
 import 'package:finova_ai/pages/loading_state.dart';
 import 'package:finova_ai/pages/onBoarding/onboarding.dart';
 import 'package:finova_ai/pages/splash_screen.dart';
@@ -40,6 +41,9 @@ class MyApp extends ConsumerWidget {
         break;
       case AppStatus.loading_state:
         currentScreen = const LoadingState(); //
+        break;
+      case AppStatus.infoscreen:
+        currentScreen = const InfoScreen(); //
         break;
       case AppStatus.authenticated:
         currentScreen = const HomeScreen(); //

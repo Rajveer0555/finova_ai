@@ -63,8 +63,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 ),
               ),
               Positioned.fill(
-                child: SvgPicture.asset(
-                  'assets/SplashImage.svg',
+                child: Image.asset(
+                  'assets/SplashImage.png',
                   fit: BoxFit.fitHeight,
                   height: screenHeight * 0.46,
                 ),

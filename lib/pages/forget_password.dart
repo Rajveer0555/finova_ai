@@ -101,6 +101,7 @@ class ForgetPassword extends StatelessWidget {
                       ),
                     ),
                   ),
+                  SizedBox(height: screenHeight * 0.01),
                 ],
               ),
             ),

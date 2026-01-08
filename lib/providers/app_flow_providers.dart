@@ -5,6 +5,7 @@ enum AppStatus {
   onboarding,
   unauthenticated,
   authenticated,
+  infoscreen,
   loading_state,
   ForgetPassword,
 }

@@ -38,7 +38,7 @@ class _LoadingStateState extends ConsumerState<LoadingState> {
     // After 8 seconds → move to Home screen
     Future.delayed(const Duration(seconds: 8), () {
       timer?.cancel();
-      ref.read(appFlowProvider.notifier).state = AppStatus.authenticated;
+      ref.read(appFlowProvider.notifier).state = AppStatus.infoscreen;
     });
   }
 
