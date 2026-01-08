@@ -3,7 +3,9 @@
 // import 'package:finova_ai/pages/onBoarding/screen2.dart';
 // import 'package:finova_ai/pages/onBoarding/screen3.dart';
 import 'package:finova_ai/pages/forget_password.dart';
-import 'package:finova_ai/pages/login_screen.dart';
+import 'package:finova_ai/pages/auth_screen.dart';
+import 'package:finova_ai/pages/home_screen.dart';
+import 'package:finova_ai/pages/loading_state.dart';
 import 'package:finova_ai/pages/onBoarding/onboarding.dart';
 import 'package:finova_ai/pages/splash_screen.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
@@ -36,8 +38,11 @@ class MyApp extends ConsumerWidget {
       case AppStatus.ForgetPassword:
         currentScreen = const ForgetPassword();
         break;
+      case AppStatus.loading_state:
+        currentScreen = const LoadingState(); //
+        break;
       case AppStatus.authenticated:
-        currentScreen = const Scaffold(body: Center(child: Text('HomeScreen')));
+        currentScreen = const HomeScreen(); //
         break;
     }
 
