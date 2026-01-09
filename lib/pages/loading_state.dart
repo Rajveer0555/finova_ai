@@ -37,7 +37,7 @@ class _LoadingStateState extends ConsumerState<LoadingState> {
     });
 
     // After 8 seconds → move to Home screen
-    Future.delayed(const Duration(seconds: 8), () {
+    Future.delayed(const Duration(seconds: 6), () {
       timer?.cancel();
       ref.read(appFlowProvider.notifier).state = AppStatus.infoscreen;
     });
@@ -67,13 +67,15 @@ class _LoadingStateState extends ConsumerState<LoadingState> {
                 ),
 
                 const SizedBox(height: 8),
-
-                Text(
-                  "Finova AI",
-                  style: GoogleFonts.unbounded(
-                    textStyle: const TextStyle(
-                      fontSize: 44,
-                      fontWeight: FontWeight.w500,
+                RichText(
+                  text: TextSpan(
+                    text: "Finova Ai",
+                    style: GoogleFonts.unbounded(
+                      textStyle: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 44,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
@@ -92,13 +94,16 @@ class _LoadingStateState extends ConsumerState<LoadingState> {
 
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 500),
-              child: Text(
-                loadingTexts[currentIndex],
+              child: RichText(
                 key: ValueKey(currentIndex),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w300,
-                  fontFamily: 'SFDisplay',
+                text: TextSpan(
+                  text: loadingTexts[currentIndex],
+                  style: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w300,
+                    fontFamily: 'SFDisplay',
+                  ),
                 ),
               ),
             ),

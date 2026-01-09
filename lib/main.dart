@@ -1,7 +1,3 @@
-// import 'package:finova_ai/pages/onBoarding/onboarding.dart';
-// import 'package:finova_ai/pages/onBoarding/screen1.dart';
-// import 'package:finova_ai/pages/onBoarding/screen2.dart';
-// import 'package:finova_ai/pages/onBoarding/screen3.dart';
 import 'package:finova_ai/pages/forget_password.dart';
 import 'package:finova_ai/pages/auth_screen.dart';
 import 'package:finova_ai/pages/home_screen.dart';
@@ -12,7 +8,6 @@ import 'package:finova_ai/pages/splash_screen.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'providers/app_flow_providers.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));

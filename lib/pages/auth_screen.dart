@@ -22,7 +22,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
-
       bottomNavigationBar: Padding(
         padding: EdgeInsets.fromLTRB(
           screenWidth * 0.05,
@@ -48,14 +47,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  isLoginSelected ? "Login" : "Sign Up",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                RichText(
+                  text: TextSpan(
+                    text: isLoginSelected ? "Login" : "Sign Up",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
+
                 SizedBox(width: screenWidth * 0.02),
                 const Icon(
                   Icons.arrow_forward_ios_rounded,
@@ -78,13 +80,27 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             children: [
               SizedBox(height: screenHeight * 0.08),
 
-              const Text(
-                "Welcome!",
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              RichText(
+                text: TextSpan(
+                  text: "Welcome!",
+                  style: TextStyle(
+                    fontSize: 36,
+                    color: Colors.black,
+                    fontFamily: 'SFProDisplay',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              const Text(
-                "Sign up or Login to your Account",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+              RichText(
+                text: TextSpan(
+                  text: "Sign up or Login to your Account",
+                  style: TextStyle(
+                    fontSize: 17,
+                    color: Colors.grey,
+                    fontFamily: 'SFProDisplay',
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
               ),
 
               SizedBox(height: screenHeight * 0.02),
@@ -132,15 +148,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   borderRadius: BorderRadius.circular(40),
                 ),
                 child: Center(
-                  child: Text(
-                    "Login",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color:
-                          isLoginSelected
-                              ? Colors.white
-                              : const Color(0xFF3399FF),
+                  child: RichText(
+                    text: TextSpan(
+                      text: "Login",
+                      style: TextStyle(
+                        fontFamily: 'SFProText',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color:
+                            isLoginSelected
+                                ? Colors.white
+                                : const Color(0xFF3399FF),
+                      ),
                     ),
                   ),
                 ),
@@ -164,15 +183,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   borderRadius: BorderRadius.circular(40),
                 ),
                 child: Center(
-                  child: Text(
-                    "Sign Up",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color:
-                          !isLoginSelected
-                              ? Colors.white
-                              : const Color(0xFF3399FF),
+                  child: RichText(
+                    text: TextSpan(
+                      text: "Sign Up",
+                      style: TextStyle(
+                        fontFamily: 'SFProText',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color:
+                            !isLoginSelected
+                                ? Colors.white
+                                : const Color(0xFF3399FF),
+                      ),
                     ),
                   ),
                 ),
@@ -190,9 +212,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "Email Address",
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        RichText(
+          text: TextSpan(
+            text: "Email Address",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              fontFamily: 'SFProText',
+              color: Colors.black,
+            ),
+          ),
         ),
         SizedBox(height: screenHeight * 0.01),
         _inputField("Enter your Email"),
@@ -213,9 +242,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               ref.read(appFlowProvider.notifier).state =
                   AppStatus.ForgetPassword;
             },
-            child: const Text(
-              "Forget Password ?",
-              style: TextStyle(color: Colors.grey),
+            child: RichText(
+              text: TextSpan(
+                text: "Forget Password ?",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 16,
+                  fontFamily: 'SFProText',
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
             ),
           ),
         ),
@@ -233,32 +269,53 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          "Full Name",
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        RichText(
+          text: TextSpan(
+            text: "Full Name",
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              fontFamily: 'SFProText',
+            ),
+          ),
         ),
         SizedBox(height: screenHeight * 0.01),
         _inputField("Enter your Full Name"),
 
         SizedBox(height: screenHeight * 0.01),
 
-        const Text(
-          "Email Address",
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        RichText(
+          text: TextSpan(
+            text: "Email Address",
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              fontFamily: 'SFProText',
+            ),
+          ),
         ),
         SizedBox(height: screenHeight * 0.01),
         _inputField("Enter your Email"),
 
         SizedBox(height: screenHeight * 0.01),
 
-        const Text(
-          "Password",
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        RichText(
+          text: TextSpan(
+            text: "Password",
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              fontFamily: 'SFProText',
+            ),
+          ),
         ),
         SizedBox(height: screenHeight * 0.01),
         _inputField("Enter your Password", isPassword: true),
 
-        SizedBox(height: screenHeight * 0.02),
+        SizedBox(height: screenHeight * 0.03),
 
         const DividerSection(),
 
@@ -327,11 +384,21 @@ class DividerSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: const [
+      children: [
         Expanded(child: Divider()),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 8),
-          child: Text("Or Login Using"),
+          child: RichText(
+            text: TextSpan(
+              text: "Or Login Using",
+              style: TextStyle(
+                fontSize: 16,
+                fontFamily: 'SFProText',
+                fontWeight: FontWeight.w400,
+                color: Colors.black,
+              ),
+            ),
+          ),
         ),
         Expanded(child: Divider()),
       ],

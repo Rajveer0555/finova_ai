@@ -22,24 +22,28 @@ class Container2 extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: screenHeight * 0.02),
-            Text(
-              'Monthly Income',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 14,
-                fontFamily: 'SFProText',
-                fontWeight: FontWeight.w500,
+            RichText(
+              text: TextSpan(
+                text: 'Monthly Income',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 14,
+                  fontFamily: 'SFProText',
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
 
             SizedBox(height: screenHeight * 0.001),
-            Text(
-              'This helps Finova AI give you personalized insights.',
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.black,
-                fontFamily: 'SFProText',
-                fontWeight: FontWeight.w300,
+            RichText(
+              text: TextSpan(
+                text: 'This helps Finova AI give you personalized insights.',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 10,
+                  fontFamily: 'SFProText',
+                  fontWeight: FontWeight.w300,
+                ),
               ),
             ),
 
@@ -55,14 +59,17 @@ class Container2 extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Text(
-                    "₹",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
+                  RichText(
+                    text: TextSpan(
+                      text: "₹",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
+
                   const SizedBox(width: 8),
 
                   Expanded(

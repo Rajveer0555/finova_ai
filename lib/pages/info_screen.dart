@@ -1,11 +1,9 @@
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/budget_category.dart';
 import 'package:finova_ai/widgets/container.dart';
-import 'package:finova_ai/widgets/quickbtn.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class InfoScreen extends ConsumerStatefulWidget {
   const InfoScreen({super.key});
@@ -29,12 +27,15 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: screenHeight * 0.01),
-              Text(
-                "Let's Set things",
-                style: TextStyle(
-                  fontFamily: 'SFProText',
-                  fontSize: 28,
-                  fontWeight: FontWeight.w500,
+              RichText(
+                text: TextSpan(
+                  text: "Let's set things up",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontFamily: 'SFProText',
+                    fontSize: 28,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
               SizedBox(height: screenHeight * 0.01),
@@ -59,24 +60,29 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(height: screenHeight * 0.02),
-                      Text(
-                        'Set Your Budget',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                          fontFamily: 'SFProText',
-                          fontWeight: FontWeight.w500,
+                      RichText(
+                        text: TextSpan(
+                          text: 'Set Your Budget',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 14,
+                            fontFamily: 'SFProText',
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
 
                       SizedBox(height: screenHeight * 0.001),
-                      Text(
-                        'This helps Finova AI give you personalized insights.',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.black,
-                          fontFamily: 'SFProText',
-                          fontWeight: FontWeight.w300,
+                      RichText(
+                        text: TextSpan(
+                          text:
+                              'This helps Finova AI give you personalized insights.',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 10,
+                            fontFamily: 'SFProText',
+                            fontWeight: FontWeight.w300,
+                          ),
                         ),
                       ),
 
@@ -131,23 +137,28 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: screenHeight * 0.015),
-                          Text(
-                            'Enable AI Insights',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 14,
-                              fontFamily: 'SFProText',
-                              fontWeight: FontWeight.w600,
+                          RichText(
+                            text: TextSpan(
+                              text: 'Enable AI Insights',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                                fontFamily: 'SFProText',
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                           SizedBox(height: screenHeight * 0.001),
-                          Text(
-                            'Get smart alerts, predictions, and saving tips.',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 10,
-                              fontFamily: 'SFProText',
-                              fontWeight: FontWeight.w300,
+                          RichText(
+                            text: TextSpan(
+                              text:
+                                  'Get smart alerts, predictions, and saving tips.',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 10,
+                                fontFamily: 'SFProText',
+                                fontWeight: FontWeight.w300,
+                              ),
                             ),
                           ),
 
@@ -193,14 +204,16 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
                         ),
                         backgroundColor: Color.fromARGB(255, 46, 150, 255),
                       ),
-                      child: Text(
+                      child: RichText(
                         textAlign: TextAlign.center,
-                        "Get Started",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'SFProText',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                        text: TextSpan(
+                          text: "Get Started",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'SFProText',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -213,14 +226,16 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
                     ref.read(appFlowProvider.notifier).state =
                         AppStatus.authenticated;
                   },
-                  child: Text(
-                    'Skip for now',
-                    style: TextStyle(
-                      decoration: TextDecoration.underline,
-                      color: Colors.black,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w300,
-                      fontFamily: 'SFProText',
+                  child: RichText(
+                    text: TextSpan(
+                      text: 'Skip for now',
+                      style: TextStyle(
+                        decoration: TextDecoration.underline,
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w300,
+                        fontFamily: 'SFProText',
+                      ),
                     ),
                   ),
                 ),

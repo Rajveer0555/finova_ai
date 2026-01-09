@@ -6,6 +6,7 @@ class MainscreenCatgerories extends StatelessWidget {
   final String money;
   final String perc;
   final String imagePath2;
+  final Color color;
   const MainscreenCatgerories({
     super.key,
     required this.imagePath2,
@@ -13,6 +14,7 @@ class MainscreenCatgerories extends StatelessWidget {
     required this.subTitle,
     required this.money,
     required this.perc,
+    required this.color,
   });
 
   @override
@@ -43,27 +45,32 @@ class MainscreenCatgerories extends StatelessWidget {
               height: screenHeight * 0.06,
               width: screenWidth * 0.15,
             ),
-            SizedBox(width: screenWidth * 0.12),
+            SizedBox(width: screenWidth * 0.08),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontFamily: 'SFProText',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                RichText(
+                  text: TextSpan(
+                    text: title,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontFamily: 'SFProText',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
+
                 SizedBox(height: screenHeight * 0.004),
-                Text(
-                  subTitle,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontFamily: 'SFProText',
-                    fontSize: 10,
-                    fontWeight: FontWeight.w300,
+                RichText(
+                  text: TextSpan(
+                    text: subTitle,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontFamily: 'SFProText',
+                      fontSize: 10,
+                      fontWeight: FontWeight.w300,
+                    ),
                   ),
                 ),
               ],
@@ -72,23 +79,28 @@ class MainscreenCatgerories extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  money,
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontFamily: 'SFProText',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                RichText(
+                  text: TextSpan(
+                    text: money,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontFamily: 'SFProText',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
+
                 SizedBox(height: screenHeight * 0.001),
-                Text(
-                  perc,
-                  style: TextStyle(
-                    color: Colors.redAccent,
-                    fontFamily: 'SFProText',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                RichText(
+                  text: TextSpan(
+                    text: perc,
+                    style: TextStyle(
+                      color: color,
+                      fontFamily: 'SFProText',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],

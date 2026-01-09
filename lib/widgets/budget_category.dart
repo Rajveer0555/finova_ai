@@ -27,13 +27,15 @@ class BudgetCategory extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: TextStyle(
-                color: Colors.black,
-                fontFamily: 'SFProText',
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+            RichText(
+              text: TextSpan(
+                text: title,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontFamily: 'SFProText',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             SizedBox(height: screenHeight * 0.01),
@@ -45,18 +47,20 @@ class BudgetCategory extends StatelessWidget {
                 horizontal: screenWidth * 0.03,
               ),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade900, width: 1.5),
+                border: Border.all(color: Colors.grey.shade900, width: 1),
                 borderRadius: BorderRadius.circular(8),
                 color: Colors.white,
               ),
               child: Row(
                 children: [
-                  const Text(
-                    "₹",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
+                  RichText(
+                    text: TextSpan(
+                      text: "₹",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),

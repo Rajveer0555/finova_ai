@@ -77,14 +77,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             ),
                             backgroundColor: Color.fromARGB(255, 46, 150, 255),
                           ),
-                          child: Text(
+                          child: RichText(
                             textAlign: TextAlign.center,
-                            "Get Started",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontFamily: 'SFProText',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                            text: TextSpan(
+                              text: "Get Started",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontFamily: 'SFProText',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),

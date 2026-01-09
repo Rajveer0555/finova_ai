@@ -54,25 +54,29 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
                 const SizedBox(height: 8),
 
-                Text(
-                  "Finova AI",
-                  style: GoogleFonts.unbounded(
-                    textStyle: const TextStyle(
-                      fontSize: 44,
-                      fontWeight: FontWeight.w500,
+                RichText(
+                  text: TextSpan(
+                    text: "Finova Ai",
+                    style: GoogleFonts.unbounded(
+                      textStyle: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 44,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 4),
-
-                const Text(
-                  "Smart Expense Tracking App",
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontFamily: 'SFProText',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w300,
+                const SizedBox(height: 2),
+                RichText(
+                  text: TextSpan(
+                    text: "Smart Expense Tracking App",
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontFamily: 'SFProText',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w300,
+                    ),
                   ),
                 ),
               ],

@@ -19,26 +19,32 @@ class Screen1 extends StatelessWidget {
               height: screenHeight * 0.25,
             ),
             SizedBox(height: screenHeight * 0.03),
-            Text(
-              "Track Your Expenses Easily",
-              style: TextStyle(
-                color: Colors.black,
-                fontFamily: 'SFProText',
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.001),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
-              child: Text(
-                textAlign: TextAlign.center,
-                "Record your daily spending and keep everything organized in one place.",
+            RichText(
+              text: TextSpan(
+                text: "Track Your Expenses Easily",
                 style: TextStyle(
                   color: Colors.black,
                   fontFamily: 'SFProText',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w300,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+
+            SizedBox(height: screenHeight * 0.001),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
+              child: RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  text:
+                      "Record your daily spending and keep everything organized in one place.",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontFamily: 'SFProText',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w300,
+                  ),
                 ),
               ),
             ),

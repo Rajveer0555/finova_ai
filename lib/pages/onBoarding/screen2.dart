@@ -19,26 +19,31 @@ class Screen2 extends StatelessWidget {
               height: screenHeight * 0.25,
             ),
             SizedBox(height: screenHeight * 0.03),
-            Text(
-              "Smart AI Insights",
-              style: TextStyle(
-                color: Colors.black,
-                fontFamily: 'SFProText',
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+            RichText(
+              text: TextSpan(
+                text: "Smart AI Insights",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontFamily: 'SFProText',
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             SizedBox(height: screenHeight * 0.001),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
-              child: Text(
+              child: RichText(
                 textAlign: TextAlign.center,
-                "Finova AI analyzes your spending and gives smart suggestions to save more.",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontFamily: 'SFProText',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w300,
+                text: TextSpan(
+                  text:
+                      "Finova AI analyzes your spending and gives smart suggestions to save more.",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontFamily: 'SFProText',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w300,
+                  ),
                 ),
               ),
             ),

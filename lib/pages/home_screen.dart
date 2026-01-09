@@ -65,33 +65,40 @@ class HomeScreen extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Total Spendings',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontFamily: 'SFProText',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w300,
+                          RichText(
+                            text: TextSpan(
+                              text: 'Total Spendings',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontFamily: 'SFProText',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w300,
+                              ),
                             ),
                           ),
                           SizedBox(height: screenHeight * 0.0001),
-                          Text(
-                            '₹ 28,450',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontFamily: 'SFProText',
-                              fontSize: 42,
-                              fontWeight: FontWeight.w500,
+                          RichText(
+                            text: TextSpan(
+                              text: '₹ 28,450',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontFamily: 'SFProText',
+                                fontSize: 42,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
+
                           SizedBox(height: screenHeight * 0.0001),
-                          Text(
-                            'This month',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontFamily: 'SFProText',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w300,
+                          RichText(
+                            text: TextSpan(
+                              text: 'This month',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontFamily: 'SFProText',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w300,
+                              ),
                             ),
                           ),
                         ],
@@ -122,13 +129,15 @@ class HomeScreen extends StatelessWidget {
                             padding: EdgeInsets.symmetric(
                               horizontal: screenWidth * 0.04,
                             ),
-                            child: Text(
-                              'Budgets Used',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontFamily: 'SFProText',
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
+                            child: RichText(
+                              text: TextSpan(
+                                text: 'Budgets Used',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontFamily: 'SFProText',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ),
@@ -176,23 +185,28 @@ class HomeScreen extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'AI Insights',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18,
-                                fontFamily: 'SFProText',
-                                fontWeight: FontWeight.w500,
+                            RichText(
+                              text: TextSpan(
+                                text: 'AI Insights',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontFamily: 'SFProText',
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                             SizedBox(height: screenHeight * 0.001),
-                            Text(
-                              'Your food expenses are 30% higher than last\nmonth. Consider meal planning to save ₹2,000',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 12,
-                                fontFamily: 'SFProText',
-                                fontWeight: FontWeight.w300,
+                            RichText(
+                              text: TextSpan(
+                                text:
+                                    'Your food expenses are 30% higher than last\nmonth. Consider meal planning to save ₹2,000',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 12,
+                                  fontFamily: 'SFProText',
+                                  fontWeight: FontWeight.w300,
+                                ),
                               ),
                             ),
                           ],
@@ -201,17 +215,22 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: screenHeight * 0.01),
-                Text(
-                  "Categories",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                    fontFamily: 'SFProText',
+                SizedBox(height: screenHeight * 0.02),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
+                  child: RichText(
+                    text: TextSpan(
+                      text: 'Categories',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontFamily: 'SFProText',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
                   ),
                 ),
-                SizedBox(height: screenHeight * 0.01),
+                SizedBox(height: screenHeight * 0.02),
 
                 MainscreenCatgerories(
                   imagePath2: 'assets/diet.png',
@@ -219,6 +238,7 @@ class HomeScreen extends StatelessWidget {
                   subTitle: '42 Transactions',
                   money: '₹ 8,450',
                   perc: '+ 12%',
+                  color: Colors.redAccent,
                 ),
                 SizedBox(height: screenHeight * 0.01),
                 MainscreenCatgerories(
@@ -227,6 +247,8 @@ class HomeScreen extends StatelessWidget {
                   subTitle: '12 Transactions',
                   money: '₹ 2,250',
                   perc: '- 12%',
+
+                  color: Colors.lightGreenAccent.shade400,
                 ),
                 SizedBox(height: screenHeight * 0.01),
                 MainscreenCatgerories(
@@ -235,6 +257,8 @@ class HomeScreen extends StatelessWidget {
                   subTitle: '18 Transactions',
                   money: '₹ 12,000',
                   perc: '+ 2%',
+
+                  color: Colors.lightGreenAccent.shade400,
                 ),
                 SizedBox(height: screenHeight * 0.01),
               ],
