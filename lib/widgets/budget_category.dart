@@ -1,56 +1,52 @@
+import 'package:finova_ai/widgets/quickbtn.dart';
 import 'package:flutter/material.dart';
 
-class Container2 extends StatelessWidget {
-  const Container2({super.key});
+class BudgetCategory extends StatelessWidget {
+  final String title;
+  final String imagePath;
+  const BudgetCategory({
+    super.key,
+    required this.title,
+    required this.imagePath,
+  });
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-    return Container(
-      width: screenWidth * 1,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 12.0, spreadRadius: 1),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-        child: Column(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Image(
+          image: AssetImage(imagePath),
+          fit: BoxFit.contain,
+          height: screenHeight * 0.05,
+          width: screenWidth * 0.15,
+        ),
+        SizedBox(width: screenWidth * 0.03),
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: screenHeight * 0.02),
             Text(
-              'Monthly Income',
+              title,
               style: TextStyle(
                 color: Colors.black,
-                fontSize: 14,
                 fontFamily: 'SFProText',
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
             ),
-
-            SizedBox(height: screenHeight * 0.001),
-            Text(
-              'This helps Finova AI give you personalized insights.',
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.black,
-                fontFamily: 'SFProText',
-                fontWeight: FontWeight.w300,
-              ),
-            ),
-
             SizedBox(height: screenHeight * 0.01),
-
             Container(
-              height: 52,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              height: screenHeight * 0.035,
+              width: screenWidth * 0.3,
+              padding: EdgeInsets.symmetric(
+                vertical: screenHeight * 0.005,
+                horizontal: screenWidth * 0.03,
+              ),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade900, width: 1.5),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(8),
                 color: Colors.white,
               ),
               child: Row(
@@ -58,7 +54,7 @@ class Container2 extends StatelessWidget {
                   const Text(
                     "₹",
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: Colors.black,
                     ),
@@ -71,14 +67,14 @@ class Container2 extends StatelessWidget {
                         decimal: true,
                       ),
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
                       decoration: InputDecoration(
                         hintText: "00.00",
                         hintStyle: TextStyle(
                           color: Colors.grey.shade400,
-                          fontSize: 18,
+                          fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
                         border: InputBorder.none,
@@ -88,11 +84,25 @@ class Container2 extends StatelessWidget {
                 ],
               ),
             ),
-
-            SizedBox(height: screenHeight * 0.028),
           ],
         ),
-      ),
+        SizedBox(width: screenWidth * 0.04),
+        Column(
+          children: [
+            Quickbtn(text: '₹5k'),
+            SizedBox(height: screenHeight * 0.008),
+            Quickbtn(text: '₹15k'),
+          ],
+        ),
+        SizedBox(width: screenWidth * 0.005),
+        Column(
+          children: [
+            Quickbtn(text: '₹10k'),
+            SizedBox(height: screenHeight * 0.008),
+            Quickbtn(text: '₹20k'),
+          ],
+        ),
+      ],
     );
   }
 }

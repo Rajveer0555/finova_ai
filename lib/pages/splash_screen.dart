@@ -1,6 +1,4 @@
 import 'dart:async';
-
-import 'package:finova_ai/pages/onBoarding/onboarding.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,7 +16,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed((const Duration(seconds: 5)), () {
+    Future.delayed(const Duration(seconds: 5), () {
       ref.read(appFlowProvider.notifier).state = AppStatus.onboarding;
     });
   }
@@ -26,50 +24,59 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/AppLogo.svg',
-                      width: 66,
-                      fit: BoxFit.contain,
-                    ),
-                    Text(
-                      "Finova AI",
-                      style: GoogleFonts.unbounded(
-                        textStyle: TextStyle(
-                          fontSize: 44,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      "Smart Expense Tracking App",
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontFamily: 'SFProText',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w300,
-                      ),
-                    ),
-                  ],
+          /// 🔽 Bottom Background Image
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: SvgPicture.asset(
+              'assets/SplashImage.svg',
+              fit: BoxFit.fitHeight,
+              height: screenHeight * 0.46,
+            ),
+          ),
+
+          /// 🔝 Center Logo & Text
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  'assets/AppLogo.svg',
+                  width: 66,
+                  fit: BoxFit.contain,
                 ),
-              ),
-              Positioned.fill(
-                child: Image.asset(
-                  'assets/SplashImage.png',
-                  fit: BoxFit.fitHeight,
-                  height: screenHeight * 0.46,
+
+                const SizedBox(height: 8),
+
+                Text(
+                  "Finova AI",
+                  style: GoogleFonts.unbounded(
+                    textStyle: const TextStyle(
+                      fontSize: 44,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: 4),
+
+                const Text(
+                  "Smart Expense Tracking App",
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontFamily: 'SFProText',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w300,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

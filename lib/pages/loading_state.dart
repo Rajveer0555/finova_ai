@@ -3,6 +3,7 @@ import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LoadingState extends ConsumerStatefulWidget {
   const LoadingState({super.key});
@@ -27,7 +28,7 @@ class _LoadingStateState extends ConsumerState<LoadingState> {
     super.initState();
 
     // Change text every 2 seconds
-    timer = Timer.periodic(const Duration(seconds: 2), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (currentIndex < loadingTexts.length - 1) {
         setState(() {
           currentIndex++;
@@ -51,21 +52,32 @@ class _LoadingStateState extends ConsumerState<LoadingState> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SvgPicture.asset(
-              'assets/AppLogo.svg',
-              width: 66,
-              fit: BoxFit.contain,
-            ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  'assets/AppLogo.svg',
+                  width: 66,
+                  fit: BoxFit.contain,
+                ),
 
-            const SizedBox(height: 10),
+                const SizedBox(height: 8),
 
-            const Text(
-              "Finova AI",
-              style: TextStyle(fontSize: 44, fontWeight: FontWeight.w500),
+                Text(
+                  "Finova AI",
+                  style: GoogleFonts.unbounded(
+                    textStyle: const TextStyle(
+                      fontSize: 44,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
             ),
 
             const SizedBox(height: 20),

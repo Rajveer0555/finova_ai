@@ -29,7 +29,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           10,
           screenWidth * 0.05,
           MediaQuery.of(context).viewInsets.bottom == 0
-              ? 20
+              ? 80
               : MediaQuery.of(context).viewInsets.bottom + 4,
         ),
         child: SizedBox(

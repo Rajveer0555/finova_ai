@@ -28,6 +28,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           PageView(
