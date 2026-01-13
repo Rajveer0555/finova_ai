@@ -51,8 +51,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   text: TextSpan(
                     text: isLoginSelected ? "Login" : "Sign Up",
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
                   ),
@@ -70,7 +70,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ),
       ),
 
-      // Scrollable Content
       body: SafeArea(
         child: SingleChildScrollView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -119,7 +118,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     );
   }
 
-  /// 🔁 Toggle Widget (Riverpod controlled)
   Widget _buildToggle() {
     final isLoginSelected = ref.watch(authModeProvider);
 

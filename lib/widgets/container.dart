@@ -1,10 +1,14 @@
+import 'package:finova_ai/providers/income_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class Container2 extends StatelessWidget {
+class Container2 extends ConsumerWidget {
   const Container2({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final income = ref.watch(monthlyIncomeProvider);
+
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Container(
@@ -80,6 +84,13 @@ class Container2 extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
+                      ),
+                      onChanged: (value) {
+                        final parsed = double.tryParse(value) ?? 0.0;
+                        ref.read(monthlyIncomeProvider.notifier).state = parsed;
+                      },
+                      controller: TextEditingController(
+                        text: income == 0 ? "" : income.toString(),
                       ),
                       decoration: InputDecoration(
                         hintText: "00.00",

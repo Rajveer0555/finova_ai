@@ -1,17 +1,22 @@
+import 'package:finova_ai/providers/budget_provider.dart';
 import 'package:finova_ai/widgets/quickbtn.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BudgetCategory extends StatelessWidget {
+class BudgetCategory extends ConsumerWidget {
+  final String id;
   final String title;
   final String imagePath;
   const BudgetCategory({
     super.key,
     required this.title,
     required this.imagePath,
+    required this.id,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final amount = ref.read(budgetAmountProvider(id));
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Row(
@@ -67,12 +72,22 @@ class BudgetCategory extends StatelessWidget {
 
                   Expanded(
                     child: TextField(
+                      enableInteractiveSelection: true,
+                      cursorColor: Colors.black,
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
+                      ),
+                      onChanged: (value) {
+                        final parsed = double.tryParse(value) ?? 0.0;
+                        ref.read(budgetAmountProvider(id).notifier).state =
+                            parsed;
+                      },
+                      controller: TextEditingController(
+                        text: amount == 0 ? "" : amount.toString(),
                       ),
                       decoration: InputDecoration(
                         hintText: "00.00",
@@ -93,17 +108,37 @@ class BudgetCategory extends StatelessWidget {
         SizedBox(width: screenWidth * 0.04),
         Column(
           children: [
-            Quickbtn(text: '₹5k'),
+            Quickbtn(
+              text: '₹5k',
+              onTap: () {
+                ref.read(budgetAmountProvider(id).notifier).state = 5000;
+              },
+            ),
             SizedBox(height: screenHeight * 0.008),
-            Quickbtn(text: '₹15k'),
+            Quickbtn(
+              text: '₹15k',
+              onTap: () {
+                ref.read(budgetAmountProvider(id).notifier).state = 15000;
+              },
+            ),
           ],
         ),
         SizedBox(width: screenWidth * 0.005),
         Column(
           children: [
-            Quickbtn(text: '₹10k'),
+            Quickbtn(
+              text: '₹10k',
+              onTap: () {
+                ref.read(budgetAmountProvider(id).notifier).state = 10000;
+              },
+            ),
             SizedBox(height: screenHeight * 0.008),
-            Quickbtn(text: '₹20k'),
+            Quickbtn(
+              text: '₹20k',
+              onTap: () {
+                ref.read(budgetAmountProvider(id).notifier).state = 20000;
+              },
+            ),
           ],
         ),
       ],

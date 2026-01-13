@@ -2,6 +2,7 @@ import 'package:finova_ai/pages/onBoarding/screen1.dart';
 import 'package:finova_ai/pages/onBoarding/screen2.dart';
 import 'package:finova_ai/pages/onBoarding/screen3.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
+import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -63,34 +64,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        height: screenHeight * 0.06,
-                        width: screenWidth * 0.9,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            ref.read(appFlowProvider.notifier).state =
-                                AppStatus.unauthenticated;
-                          },
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            backgroundColor: Color.fromARGB(255, 46, 150, 255),
-                          ),
-                          child: RichText(
-                            textAlign: TextAlign.center,
-                            text: TextSpan(
-                              text: "Get Started",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontFamily: 'SFProText',
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                      ElevatedButtonCust('Get Started', () {
+                        ref.read(appFlowProvider.notifier).state =
+                            AppStatus.unauthenticated;
+                      }),
                     ],
                   ),
                 ],

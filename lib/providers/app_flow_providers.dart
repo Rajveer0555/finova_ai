@@ -6,6 +6,7 @@ enum AppStatus {
   unauthenticated,
   authenticated,
   infoscreen,
+  add_screen,
   loading_state,
   ForgetPassword,
 }

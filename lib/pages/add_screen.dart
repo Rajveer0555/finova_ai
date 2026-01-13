@@ -1,0 +1,379 @@
+import 'package:finova_ai/models/payment_method.dart';
+import 'package:finova_ai/models/transactions_model.dart';
+import 'package:finova_ai/providers/app_flow_providers.dart';
+import 'package:finova_ai/providers/history_provider.dart';
+import 'package:finova_ai/widgets/elevated_button.dart';
+import 'package:finova_ai/widgets/payment_methodsheet.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class AddTransactionScreen extends ConsumerStatefulWidget {
+  const AddTransactionScreen({super.key});
+
+  @override
+  ConsumerState<AddTransactionScreen> createState() =>
+      _AddTransactionScreenState();
+}
+
+class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
+  String selectedCategory = "Food";
+  DateTime selectedDateTime = DateTime.now();
+
+  PaymentMethod selectedPayment = PaymentMethod(
+    title: "Cash",
+    imagePath: "assets/money.png",
+  );
+
+  final TextEditingController amountController = TextEditingController();
+  final TextEditingController titleController = TextEditingController();
+
+  final List<Map<String, dynamic>> categories = [
+    {"title": "Food", "image": "assets/diet.png"},
+    {"title": "Travel", "image": "assets/travel-luggage.png"},
+    {"title": "Bills", "image": "assets/bill.png"},
+    {"title": "Shopping", "image": "assets/shopping-bag.png"},
+  ];
+
+  final List<Map<String, dynamic>> paymentMethods = [
+    {"title": "Cash", "image": "assets/money.png"},
+    {"title": "Debit Card", "image": "assets/contactless.png"},
+    {"title": "Credit Card", "image": "assets/credit-card.png"},
+    {"title": "Wallet", "image": "assets/ewallet.png"},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+
+    return Scaffold(
+      backgroundColor: Colors.grey.shade100,
+      appBar: AppBar(
+        leading: TextButton(
+          onPressed: () {
+            ref.read(appFlowProvider.notifier).state = AppStatus.authenticated;
+          },
+          child: Icon(Icons.arrow_back_ios, color: Colors.black, size: 24),
+        ),
+        title: const Text("Add Expense"),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black12, blurRadius: 10),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: amountController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w600,
+                      ),
+
+                      decoration: InputDecoration(
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Colors.black,
+                            width: 2,
+                          ),
+                        ),
+                        hintText: "00.00",
+                        hintStyle: TextStyle(color: Colors.grey.shade300),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children:
+                          categories.map((cat) {
+                            final bool isSelected =
+                                selectedCategory == cat["title"];
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedCategory = cat["title"];
+                                });
+                              },
+                              child: Column(
+                                children: [
+                                  Stack(
+                                    alignment: Alignment.topRight,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color:
+                                              isSelected
+                                                  ? Colors.blue.shade50
+                                                  : Colors.transparent,
+                                          borderRadius: BorderRadius.circular(
+                                            14,
+                                          ),
+                                          border: Border.all(
+                                            color:
+                                                isSelected
+                                                    ? Colors.blue
+                                                    : Colors.grey.shade300,
+                                          ),
+                                        ),
+                                        child: Image.asset(
+                                          height: 40,
+                                          width: 40,
+                                          cat["image"],
+                                          fit: BoxFit.contain,
+                                        ),
+                                      ),
+                                      if (isSelected)
+                                        const CircleAvatar(
+                                          radius: 8,
+                                          backgroundColor: Colors.green,
+                                          child: Icon(
+                                            Icons.check,
+                                            size: 10,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    cat["title"],
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color:
+                                          isSelected
+                                              ? Colors.black
+                                              : Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    GestureDetector(
+                      onTap: pickDateTime,
+                      child: _inputBox(
+                        icon: Icons.calendar_today,
+                        text:
+                            "${selectedDateTime.day}/${selectedDateTime.month}/${selectedDateTime.year} | ${selectedDateTime.hour}:${selectedDateTime.minute.toString().padLeft(2, '0')}",
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    TextField(
+                      controller: titleController,
+                      decoration: _inputDecoration("Title"),
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: 'SFProText',
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    GestureDetector(
+                      onTap: () async {
+                        final result =
+                            await showModalBottomSheet<PaymentMethod>(
+                              context: context,
+                              backgroundColor: Colors.transparent,
+                              builder:
+                                  (_) => PaymentMethodSheet(
+                                    initialMethod: selectedPayment,
+                                  ),
+                            );
+
+                        if (result != null) {
+                          setState(() {
+                            selectedPayment = result;
+                          });
+                        }
+                      },
+                      child: Container(
+                        height: 56,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade400),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          children: [
+                            Image.asset(
+                              selectedPayment.imagePath,
+                              height: 22,
+                              width: 22,
+                            ),
+
+                            const SizedBox(width: 12),
+
+                            Text(
+                              selectedPayment.title,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+
+                            const Spacer(),
+
+                            const Icon(Icons.keyboard_arrow_down_rounded),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 10),
+              RichText(
+                text: TextSpan(
+                  text: '🤖  Looks like a $selectedCategory expense',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontFamily: 'SFProText',
+                    fontSize: 10,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+              SizedBox(height: 260),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButtonCust('Save Expense', () {
+                    if (amountController.text.isEmpty ||
+                        titleController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Please fill all fields")),
+                      );
+                      return;
+                    }
+
+                    final newTransaction = TransactionModel2(
+                      id: DateTime.now().toString(),
+                      category: selectedCategory,
+                      title: titleController.text,
+                      amount: double.parse(amountController.text),
+                      dateTime: selectedDateTime,
+                      paymentTitle: selectedPayment.title,
+                      paymentImage: selectedPayment.imagePath,
+                    );
+
+                    ref
+                        .read(transactionsProvider.notifier)
+                        .addTransaction(newTransaction);
+                    ref.read(appFlowProvider.notifier).state =
+                        AppStatus.authenticated;
+                  }),
+                ],
+              ),
+              SizedBox(height: screenHeight * 0.02),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> pickDateTime() async {
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: selectedDateTime,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+    );
+
+    if (pickedDate == null) return;
+
+    TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+    if (pickedTime == null) return;
+
+    setState(() {
+      selectedDateTime = DateTime(
+        pickedDate.year,
+        pickedDate.month,
+        pickedDate.day,
+        pickedTime.hour,
+        pickedTime.minute,
+      );
+    });
+  }
+
+  void showPaymentSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return PaymentMethodSheet(initialMethod: selectedPayment);
+      },
+    );
+  }
+
+  Widget _inputBox({
+    required IconData icon,
+    required String text,
+    IconData? trailing,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18),
+          const SizedBox(width: 10),
+          Expanded(child: Text(text)),
+          if (trailing != null) Icon(trailing),
+        ],
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String hint) {
+    return InputDecoration(
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.black, width: 2),
+      ),
+      hintText: hint,
+      hintStyle: TextStyle(color: Colors.grey.shade300),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+    );
+  }
+}
