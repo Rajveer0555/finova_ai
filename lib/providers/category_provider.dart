@@ -46,6 +46,15 @@ class CategoriesNotifier extends Notifier<List<CategoryModel>> {
         imagePath: "assets/bill.png",
         colorValue: 0xFFFF2E54,
       ),
+      CategoryModel(
+        id: "other",
+        title: "Others",
+        subTitle: "8 Transactions",
+        money: "₹3,200",
+        perc: "+5%",
+        imagePath: "assets/delivery-box.png",
+        colorValue: 0xFFFF2E54,
+      ),
     ];
   }
 

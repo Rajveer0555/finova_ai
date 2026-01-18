@@ -15,6 +15,14 @@ class EditTransactionScreen extends ConsumerStatefulWidget {
 }
 
 class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
+  String getCategoryImage(String category) {
+    final match = categories.firstWhere(
+      (c) => c['title'] == category,
+      orElse: () => {"image": "assets/diet.png"},
+    );
+    return match['image'];
+  }
+
   late TextEditingController amountController;
   late TextEditingController titleController;
   late String selectedCategory;
@@ -189,75 +197,44 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
 
                   const SizedBox(height: 16),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children:
-                        categories.map((cat) {
-                          final bool isSelected =
-                              selectedCategory == cat["title"];
-
-                          return Column(
-                            children: [
-                              Stack(
-                                alignment: Alignment.topRight,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          isSelected
-                                              ? Colors.blue.shade50
-                                              : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(14),
-                                      border: Border.all(
-                                        color:
-                                            isSelected
-                                                ? Colors.blue
-                                                : Colors.grey.shade300,
-                                      ),
-                                    ),
-                                    child: Image.asset(
-                                      cat["image"],
-                                      height: 40,
-                                      width: 40,
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-
-                                  if (isSelected)
-                                    const Positioned(
-                                      right: 2,
-                                      top: 2,
-                                      child: CircleAvatar(
-                                        radius: 8,
-                                        backgroundColor: Colors.green,
-                                        child: Icon(
-                                          Icons.check,
-                                          size: 10,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 4),
-
-                              Text(
-                                cat["title"],
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color:
-                                      isSelected ? Colors.black : Colors.grey,
-                                  fontWeight:
-                                      isSelected
-                                          ? FontWeight.w500
-                                          : FontWeight.w400,
-                                ),
-                              ),
-                            ],
-                          );
-                        }).toList(),
+                  Container(
+                    height: 56,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade400),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          getCategoryImage(selectedCategory),
+                          height: 22,
+                          width: 22,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          selectedCategory,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          height: 22,
+                          width: 22,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.green,
+                          ),
+                          child: const Icon(
+                            Icons.check,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 16),

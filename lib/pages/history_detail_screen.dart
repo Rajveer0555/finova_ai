@@ -5,12 +5,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ExpenseDetailScreen extends ConsumerWidget {
-  final TransactionModel2 transaction;
+  final String transactionId;
 
-  const ExpenseDetailScreen({super.key, required this.transaction});
+  const ExpenseDetailScreen({super.key, required this.transactionId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final transactions = ref.watch(transactionsProvider);
+    final transaction =
+        transactions.where((t) => t.id == transactionId).toList();
+
+    if (transaction.isEmpty) {
+      return const Scaffold(body: Center(child: Text("Expense deleted")));
+    }
+
+    final t = transaction.first;
+
     double screenHeight = MediaQuery.of(context).size.height;
 
     void showDeleteDialog(
@@ -133,14 +143,11 @@ class ExpenseDetailScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  Image.asset(
-                    _getCategoryImage(transaction.category),
-                    height: 60,
-                  ),
+                  Image.asset(_getCategoryImage(t.category), height: 60),
                   const SizedBox(height: 8),
 
                   Text(
-                    transaction.category,
+                    t.category,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
@@ -159,7 +166,7 @@ class ExpenseDetailScreen extends ConsumerWidget {
                     child: Column(
                       children: [
                         Text(
-                          "₹ ${transaction.amount.toStringAsFixed(2)}",
+                          "₹ ${t.amount.toStringAsFixed(2)}",
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w600,
@@ -167,7 +174,7 @@ class ExpenseDetailScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          transaction.title,
+                          t.title,
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.grey,
@@ -182,7 +189,7 @@ class ExpenseDetailScreen extends ConsumerWidget {
                   _infoBox(
                     icon: Icons.calendar_today,
                     text:
-                        "${transaction.dateTime.day}/${transaction.dateTime.month}/${transaction.dateTime.year} | ${transaction.dateTime.hour}:${transaction.dateTime.minute.toString().padLeft(2, '0')}",
+                        "${t.dateTime.day}/${t.dateTime.month}/${t.dateTime.year} | ${t.dateTime.hour}:${t.dateTime.minute.toString().padLeft(2, '0')}",
                   ),
 
                   const SizedBox(height: 12),
@@ -196,10 +203,10 @@ class ExpenseDetailScreen extends ConsumerWidget {
                     ),
                     child: Row(
                       children: [
-                        Image.asset(transaction.paymentImage, height: 22),
+                        Image.asset(t.paymentImage, height: 22),
                         const SizedBox(width: 12),
                         Text(
-                          transaction.paymentTitle,
+                          t.paymentTitle,
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
@@ -242,7 +249,7 @@ class ExpenseDetailScreen extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
+                  SizedBox(
                     width: 150,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -256,23 +263,14 @@ class ExpenseDetailScreen extends ConsumerWidget {
                           vertical: 14,
                         ),
                       ),
-                      onPressed: () async {
-                        final updatedTransaction = await Navigator.push(
+                      onPressed: () {
+                        Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder:
-                                (_) => EditTransactionScreen(
-                                  transaction: transaction,
-                                ),
+                                (_) => EditTransactionScreen(transaction: t),
                           ),
                         );
-
-                        if (updatedTransaction != null) {
-                          ref
-                              .read(transactionsProvider.notifier)
-                              .updateTransaction(updatedTransaction);
-                          Navigator.pop(context);
-                        }
                       },
                       child: const Text(
                         "Edit",
@@ -281,7 +279,7 @@ class ExpenseDetailScreen extends ConsumerWidget {
                     ),
                   ),
                   Spacer(),
-                  Container(
+                  SizedBox(
                     width: 150,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -295,7 +293,7 @@ class ExpenseDetailScreen extends ConsumerWidget {
                         ),
                       ),
                       onPressed: () {
-                        showDeleteDialog(context, ref, transaction);
+                        showDeleteDialog(context, ref, t);
                       },
                       child: const Text(
                         "Delete",

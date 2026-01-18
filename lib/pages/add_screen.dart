@@ -1,7 +1,9 @@
+import 'package:finova_ai/models/category_selector_model.dart';
 import 'package:finova_ai/models/payment_method.dart';
 import 'package:finova_ai/models/transactions_model.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/providers/history_provider.dart';
+import 'package:finova_ai/widgets/category_selector.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:finova_ai/widgets/payment_methodsheet.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +20,11 @@ class AddTransactionScreen extends ConsumerStatefulWidget {
 class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
   String selectedCategory = "Food";
   DateTime selectedDateTime = DateTime.now();
+
+  CategorySelectorModel selectedCategoryModel = CategorySelectorModel(
+    title: "Food",
+    imagePath: "assets/diet.png",
+  );
 
   PaymentMethod selectedPayment = PaymentMethod(
     title: "Cash",
@@ -44,6 +51,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
@@ -103,74 +111,56 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
                     const SizedBox(height: 16),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children:
-                          categories.map((cat) {
-                            final bool isSelected =
-                                selectedCategory == cat["title"];
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  selectedCategory = cat["title"];
-                                });
-                              },
-                              child: Column(
-                                children: [
-                                  Stack(
-                                    alignment: Alignment.topRight,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color:
-                                              isSelected
-                                                  ? Colors.blue.shade50
-                                                  : Colors.transparent,
-                                          borderRadius: BorderRadius.circular(
-                                            14,
-                                          ),
-                                          border: Border.all(
-                                            color:
-                                                isSelected
-                                                    ? Colors.blue
-                                                    : Colors.grey.shade300,
-                                          ),
-                                        ),
-                                        child: Image.asset(
-                                          height: 40,
-                                          width: 40,
-                                          cat["image"],
-                                          fit: BoxFit.contain,
-                                        ),
-                                      ),
-                                      if (isSelected)
-                                        const CircleAvatar(
-                                          radius: 8,
-                                          backgroundColor: Colors.green,
-                                          child: Icon(
-                                            Icons.check,
-                                            size: 10,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                    ],
+                    GestureDetector(
+                      onTap: () async {
+                        final result =
+                            await showModalBottomSheet<CategorySelectorModel>(
+                              context: context,
+                              backgroundColor: Colors.transparent,
+                              builder:
+                                  (_) => CategorySelector(
+                                    initialMethod: selectedCategoryModel,
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    cat["title"],
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color:
-                                          isSelected
-                                              ? Colors.black
-                                              : Colors.grey,
-                                    ),
-                                  ),
-                                ],
-                              ),
                             );
-                          }).toList(),
+
+                        if (result != null) {
+                          setState(() {
+                            selectedCategoryModel = result;
+                            selectedCategory = result.title;
+                          });
+                        }
+                      },
+                      child: Container(
+                        height: 56,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade400),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          children: [
+                            Image.asset(
+                              selectedCategoryModel.imagePath,
+                              height: 22,
+                              width: 22,
+                            ),
+
+                            const SizedBox(width: 12),
+
+                            Text(
+                              selectedCategoryModel.title,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+
+                            const Spacer(),
+
+                            const Icon(Icons.keyboard_arrow_down_rounded),
+                          ],
+                        ),
+                      ),
                     ),
 
                     const SizedBox(height: 16),
@@ -264,38 +254,49 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 260),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButtonCust('Save Expense', () {
-                    if (amountController.text.isEmpty ||
-                        titleController.text.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Please fill all fields")),
-                      );
-                      return;
-                    }
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.fromLTRB(
+          screenWidth * 0.05,
+          10,
+          screenWidth * 0.05,
+          MediaQuery.of(context).viewInsets.bottom == 0
+              ? 80
+              : MediaQuery.of(context).viewInsets.bottom + 4,
+        ),
+        child: SizedBox(
+          height: 52,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButtonCust('Save Expense', () {
+                if (amountController.text.isEmpty ||
+                    titleController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Please fill all fields")),
+                  );
+                  return;
+                }
 
-                    final newTransaction = TransactionModel2(
-                      id: DateTime.now().toString(),
-                      category: selectedCategory,
-                      title: titleController.text,
-                      amount: double.parse(amountController.text),
-                      dateTime: selectedDateTime,
-                      paymentTitle: selectedPayment.title,
-                      paymentImage: selectedPayment.imagePath,
-                    );
+                final newTransaction = TransactionModel2(
+                  id: DateTime.now().toString(),
+                  category: selectedCategory,
+                  title: titleController.text,
+                  amount: double.parse(amountController.text),
+                  dateTime: selectedDateTime,
+                  paymentTitle: selectedPayment.title,
+                  paymentImage: selectedPayment.imagePath,
+                );
 
-                    ref
-                        .read(transactionsProvider.notifier)
-                        .addTransaction(newTransaction);
-                    ref.read(appFlowProvider.notifier).state =
-                        AppStatus.authenticated;
-                  }),
-                ],
-              ),
-              SizedBox(height: screenHeight * 0.02),
+                ref
+                    .read(transactionsProvider.notifier)
+                    .addTransaction(newTransaction);
+                ref.read(appFlowProvider.notifier).state =
+                    AppStatus.authenticated;
+              }),
             ],
           ),
         ),
@@ -331,8 +332,8 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     });
   }
 
-  void showPaymentSheet() {
-    showModalBottomSheet(
+  void showPaymentSheet() async {
+    final result = await showModalBottomSheet<PaymentMethod>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -341,6 +342,12 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
         return PaymentMethodSheet(initialMethod: selectedPayment);
       },
     );
+
+    if (result != null) {
+      setState(() {
+        selectedPayment = result;
+      });
+    }
   }
 
   Widget _inputBox({

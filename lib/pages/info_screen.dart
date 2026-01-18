@@ -116,6 +116,12 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
                           title: 'Bills',
                           imagePath: 'assets/bill.png',
                         ),
+                        SizedBox(height: screenHeight * 0.028),
+                        BudgetCategory(
+                          id: "others",
+                          title: 'Others',
+                          imagePath: 'assets/delivery-box.png',
+                        ),
 
                         SizedBox(height: screenHeight * 0.028),
                       ],
@@ -123,7 +129,7 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
                   ),
                 ),
 
-                SizedBox(height: screenHeight * 0.02),
+                SizedBox(height: screenHeight * 0.015),
                 Container(
                   width: screenWidth * 1,
                   decoration: BoxDecoration(
@@ -199,7 +205,7 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: screenHeight * 0.02),
+                SizedBox(height: screenHeight * 0.015),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [ElevatedButtonCust('Get Started', () {})],

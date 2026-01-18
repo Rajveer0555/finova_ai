@@ -38,7 +38,7 @@ class MainscreenCatgerories extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              SizedBox(width: 40),
+              SizedBox(width: 20),
               Image(
                 image: AssetImage(category.imagePath),
                 fit: BoxFit.contain,
@@ -75,7 +75,7 @@ class MainscreenCatgerories extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(width: screenWidth * 0.28),
+              SizedBox(width: screenWidth * 0.22),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
