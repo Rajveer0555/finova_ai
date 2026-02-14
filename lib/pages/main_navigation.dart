@@ -1,7 +1,7 @@
 import 'package:finova_ai/pages/analytics.dart';
 import 'package:finova_ai/pages/history_screen.dart';
 import 'package:finova_ai/pages/home_screen.dart';
-import 'package:finova_ai/pages/profile_screen.dart';
+import 'package:finova_ai/pages/profileScreens/profile_screen.dart';
 import 'package:finova_ai/providers/bottom_nav_provider.dart';
 import 'package:finova_ai/widgets/custom_navbar.dart';
 import 'package:flutter/material.dart';

@@ -1,7 +1,5 @@
-import 'package:finova_ai/models/transactions_model.dart';
-import 'package:finova_ai/pages/edit_screen.dart';
-import 'package:finova_ai/providers/history_provider.dart';
-import 'package:finova_ai/providers/month_group_provider.dart';
+import 'package:finova_ai/providers/filtered_grouped_by_month_provider.dart';
+import 'package:finova_ai/providers/history_filter_provider.dart';
 import 'package:finova_ai/providers/month_total_provider.dart'
     show monthTotalProvider;
 import 'package:finova_ai/providers/total_expense_provider.dart';
@@ -15,7 +13,7 @@ class HistoryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final grouped = ref.watch(groupedByMonthProvider);
+    final grouped = ref.watch(filteredGroupedByMonthProvider);
 
     final totalExpense = ref.watch(totalExpenseProvider);
 
@@ -125,12 +123,28 @@ class HistoryScreen extends ConsumerWidget {
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-              children: const [
-                OutlinedBtn(title: 'Payment Method'),
+              children: [
+                OutlinedBtn(
+                  title: 'Payment Method',
+                  onTap: () => showPaymentMethodSheet(context),
+                ),
+
                 SizedBox(width: 10),
-                OutlinedBtn(title: 'Category'),
+                OutlinedBtn(
+                  title: 'Category',
+                  onTap: () => showCategorySheet(context),
+                ),
                 SizedBox(width: 10),
-                OutlinedBtn(title: 'Date'),
+                OutlinedBtn(
+                  title: 'Date',
+                  onTap: () => showDateRangeSheet(context, ref),
+                ),
+                OutlinedBtn(
+                  title: 'Reset',
+                  onTap: () {
+                    ref.read(historyFilterProvider.notifier).reset();
+                  },
+                ),
               ],
             ),
           ),
@@ -141,9 +155,8 @@ class HistoryScreen extends ConsumerWidget {
             removeTop: true,
             child: Expanded(
               child: ListView(
-                padding: const EdgeInsets.all(16),
                 children:
-                    grouped.entries.map((e) {
+                    grouped.map((e) {
                       return MonthHistoryCard(
                         monthKey: e.key,
                         transactions: e.value,
@@ -156,5 +169,79 @@ class HistoryScreen extends ConsumerWidget {
       ),
       backgroundColor: Colors.white,
     );
+  }
+}
+
+void showPaymentMethodSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder:
+        (_) => Consumer(
+          builder: (context, ref, _) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children:
+                  ['Cash', 'Debit Card', 'Credit Card', 'Wallet']
+                      .map(
+                        (method) => ListTile(
+                          title: Text(method),
+                          onTap: () {
+                            ref
+                                .read(historyFilterProvider.notifier)
+                                .setPaymentMethod(method);
+                            Navigator.pop(context);
+                          },
+                        ),
+                      )
+                      .toList(),
+            );
+          },
+        ),
+  );
+}
+
+void showCategorySheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder:
+        (_) => Consumer(
+          builder: (context, ref, _) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children:
+                  ['Food', 'Travel', 'Shopping', 'Bills', 'Other']
+                      .map(
+                        (cat) => ListTile(
+                          title: Text(cat),
+                          onTap: () {
+                            ref
+                                .read(historyFilterProvider.notifier)
+                                .setCategory(cat);
+                            Navigator.pop(context);
+                          },
+                        ),
+                      )
+                      .toList(),
+            );
+          },
+        ),
+  );
+}
+
+void showDateRangeSheet(BuildContext context, WidgetRef ref) async {
+  final range = await showDateRangePicker(
+    context: context,
+    firstDate: DateTime(2020),
+    lastDate: DateTime.now(),
+  );
+
+  if (range != null) {
+    ref.read(historyFilterProvider.notifier).setDateRange(range);
   }
 }

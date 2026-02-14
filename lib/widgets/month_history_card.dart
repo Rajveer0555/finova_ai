@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class MonthHistoryCard extends StatefulWidget {
-  final String monthKey;
+  final DateTime monthKey;
   final List<TransactionModel2> transactions;
 
   const MonthHistoryCard({
@@ -23,25 +23,33 @@ class _MonthHistoryCardState extends State<MonthHistoryCard> {
   double get totalAmount =>
       widget.transactions.fold(0, (sum, t) => sum + t.amount);
 
+  Image getCategoryImage(String category) {
+    switch (category) {
+      case "Food":
+        return Image.asset('assets/diet.png');
+      case "Travel":
+        return Image.asset('assets/travel-luggage.png');
+      case "Shopping":
+        return Image.asset('assets/shopping-bag.png');
+      case "Bills":
+        return Image.asset('assets/bill.png');
+      default:
+        return Image.asset('assets/delivery-box.png');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final parts = widget.monthKey.split(' ');
-    final year = parts[0];
-    final month = parts[1];
-
+    final year = DateFormat('yyyy').format(widget.monthKey);
+    final month = DateFormat('MMMM').format(widget.monthKey);
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
-      ),
       child: Column(
         children: [
           InkWell(
             onTap: () => setState(() => isExpanded = !isExpanded),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -50,10 +58,7 @@ class _MonthHistoryCardState extends State<MonthHistoryCard> {
                     children: [
                       Text(
                         year,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
                       Text(
                         month,
@@ -66,16 +71,13 @@ class _MonthHistoryCardState extends State<MonthHistoryCard> {
                   ),
                   Text(
                     '₹ ${totalAmount.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
             ),
           ),
-          if (isExpanded) const Divider(height: 1),
+          if (isExpanded) Divider(height: 1),
           if (isExpanded)
             Column(
               children: widget.transactions.map(_transactionTile).toList(),
@@ -99,11 +101,15 @@ class _MonthHistoryCardState extends State<MonthHistoryCard> {
           );
         },
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           child: Row(
             children: [
-              Image.asset(t.paymentImage, height: 38),
-              const SizedBox(width: 12),
+              SizedBox(
+                height: 38,
+                width: 38,
+                child: getCategoryImage(t.category),
+              ),
+              const SizedBox(width: 52),
 
               Expanded(
                 child: Column(

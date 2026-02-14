@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class OutlinedBtn extends StatelessWidget {
-  final String title;
-  const OutlinedBtn({super.key, required this.title});
+  final String title;final VoidCallback onTap;
+  const OutlinedBtn({super.key, required this.title, required this.onTap,});
 
   @override
   Widget build(BuildContext context) {
     return OutlinedButton(
-      onPressed: () {},
+      onPressed: onTap,
       style: ButtonStyle(
         backgroundColor: WidgetStatePropertyAll<Color>(Colors.white),
         foregroundColor: WidgetStatePropertyAll<Color>(Colors.black),
