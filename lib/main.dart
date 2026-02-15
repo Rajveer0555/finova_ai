@@ -1,11 +1,11 @@
 import 'package:finova_ai/pages/add_screen.dart';
 import 'package:finova_ai/pages/forget_password.dart';
 import 'package:finova_ai/pages/auth_screen.dart';
-import 'package:finova_ai/pages/home_screen.dart';
 import 'package:finova_ai/pages/info_screen.dart';
 import 'package:finova_ai/pages/loading_state.dart';
 import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/pages/onBoarding/onboarding.dart';
+import 'package:finova_ai/pages/profileScreens/manage_budget.dart';
 import 'package:finova_ai/pages/profileScreens/user_profile.dart';
 import 'package:finova_ai/pages/splash_screen.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
@@ -48,6 +48,9 @@ class MyApp extends ConsumerWidget {
         break;
       case AppStatus.authenticated:
         currentScreen = const MainNavigation(); //
+        break;
+      case AppStatus.manage_budget:
+        currentScreen = const ManageBudgetScreen(); //
         break;
       case AppStatus.userprofile:
         currentScreen = const UserProfile(); //

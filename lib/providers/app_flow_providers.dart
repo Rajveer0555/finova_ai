@@ -7,6 +7,7 @@ enum AppStatus {
   authenticated,
   infoscreen,
   userprofile,
+  manage_budget,
   add_screen,
   loading_state,
   ForgetPassword,

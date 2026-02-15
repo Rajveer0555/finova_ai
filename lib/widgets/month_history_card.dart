@@ -42,105 +42,131 @@ class _MonthHistoryCardState extends State<MonthHistoryCard> {
   Widget build(BuildContext context) {
     final year = DateFormat('yyyy').format(widget.monthKey);
     final month = DateFormat('MMMM').format(widget.monthKey);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        children: [
-          InkWell(
-            onTap: () => setState(() => isExpanded = !isExpanded),
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        year,
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                      Text(
-                        month,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    '₹ ${totalAmount.toStringAsFixed(0)}',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (isExpanded) Divider(height: 1),
-          if (isExpanded)
-            Column(
-              children: widget.transactions.map(_transactionTile).toList(),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _transactionTile(TransactionModel2 t) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ExpenseDetailScreen(transactionId: t.id),
+      padding: EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 10,
+              spreadRadius: 1,
+              offset: Offset(0, 4), // shadow position
             ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-          child: Row(
-            children: [
-              SizedBox(
-                height: 38,
-                width: 38,
-                child: getCategoryImage(t.category),
-              ),
-              const SizedBox(width: 52),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          ],
+        ),
+        margin: const EdgeInsets.only(bottom: 16),
+        child: Column(
+          children: [
+            InkWell(
+              splashColor: Colors.white,
+              focusColor: Colors.white,
+              onTap: () => setState(() => isExpanded = !isExpanded),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      t.category,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          year,
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                        Text(
+                          month,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                     Text(
-                      DateFormat('dd MMM, hh:mm a').format(t.dateTime),
+                      '₹ ${totalAmount.toStringAsFixed(0)}',
                       style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 12,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
               ),
-
-              Text(
-                "₹ ${t.amount.toStringAsFixed(0)}",
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+            ),
+            if (isExpanded) Divider(height: 1),
+            if (isExpanded)
+              Column(
+                children: widget.transactions.map(_transactionTile).toList(),
               ),
-            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _transactionTile(TransactionModel2 t) {
+    return Material(
+      borderRadius: BorderRadius.circular(12),
+      color: Colors.grey.shade50,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: InkWell(
+          focusColor: Colors.black,
+          splashColor: Colors.black,
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ExpenseDetailScreen(transactionId: t.id),
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+            child: Row(
+              children: [
+                SizedBox(
+                  height: 38,
+                  width: 38,
+                  child: getCategoryImage(t.category),
+                ),
+                const SizedBox(width: 32),
+        
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        t.category,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        DateFormat('dd MMM, hh:mm a').format(t.dateTime),
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+        
+                Text(
+                  "₹ ${t.amount.toStringAsFixed(0)}",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

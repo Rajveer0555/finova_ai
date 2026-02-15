@@ -1,4 +1,5 @@
 import 'package:finova_ai/models/transactions_model.dart';
+import 'package:finova_ai/providers/payment_filter_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
@@ -46,3 +47,15 @@ class TransactionsNotifier extends StateNotifier<List<TransactionModel2>> {
     ];
   }
 }
+
+final filteredTransactionsProvider = Provider((ref) {
+  final transactions = ref.watch(transactionsProvider);
+
+  final filter = ref.watch(paymentFilterProvider);
+
+  if (filter == null) {
+    return transactions;
+  }
+
+  return transactions.where((tx) => tx.paymentTitle == filter).toList();
+});

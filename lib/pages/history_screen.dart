@@ -122,7 +122,7 @@ class HistoryScreen extends ConsumerWidget {
             height: 34,
             child: ListView(
               scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
               children: [
                 OutlinedBtn(
                   title: 'Payment Method',

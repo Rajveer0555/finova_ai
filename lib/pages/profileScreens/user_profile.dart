@@ -13,16 +13,16 @@ class UserProfile extends ConsumerStatefulWidget {
 class _UserProfileState extends ConsumerState<UserProfile> {
   @override
   Widget build(BuildContext context) {
-    
     double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black, size: 24),
           onPressed: () {
             ref.read(appFlowProvider.notifier).state = AppStatus.authenticated;
           },
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          color: Colors.black,
         ),
         surfaceTintColor: Colors.white,
         elevation: 2,
@@ -122,15 +122,11 @@ class _UserProfileState extends ConsumerState<UserProfile> {
                 ],
               ),
               const Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButtonCust('Submit', () {
-                 
-                }),
-              ],
-            ),
-            SizedBox(height: screenHeight * 0.04),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [ElevatedButtonCust('Submit', () {})],
+              ),
+              SizedBox(height: screenHeight * 0.04),
             ],
           ),
         ],
@@ -139,7 +135,7 @@ class _UserProfileState extends ConsumerState<UserProfile> {
   }
 }
 
-Widget _inputField(String hintText, ) {
+Widget _inputField(String hintText) {
   return SizedBox(
     width: 340,
     child: TextField(

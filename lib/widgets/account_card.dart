@@ -132,30 +132,35 @@ class _AccountCardState extends ConsumerState<AccountCard> {
             child: Divider(),
           ),
           SizedBox(height: screenHeight * 0.01),
-          Row(
-            children: [
-              SizedBox(width: screenWidth * 0.09),
-              Image(
-                image: AssetImage('assets/pie-chart.png'),
-                height: 24,
-                width: 24,
-              ),
-              SizedBox(width: screenWidth * 0.08),
-              RichText(
-                text: TextSpan(
-                  text: 'Manage Budget',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'SFProText',
+          InkWell(
+            onTap: () {
+              ref.read(appFlowProvider.notifier).state = AppStatus.manage_budget;
+            },
+            child: Row(
+              children: [
+                SizedBox(width: screenWidth * 0.09),
+                Image(
+                  image: AssetImage('assets/pie-chart.png'),
+                  height: 24,
+                  width: 24,
+                ),
+                SizedBox(width: screenWidth * 0.08),
+                RichText(
+                  text: TextSpan(
+                    text: 'Manage Budget',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'SFProText',
+                    ),
                   ),
                 ),
-              ),
-              Spacer(),
-              Icon(Icons.arrow_forward_ios_rounded, size: 16),
-              SizedBox(width: screenWidth * 0.08),
-            ],
+                Spacer(),
+                Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                SizedBox(width: screenWidth * 0.08),
+              ],
+            ),
           ),
           SizedBox(height: screenHeight * 0.02),
         ],
