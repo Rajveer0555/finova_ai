@@ -26,8 +26,8 @@ class HistoryScreen extends ConsumerWidget {
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(28),
-                bottomRight: Radius.circular(28),
+                bottomLeft: Radius.circular(18),
+                bottomRight: Radius.circular(18),
               ),
               color: Color(0xFF4A90FF),
               boxShadow: [
@@ -112,7 +112,7 @@ class HistoryScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  SizedBox(height: screenHeight * 0.02),
+                  SizedBox(height: screenHeight * 0.03),
                 ],
               ),
             ),

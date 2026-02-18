@@ -1,3 +1,4 @@
+import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,26 +26,31 @@ class _SupportCardState extends ConsumerState<SupportCard> {
       child: Column(
         children: [
           SizedBox(height: screenHeight * 0.02),
-          Row(
-            children: [
-              SizedBox(width: screenWidth * 0.08),
-              Icon(Icons.quiz_rounded, size: 28),
-              SizedBox(width: screenWidth * 0.08),
-              RichText(
-                text: TextSpan(
-                  text: "FAQ's",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'SFProText',
+          InkWell(
+            onTap: () {
+              ref.read(appFlowProvider.notifier).state = AppStatus.faq_screen;
+            },
+            child: Row(
+              children: [
+                SizedBox(width: screenWidth * 0.08),
+                Icon(Icons.quiz_rounded, size: 28),
+                SizedBox(width: screenWidth * 0.08),
+                RichText(
+                  text: TextSpan(
+                    text: "FAQ's",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'SFProText',
+                    ),
                   ),
                 ),
-              ),
-              Spacer(),
-              Icon(Icons.arrow_forward_ios_rounded, size: 16),
-              SizedBox(width: screenWidth * 0.08),
-            ],
+                Spacer(),
+                Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                SizedBox(width: screenWidth * 0.08),
+              ],
+            ),
           ),
           SizedBox(height: screenHeight * 0.01),
           Padding(
@@ -52,26 +58,32 @@ class _SupportCardState extends ConsumerState<SupportCard> {
             child: Divider(),
           ),
           SizedBox(height: screenHeight * 0.01),
-          Row(
-            children: [
-              SizedBox(width: screenWidth * 0.08),
-              Icon(Icons.support_agent_rounded, size: 28),
-              SizedBox(width: screenWidth * 0.08),
-              RichText(
-                text: TextSpan(
-                  text: 'Help & Support',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'SFProText',
+          InkWell(
+            onTap: () {
+              ref.read(appFlowProvider.notifier).state =
+                  AppStatus.support_screen;
+            },
+            child: Row(
+              children: [
+                SizedBox(width: screenWidth * 0.08),
+                Icon(Icons.support_agent_rounded, size: 28),
+                SizedBox(width: screenWidth * 0.08),
+                RichText(
+                  text: TextSpan(
+                    text: 'Help & Support',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'SFProText',
+                    ),
                   ),
                 ),
-              ),
-              Spacer(),
-              Icon(Icons.arrow_forward_ios_rounded, size: 16),
-              SizedBox(width: screenWidth * 0.08),
-            ],
+                Spacer(),
+                Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                SizedBox(width: screenWidth * 0.08),
+              ],
+            ),
           ),
           SizedBox(height: screenHeight * 0.01),
           Padding(

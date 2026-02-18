@@ -6,6 +6,8 @@ enum AppStatus {
   unauthenticated,
   authenticated,
   infoscreen,
+  support_screen,
+  faq_screen,
   userprofile,
   manage_budget,
   add_screen,

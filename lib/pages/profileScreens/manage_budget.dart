@@ -1,4 +1,8 @@
 import 'package:finova_ai/providers/app_flow_providers.dart';
+import 'package:finova_ai/widgets/alerts_container.dart';
+import 'package:finova_ai/widgets/elevated_button.dart';
+import 'package:finova_ai/widgets/expense_adjust_widget.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,6 +16,9 @@ class ManageBudgetScreen extends ConsumerStatefulWidget {
 class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+    bool isSwitched2 = true;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -36,7 +43,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                 fontFamily: 'SFProText',
               ),
             ),
-            SizedBox(height: 4),
+            SizedBox(height: 1),
             Text(
               "Your current budget limit is ₹16,000 per month",
               style: TextStyle(
@@ -51,8 +58,194 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
         centerTitle: true,
         backgroundColor: Colors.white,
       ),
-      backgroundColor: Colors.white,
-      body: Center(child: Text('This is the Manage Budget Screen')),
+      backgroundColor: Colors.grey.shade50,
+      body: Padding(
+        padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 102,
+              width: 380,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color.fromARGB(31, 112, 112, 112),
+                    blurRadius: 10.0,
+                    spreadRadius: 12,
+                  ),
+                ],
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        SizedBox(height: 20),
+                        Text(
+                          "₹ 9,800",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'SFProText',
+                            color: Colors.black,
+                          ),
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          "spent of",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: 'SFProText',
+                            color: Colors.black,
+                          ),
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          "₹ 16,000",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'SFProText',
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    LinearProgressIndicator(
+                      borderRadius: BorderRadius.circular(12),
+                      minHeight: 14,
+                      value: 0.48,
+                      backgroundColor: Colors.grey.shade300,
+                      color: Color.fromARGB(255, 100, 159, 255),
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              "61% ",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: 'SFProText',
+                                color: Color.fromARGB(255, 100, 159, 255),
+                              ),
+                            ),
+                            Text(
+                              "Spent",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: 'SFProText',
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          "₹ 6,200 Remaining",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: 'SFProText',
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 17),
+            Text(
+              "Expense Breakdown",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'SFProText',
+                color: Colors.black,
+              ),
+            ),
+            SizedBox(height: 10),
+            ExpenseAdjustWidget(
+              title: 'Food',
+              imagePath: 'assets/diet.png',
+              budget: '₹ 16,000',
+              spent: '5,900',
+            ),
+
+            SizedBox(height: 10),
+            ExpenseAdjustWidget(
+              title: 'Travel',
+              imagePath: 'assets/travel-luggage.png',
+              budget: '₹ 4,000',
+              spent: '2,300',
+            ),
+
+            SizedBox(height: 10),
+            ExpenseAdjustWidget(
+              title: 'Shopping',
+              imagePath: 'assets/shopping-bag.png',
+              budget: '₹ 4,000',
+              spent: '1,600',
+            ),
+            SizedBox(height: 17),
+            Text(
+              "Alerts",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'SFProText',
+                color: Colors.black,
+              ),
+            ),
+            SizedBox(height: 10),
+            AlertsContainer(
+              title: 'Alert on Budget Exceed',
+              subTitle: 'Receive alerts when budget exceed',
+            ),
+
+            SizedBox(height: 8),
+            AlertsContainer(
+              title: 'Alert on Category Limit',
+              subTitle: 'Receive alerts when category budget exceed',
+            ),
+            Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Column(
+                  children: [
+                    ElevatedButtonCust('Adjust Budget', () {}),
+
+                    SizedBox(height: screenHeight * 0.01),
+                    Text(
+                      'Simulation only. No data is changes',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: screenHeight * 0.01),
+          ],
+        ),
+      ),
     );
   }
 }

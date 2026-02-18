@@ -86,8 +86,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ],
                       gradient: LinearGradient(
                         colors: [
-                          Colors.lightBlue.shade300,
-                          Colors.blue.shade600,
+                          Colors.lightBlue.shade500,
+                          const Color.fromARGB(255, 8, 82, 147),
                         ],
                         begin: Alignment.bottomLeft,
                         end: Alignment.topRight,
