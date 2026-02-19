@@ -7,7 +7,11 @@ import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/pages/onBoarding/onboarding.dart';
 import 'package:finova_ai/pages/profileScreens/faq_screen.dart';
 import 'package:finova_ai/pages/profileScreens/manage_budget.dart';
+import 'package:finova_ai/pages/profileScreens/privacy_policy.dart';
+import 'package:finova_ai/pages/profileScreens/subscription.dart';
 import 'package:finova_ai/pages/profileScreens/support_screen.dart';
+import 'package:finova_ai/pages/profileScreens/terms_condtions.dart';
+import 'package:finova_ai/pages/profileScreens/upgrade_pro.dart';
 import 'package:finova_ai/pages/profileScreens/user_profile.dart';
 import 'package:finova_ai/pages/splash_screen.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
@@ -59,6 +63,18 @@ class MyApp extends ConsumerWidget {
         break;
       case AppStatus.support_screen:
         currentScreen = const SupportScreen(); //
+        break;
+      case AppStatus.terms_conditions:
+        currentScreen = const TermsConditions(); //
+        break;
+      case AppStatus.privacy_policy:
+        currentScreen = const PrivacyPolicy(); //
+        break;
+      case AppStatus.subscription:
+        currentScreen = const SubscriptionScreen(); //
+        break;
+      case AppStatus.upgrade_pro:
+        currentScreen = const UpgradeProScreen(); //
         break;
       case AppStatus.userprofile:
         currentScreen = const UserProfile(); //

@@ -1,3 +1,4 @@
+import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/account_card.dart';
 import 'package:finova_ai/widgets/profiler_header.dart';
 import 'package:finova_ai/widgets/support_card.dart';
@@ -138,22 +139,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             ],
                           ),
                           SizedBox(height: screenHeight * 0.015),
-                          Container(
-                            width: screenWidth * 0.9,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Center(
-                              child: RichText(
-                                text: TextSpan(
-                                  text: 'Upgrade to Pro',
-                                  style: TextStyle(
-                                    color: Colors.blue.shade800,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    fontFamily: 'SFProText',
+                          InkWell(
+                            onTap: () {
+                              ref.read(appFlowProvider.notifier).state =
+                                  AppStatus.upgrade_pro;
+                            },
+                            child: Container(
+                              width: screenWidth * 0.9,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Center(
+                                child: RichText(
+                                  text: TextSpan(
+                                    text: 'Upgrade to Pro',
+                                    style: TextStyle(
+                                      color: Colors.blue.shade800,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      fontFamily: 'SFProText',
+                                    ),
                                   ),
                                 ),
                               ),

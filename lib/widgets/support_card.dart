@@ -92,26 +92,32 @@ class _SupportCardState extends ConsumerState<SupportCard> {
           ),
 
           SizedBox(height: screenHeight * 0.01),
-          Row(
-            children: [
-              SizedBox(width: screenWidth * 0.08),
-              Icon(Icons.privacy_tip_rounded, size: 28),
-              SizedBox(width: screenWidth * 0.08),
-              RichText(
-                text: TextSpan(
-                  text: 'Privacy Policy',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'SFProText',
+          InkWell(
+            onTap: () {
+              ref.read(appFlowProvider.notifier).state =
+                  AppStatus.privacy_policy;
+            },
+            child: Row(
+              children: [
+                SizedBox(width: screenWidth * 0.08),
+                Icon(Icons.privacy_tip_rounded, size: 28),
+                SizedBox(width: screenWidth * 0.08),
+                RichText(
+                  text: TextSpan(
+                    text: 'Privacy Policy',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'SFProText',
+                    ),
                   ),
                 ),
-              ),
-              Spacer(),
-              Icon(Icons.arrow_forward_ios_rounded, size: 16),
-              SizedBox(width: screenWidth * 0.08),
-            ],
+                Spacer(),
+                Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                SizedBox(width: screenWidth * 0.08),
+              ],
+            ),
           ),
 
           SizedBox(height: screenHeight * 0.01),
@@ -120,26 +126,32 @@ class _SupportCardState extends ConsumerState<SupportCard> {
             child: Divider(),
           ),
           SizedBox(height: screenHeight * 0.01),
-          Row(
-            children: [
-              SizedBox(width: screenWidth * 0.08),
-              Icon(Icons.article_rounded, size: 28),
-              SizedBox(width: screenWidth * 0.08),
-              RichText(
-                text: TextSpan(
-                  text: 'Terms & Conditions',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'SFProText',
+          InkWell(
+            onTap: () {
+              ref.read(appFlowProvider.notifier).state =
+                  AppStatus.terms_conditions;
+            },
+            child: Row(
+              children: [
+                SizedBox(width: screenWidth * 0.08),
+                Icon(Icons.article_rounded, size: 28),
+                SizedBox(width: screenWidth * 0.08),
+                RichText(
+                  text: TextSpan(
+                    text: 'Terms & Conditions',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'SFProText',
+                    ),
                   ),
                 ),
-              ),
-              Spacer(),
-              Icon(Icons.arrow_forward_ios_rounded, size: 16),
-              SizedBox(width: screenWidth * 0.08),
-            ],
+                Spacer(),
+                Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                SizedBox(width: screenWidth * 0.08),
+              ],
+            ),
           ),
           SizedBox(height: screenHeight * 0.02),
         ],
