@@ -14,7 +14,7 @@ class ElevatedButtonCust extends ConsumerWidget {
 
     return SizedBox(
       height: screenHeight * 0.06,
-      width: screenWidth * 0.9,
+      width: screenWidth * 0.89,
       child: ElevatedButton(
         onPressed: route,
         style: ElevatedButton.styleFrom(

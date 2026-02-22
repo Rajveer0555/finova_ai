@@ -44,7 +44,7 @@ class ExpenseAdjustWidget extends StatelessWidget {
                 ),
                 SizedBox(width: 18),
                 Padding(
-                  padding: EdgeInsets.only(right: 90),
+                  padding: EdgeInsets.only(right: screenWidth * 0.22),
                   child: Row(
                     children: [
                       Column(
@@ -89,7 +89,7 @@ class ExpenseAdjustWidget extends StatelessWidget {
                             color: Colors.black,
                           ),
                         ),
-                        SizedBox(width: 4),
+                        SizedBox(width: screenWidth * 0.01),
                         Text(
                           "Budget",
                           style: TextStyle(
@@ -101,6 +101,7 @@ class ExpenseAdjustWidget extends StatelessWidget {
                         ),
                       ],
                     ),
+                    SizedBox(height: screenWidth * 0.019),
                     SizedBox(
                       height: 18,
                       child: ElevatedButton(

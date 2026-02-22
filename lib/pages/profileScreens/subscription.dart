@@ -1,4 +1,5 @@
 import 'package:finova_ai/providers/app_flow_providers.dart';
+import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,6 +13,9 @@ class SubscriptionScreen extends ConsumerStatefulWidget {
 class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+
+    double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -247,6 +251,166 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
                 ),
               ),
             ),
+            SizedBox(height: 20),
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    spreadRadius: 0.5,
+                    blurRadius: 0.5,
+                  ),
+                ],
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          "Payment Method",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Spacer(),
+                        TextButton(
+                          onPressed: () {},
+                          child: Text(
+                            "Change",
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 46, 150, 255),
+                              fontSize: 12,
+                              fontFamily: 'SFProText',
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Image.asset(
+                          "assets/credit-card.png",
+                          height: 31,
+                          width: 31,
+                        ),
+                        SizedBox(width: 26),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "**** **** **** 2217",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                                fontFamily: 'SFProText',
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              "Expires 12/28",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 12,
+                                fontFamily: 'SFProText',
+                                fontWeight: FontWeight.w300,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: 12),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+            InkWell(
+              onTap: () {
+                ref.read(appFlowProvider.notifier).state =
+                    AppStatus.billing_history;
+              },
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      spreadRadius: 0.5,
+                      blurRadius: 0.5,
+                    ),
+                  ],
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  child: Row(
+                    children: [
+                      Text(
+                        "Billing History",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      ),
+                      Spacer(),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: Colors.black,
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [ElevatedButtonCust('Payment', () {})],
+            ),
+            SizedBox(height: 12),
+            SizedBox(
+              height: screenHeight * 0.06,
+              width: screenWidth * 0.89,
+              child: ElevatedButton(
+                onPressed: () {
+                  ref.read(appFlowProvider.notifier).state =
+                      AppStatus.authenticated;
+                },
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  backgroundColor: Colors.white,
+                ),
+                child: RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    text: "Cancel Subscription",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontFamily: 'SFProText',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 40),
           ],
         ),
       ),

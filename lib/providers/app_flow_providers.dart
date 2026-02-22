@@ -10,6 +10,7 @@ enum AppStatus {
   terms_conditions,
   support_screen,
   faq_screen,
+  billing_history,
   subscription,
   userprofile,
   manage_budget,

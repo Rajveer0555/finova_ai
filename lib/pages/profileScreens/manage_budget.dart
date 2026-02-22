@@ -16,9 +16,7 @@ class ManageBudgetScreen extends ConsumerStatefulWidget {
 class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-    bool isSwitched2 = true;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -211,13 +209,13 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                 color: Colors.black,
               ),
             ),
-            SizedBox(height: 10),
+            SizedBox(height: screenHeight * 0.01),
             AlertsContainer(
               title: 'Alert on Budget Exceed',
               subTitle: 'Receive alerts when budget exceed',
             ),
 
-            SizedBox(height: 8),
+            SizedBox(height: screenHeight * 0.01),
             AlertsContainer(
               title: 'Alert on Category Limit',
               subTitle: 'Receive alerts when category budget exceed',
