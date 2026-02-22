@@ -2,7 +2,8 @@ import 'package:finova_ai/pages/add_screen.dart';
 import 'package:finova_ai/pages/forget_password.dart';
 import 'package:finova_ai/pages/auth_screen.dart';
 import 'package:finova_ai/pages/info_screen.dart';
-import 'package:finova_ai/pages/loading_state.dart';
+import 'package:finova_ai/pages/statesScreens/error_state.dart';
+import 'package:finova_ai/pages/statesScreens/loading_state.dart';
 import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/pages/onBoarding/onboarding.dart';
 import 'package:finova_ai/pages/profileScreens/billing_history.dart';
@@ -15,6 +16,7 @@ import 'package:finova_ai/pages/profileScreens/terms_condtions.dart';
 import 'package:finova_ai/pages/profileScreens/upgrade_pro.dart';
 import 'package:finova_ai/pages/profileScreens/user_profile.dart';
 import 'package:finova_ai/pages/splash_screen.dart';
+import 'package:finova_ai/pages/statesScreens/no_internet_screen.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -76,6 +78,9 @@ class MyApp extends ConsumerWidget {
         break;
       case AppStatus.billing_history:
         currentScreen = const BillingHistoryScreen(); //
+        break;
+      case AppStatus.error_state_screen:
+        currentScreen = const NoInternetScreen(); //
         break;
       case AppStatus.upgrade_pro:
         currentScreen = const UpgradeProScreen(); //

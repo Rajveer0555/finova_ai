@@ -5,12 +5,13 @@ class ExpenseAdjustWidget extends StatelessWidget {
   final String budget;
   final String spent;
   final String imagePath;
+  final VoidCallback onTap;
   const ExpenseAdjustWidget({
     super.key,
     required this.title,
     required this.imagePath,
     required this.budget,
-    required this.spent,
+    required this.spent, required this.onTap,
   });
 
   @override
@@ -112,7 +113,7 @@ class ExpenseAdjustWidget extends StatelessWidget {
                           ),
                           backgroundColor: Colors.white,
                         ),
-                        onPressed: () {},
+                        onPressed: onTap,
                         child: Row(
                           children: [
                             Text(

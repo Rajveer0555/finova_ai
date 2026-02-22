@@ -178,6 +178,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
             ),
             SizedBox(height: 10),
             ExpenseAdjustWidget(
+              onTap: () => showAdjustBudgetBottomSheet(context),
               title: 'Food',
               imagePath: 'assets/diet.png',
               budget: '₹ 16,000',
@@ -186,6 +187,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
 
             SizedBox(height: 10),
             ExpenseAdjustWidget(
+              onTap: () => showAdjustBudgetBottomSheet(context),
               title: 'Travel',
               imagePath: 'assets/travel-luggage.png',
               budget: '₹ 4,000',
@@ -194,6 +196,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
 
             SizedBox(height: 10),
             ExpenseAdjustWidget(
+              onTap: () => showAdjustBudgetBottomSheet(context),
               title: 'Shopping',
               imagePath: 'assets/shopping-bag.png',
               budget: '₹ 4,000',
@@ -246,4 +249,165 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
       ),
     );
   }
+}
+
+void showAdjustBudgetBottomSheet(BuildContext context) {
+  final TextEditingController budgetController = TextEditingController();
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              /// Drag Indicator
+              Container(
+                height: 5,
+                width: 50,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              /// Title
+              const Text(
+                "Adjust Budget",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+
+              const Divider(),
+
+              const SizedBox(height: 10),
+
+              /// Budget Info Row
+              Row(
+                children: [
+                  Image.asset("assets/diet.png", height: 40, width: 40),
+                  const SizedBox(width: 15),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        "Current Budget : ₹16,000",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        "Spent : ₹5,900",
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+              const Divider(),
+              const SizedBox(height: 15),
+
+              /// Enter Budget Label
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Enter New Budget",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              /// TextField
+              TextField(
+                controller: budgetController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  hintText: "20,000",
+                  prefixText: "₹ ",
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 18,
+                    horizontal: 20,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 25),
+
+              /// Buttons Row
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: const Text(
+                        "Cancel",
+                        style: TextStyle(fontSize: 16, color: Colors.black),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 15),
+
+                  /// Save
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final newBudget = budgetController.text;
+
+                        // TODO: Save budget logic here
+
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color.fromARGB(255, 46, 150, 255),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: const Text(
+                        "Save Changes",
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 10),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }
