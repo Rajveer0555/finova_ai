@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1034108295430",
+    "project_id": "finova-ai-94605",
+    "storage_bucket": "finova-ai-94605.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1034108295430:android:7121be5045b471bd1fa687",
+        "android_client_info": {
+          "package_name": "com.example.finova_ai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1034108295430-8b84cfkt6kau17jqti6191ned2860dfh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.finova_ai",
+            "certificate_hash": "e4908b24fd4d45b5623249884c0ef494a965a82e"
+          }
+        },
+        {
+          "client_id": "1034108295430-chor39j77pahrpiori38u9efragnppo8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvjRCewFRSFDM-iBQsSIj_kFri0JHiooo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1034108295430-chor39j77pahrpiori38u9efragnppo8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

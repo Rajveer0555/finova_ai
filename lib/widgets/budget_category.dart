@@ -2,11 +2,13 @@ import 'package:finova_ai/providers/budget_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BudgetCategory extends ConsumerWidget {
+class BudgetCategory extends ConsumerStatefulWidget {
   final String id;
   final String title;
   final String imagePath;
+  final TextEditingController controller;
   const BudgetCategory({
+    required this.controller,
     super.key,
     required this.title,
     required this.imagePath,
@@ -14,15 +16,28 @@ class BudgetCategory extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final amount = ref.read(budgetAmountProvider(id));
+  ConsumerState<BudgetCategory> createState() => _BudgetCategoryState();
+}
+
+class _BudgetCategoryState extends ConsumerState<BudgetCategory> {
+  final Map<String, TextEditingController> budgetControllers = {
+    "food": TextEditingController(),
+    "travel": TextEditingController(),
+    "shopping": TextEditingController(),
+    "bills": TextEditingController(),
+    "others": TextEditingController(),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final amount = ref.read(budgetAmountProvider(widget.id));
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Image(
-          image: AssetImage(imagePath),
+          image: AssetImage(widget.imagePath),
           fit: BoxFit.contain,
           height: screenHeight * 0.05,
           width: screenWidth * 0.15,
@@ -33,7 +48,7 @@ class BudgetCategory extends ConsumerWidget {
           children: [
             RichText(
               text: TextSpan(
-                text: title,
+                text: widget.title,
                 style: TextStyle(
                   color: Colors.black,
                   fontFamily: 'SFProText',
@@ -82,12 +97,11 @@ class BudgetCategory extends ConsumerWidget {
                       ),
                       onChanged: (value) {
                         final parsed = double.tryParse(value) ?? 0.0;
-                        ref.read(budgetAmountProvider(id).notifier).state =
-                            parsed;
+                        ref
+                            .read(budgetAmountProvider(widget.id).notifier)
+                            .state = parsed;
                       },
-                      controller: TextEditingController(
-                        text: amount == 0 ? "" : amount.toString(),
-                      ),
+                      controller: widget.controller,
                       decoration: InputDecoration(
                         hintText: "00.00",
                         hintStyle: TextStyle(

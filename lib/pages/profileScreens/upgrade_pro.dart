@@ -1,3 +1,4 @@
+import 'package:finova_ai/pages/profileScreens/subscription.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -230,8 +231,12 @@ class _UpgradeProScreenState extends ConsumerState<UpgradeProScreen> {
                           width: screenWidth * 0.9,
                           child: ElevatedButton(
                             onPressed: () {
-                              ref.read(appFlowProvider.notifier).state =
-                                  AppStatus.subscription;
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => SubscriptionScreen(),
+                                ),
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(

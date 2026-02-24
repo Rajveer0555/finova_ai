@@ -1,3 +1,5 @@
+import 'package:finova_ai/pages/profileScreens/upgrade_pro.dart';
+import 'package:finova_ai/pages/statesScreens/error_state.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/account_card.dart';
 import 'package:finova_ai/widgets/profiler_header.dart';
@@ -20,6 +22,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         surfaceTintColor: Colors.white,
         elevation: 2,
         shadowColor: Colors.black,
@@ -46,8 +49,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 SizedBox(height: screenHeight * 0.02),
                 InkWell(
                   onTap: () {
-                    ref.read(appFlowProvider.notifier).state =
-                        AppStatus.error_state_screen;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => ErrorStateScreen()),
+                    );
                   },
                   child: ProfilerHeader(),
                 ),
@@ -145,8 +150,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         SizedBox(height: screenHeight * 0.015),
                         InkWell(
                           onTap: () {
-                            ref.read(appFlowProvider.notifier).state =
-                                AppStatus.upgrade_pro;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => UpgradeProScreen(),
+                              ),
+                            );
                           },
                           child: Container(
                             width: screenWidth * 0.9,

@@ -1,3 +1,7 @@
+import 'package:finova_ai/pages/profileScreens/faq_screen.dart';
+import 'package:finova_ai/pages/profileScreens/privacy_policy.dart';
+import 'package:finova_ai/pages/profileScreens/support_screen.dart';
+import 'package:finova_ai/pages/profileScreens/terms_condtions.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,7 +32,10 @@ class _SupportCardState extends ConsumerState<SupportCard> {
           SizedBox(height: screenHeight * 0.02),
           InkWell(
             onTap: () {
-              ref.read(appFlowProvider.notifier).state = AppStatus.faq_screen;
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => FaqScreen()),
+              );
             },
             child: Row(
               children: [
@@ -60,8 +67,10 @@ class _SupportCardState extends ConsumerState<SupportCard> {
           SizedBox(height: screenHeight * 0.01),
           InkWell(
             onTap: () {
-              ref.read(appFlowProvider.notifier).state =
-                  AppStatus.support_screen;
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => SupportScreen()),
+              );
             },
             child: Row(
               children: [
@@ -94,8 +103,10 @@ class _SupportCardState extends ConsumerState<SupportCard> {
           SizedBox(height: screenHeight * 0.01),
           InkWell(
             onTap: () {
-              ref.read(appFlowProvider.notifier).state =
-                  AppStatus.privacy_policy;
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => PrivacyPolicy()),
+              );
             },
             child: Row(
               children: [
@@ -128,8 +139,10 @@ class _SupportCardState extends ConsumerState<SupportCard> {
           SizedBox(height: screenHeight * 0.01),
           InkWell(
             onTap: () {
-              ref.read(appFlowProvider.notifier).state =
-                  AppStatus.terms_conditions;
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => TermsConditions()),
+              );
             },
             child: Row(
               children: [

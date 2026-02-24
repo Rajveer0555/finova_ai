@@ -1,6 +1,7 @@
 import 'package:finova_ai/models/category_selector_model.dart';
 import 'package:finova_ai/models/payment_method.dart';
 import 'package:finova_ai/models/transactions_model.dart';
+import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/providers/history_provider.dart';
 import 'package:finova_ai/widgets/category_selector.dart';
@@ -58,7 +59,10 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       appBar: AppBar(
         leading: TextButton(
           onPressed: () {
-            ref.read(appFlowProvider.notifier).state = AppStatus.authenticated;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => MainNavigation()),
+            );
           },
           child: Icon(Icons.arrow_back_ios, color: Colors.black, size: 24),
         ),
@@ -296,6 +300,11 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                     .addTransaction(newTransaction);
                 ref.read(appFlowProvider.notifier).state =
                     AppStatus.authenticated;
+
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => MainNavigation()),
+                );
               }),
             ],
           ),

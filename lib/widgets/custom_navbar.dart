@@ -1,3 +1,4 @@
+import 'package:finova_ai/pages/add_screen.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/providers/bottom_nav_provider.dart';
 import 'package:flutter/material.dart';
@@ -45,8 +46,10 @@ class FinovaBottomNav extends ConsumerWidget {
             padding: EdgeInsets.only(bottom: 60),
             child: InkWell(
               onTap: () {
-                ref.watch(appFlowProvider.notifier).state =
-                    AppStatus.add_screen;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => AddTransactionScreen()),
+                );
               },
               child: CircleAvatar(
                 radius: 32,

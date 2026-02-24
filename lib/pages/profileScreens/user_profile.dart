@@ -1,5 +1,6 @@
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
+import 'package:finova_ai/widgets/userAvatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -51,13 +52,10 @@ class _UserProfileState extends ConsumerState<UserProfile> {
                 alignment: Alignment.center,
                 children: [
                   CircleAvatar(
-                    radius: 76,
-                    backgroundColor: Colors.grey.shade300,
+                    radius: 65,
+                    backgroundColor: Colors.grey.shade100,
                   ),
-                  CircleAvatar(
-                    radius: 70,
-                    backgroundImage: AssetImage('assets/circle_avatar.jpg'),
-                  ),
+                  UserAvatar(radius: 60),
                 ],
               ),
               SizedBox(height: 20),
@@ -77,20 +75,6 @@ class _UserProfileState extends ConsumerState<UserProfile> {
                   ),
                   SizedBox(height: MediaQuery.of(context).size.height * 0.01),
                   _inputField('Enter your First Name'),
-                  SizedBox(height: 20),
-                  RichText(
-                    text: TextSpan(
-                      text: "Last Name",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        fontFamily: 'SFProText',
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.01),
-                  _inputField('Enter your Last Name'),
                   SizedBox(height: 20),
                   RichText(
                     text: TextSpan(

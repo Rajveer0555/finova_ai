@@ -1,3 +1,5 @@
+import 'package:finova_ai/widgets/userAvatar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ProfilerHeader extends StatelessWidget {
@@ -19,11 +21,11 @@ class ProfilerHeader extends StatelessWidget {
       child: Row(
         children: [
           Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: CircleAvatar(
-              radius: 40,
-              backgroundImage: AssetImage('assets/circle_avatar.jpg'),
+            padding: EdgeInsets.symmetric(
+              vertical: screenHeight * 0.02,
+              horizontal: screenWidth * 0.022,
             ),
+            child: UserAvatar(radius: 28),
           ),
           SizedBox(width: screenWidth * 0.03),
           Column(
@@ -43,8 +45,9 @@ class ProfilerHeader extends StatelessWidget {
               SizedBox(height: screenHeight * 0.005),
               RichText(
                 text: TextSpan(
-                  text: 'Rajveer Chauhan',
-                  style: TextStyle(
+                  text:
+                      FirebaseAuth.instance.currentUser?.displayName ?? "User",
+                  style: const TextStyle(
                     color: Colors.black,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -54,7 +57,7 @@ class ProfilerHeader extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(width: screenWidth * 0.12),
+          Spacer(),
           IconButton(
             onPressed: () {},
             icon: Icon(Icons.logout_rounded),

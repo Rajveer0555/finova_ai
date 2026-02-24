@@ -5,6 +5,8 @@ import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class InfoScreen extends ConsumerStatefulWidget {
   const InfoScreen({super.key});
@@ -14,9 +16,46 @@ class InfoScreen extends ConsumerStatefulWidget {
 }
 
 class _InfoScreenState extends ConsumerState<InfoScreen> {
+  Future<void> _completeProfile() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'profileCompleted': true,
+        'aiEnabled': isAiEnabled,
+        'createdAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      if (!mounted) return;
+
+      ref.read(appFlowProvider.notifier).state = AppStatus.authenticated;
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Something went wrong")));
+    }
+  }
+
+  final Map<String, TextEditingController> budgetControllers = {
+    "food": TextEditingController(),
+    "travel": TextEditingController(),
+    "shopping": TextEditingController(),
+    "bills": TextEditingController(),
+    "others": TextEditingController(),
+  };
+
+  @override
+  void dispose() {
+    for (var controller in budgetControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  bool isAiEnabled = true;
   @override
   Widget build(BuildContext context) {
-    bool isSwitched2 = true;
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
@@ -96,12 +135,14 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
                           id: "food",
                           title: 'Food',
                           imagePath: 'assets/diet.png',
+                          controller: budgetControllers["food"]!,
                         ),
                         SizedBox(height: screenHeight * 0.028),
                         BudgetCategory(
                           id: "travel",
                           title: 'Travel',
                           imagePath: 'assets/travel-luggage.png',
+                          controller: budgetControllers["travel"]!,
                         ),
 
                         SizedBox(height: screenHeight * 0.028),
@@ -109,18 +150,21 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
                           id: "shopping",
                           title: 'Shopping',
                           imagePath: 'assets/shopping-bag.png',
+                          controller: budgetControllers["shopping"]!,
                         ),
                         SizedBox(height: screenHeight * 0.028),
                         BudgetCategory(
                           id: "bills",
                           title: 'Bills',
                           imagePath: 'assets/bill.png',
+                          controller: budgetControllers["bills"]!,
                         ),
                         SizedBox(height: screenHeight * 0.028),
                         BudgetCategory(
                           id: "others",
                           title: 'Others',
                           imagePath: 'assets/delivery-box.png',
+                          controller: budgetControllers["others"]!,
                         ),
 
                         SizedBox(height: screenHeight * 0.028),
@@ -193,10 +237,10 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
                               255,
                               87,
                             ),
-                            value: isSwitched2,
+                            value: isAiEnabled,
                             onChanged: (value) {
                               setState(() {
-                                isSwitched2 = value;
+                                isAiEnabled = value;
                               });
                             },
                           ),
@@ -208,13 +252,16 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
                 SizedBox(height: screenHeight * 0.015),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [ElevatedButtonCust('Get Started', () {})],
+                  children: [
+                    ElevatedButtonCust('Get Started', () async {
+                      await _completeProfile();
+                    }),
+                  ],
                 ),
                 Center(
                   child: TextButton(
-                    onPressed: () {
-                      ref.read(appFlowProvider.notifier).state =
-                          AppStatus.authenticated;
+                    onPressed: () async {
+                      await _completeProfile();
                     },
                     child: RichText(
                       text: TextSpan(

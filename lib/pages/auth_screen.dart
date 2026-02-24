@@ -1,8 +1,12 @@
+import 'package:finova_ai/pages/forget_password.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/providers/auth_ui_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -12,6 +16,175 @@ class AuthScreen extends ConsumerStatefulWidget {
 }
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
+  final _formKey = GlobalKey<FormState>();
+
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final nameController = TextEditingController();
+
+  Future<void> _signInWithGoogle() async {
+    try {
+      setState(() => isLoading = true);
+
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+      if (googleUser == null) {
+        setState(() => isLoading = false);
+        return; // user cancelled
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
+
+      final userDoc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userCredential.user!.uid)
+              .get();
+
+      if (!userDoc.exists) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .set({
+              'name': userCredential.user!.displayName,
+              'email': userCredential.user!.email,
+              'profileCompleted': false,
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+      }
+
+      final profileCompleted = userDoc.data()?['profileCompleted'] ?? false;
+
+      if (!mounted) return;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(appFlowProvider.notifier).state =
+            profileCompleted ? AppStatus.authenticated : AppStatus.infoscreen;
+      });
+    } catch (e) {
+      if (mounted) setState(() => isLoading = false);
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Google Sign-In failed")));
+    }
+  }
+
+  Future<void> _signup() async {
+    try {
+      FocusScope.of(context).unfocus();
+      setState(() => isLoading = true);
+
+      final email = emailController.text.trim();
+      final password = passwordController.text.trim();
+      final name = nameController.text.trim();
+
+      final credential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(credential.user!.uid)
+          .set({
+            'name': name,
+            'email': email,
+            'profileCompleted': false,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+
+      if (!mounted) return;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(appFlowProvider.notifier).state = AppStatus.infoscreen;
+      });
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message ?? "Auth error")));
+    } catch (e) {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+  }
+
+  Future<void> _login() async {
+    try {
+      FocusScope.of(context).unfocus();
+      setState(() => isLoading = true);
+
+      final email = emailController.text.trim();
+      final password = passwordController.text.trim();
+
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final userDoc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(credential.user!.uid)
+              .get();
+
+      final profileCompleted = userDoc.data()?['profileCompleted'] ?? false;
+
+      if (!userDoc.exists) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(credential.user!.uid)
+            .set({
+              'email': email,
+              'profileCompleted': false,
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+      }
+
+      if (!mounted) return;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (profileCompleted) {
+          ref.read(appFlowProvider.notifier).state = AppStatus.authenticated;
+        } else {
+          ref.read(appFlowProvider.notifier).state = AppStatus.infoscreen;
+        }
+      });
+    } on FirebaseAuthException catch (e) {
+      if (mounted) setState(() => isLoading = false);
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message ?? "Login failed")));
+    }
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    nameController.dispose();
+    super.dispose();
+  }
+
+  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
     final isLoginSelected = ref.watch(authModeProvider);
@@ -34,38 +207,56 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         child: SizedBox(
           height: 52,
           child: ElevatedButton(
-            onPressed: () {
-              ref.read(appFlowProvider.notifier).state =
-                  AppStatus.loading_state;
-            },
+            onPressed:
+                isLoading
+                    ? null
+                    : () async {
+                      if (!_formKey.currentState!.validate()) return;
+
+                      if (isLoginSelected) {
+                        await _login();
+                      } else {
+                        await _signup();
+                      }
+                    },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF3399FF),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
               ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                RichText(
-                  text: TextSpan(
-                    text: isLoginSelected ? "Login" : "Sign Up",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+            child:
+                isLoading
+                    ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                    : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        RichText(
+                          text: TextSpan(
+                            text: isLoginSelected ? "Login" : "Sign Up",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
 
-                SizedBox(width: screenWidth * 0.02),
-                const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ],
-            ),
+                        SizedBox(width: screenWidth * 0.02),
+                        const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ],
+                    ),
           ),
         ),
       ),
@@ -107,8 +298,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               _buildToggle(),
 
               const SizedBox(height: 24),
-
-              isLoginSelected ? _buildLoginForm() : _buildSignUpForm(),
+              Form(
+                key: _formKey,
+                child: isLoginSelected ? _buildLoginForm() : _buildSignUpForm(),
+              ),
 
               SizedBox(height: screenHeight * 0.1),
             ],
@@ -134,6 +327,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           Expanded(
             child: GestureDetector(
               onTap: () {
+                emailController.clear();
+                passwordController.clear();
+                nameController.clear();
                 ref.read(authModeProvider.notifier).state = true;
               },
               child: AnimatedContainer(
@@ -222,8 +418,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           ),
         ),
         SizedBox(height: screenHeight * 0.01),
-        _inputField("Enter your Email"),
-
+        _inputField("Enter your Email", controller: emailController),
         SizedBox(height: screenHeight * 0.01),
 
         const Text(
@@ -231,14 +426,20 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
         ),
         SizedBox(height: screenHeight * 0.01),
-        _inputField("Enter your Password", isPassword: true),
+        _inputField(
+          "Enter your Password",
+          controller: passwordController,
+          isPassword: true,
+        ),
 
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
             onPressed: () {
-              ref.read(appFlowProvider.notifier).state =
-                  AppStatus.ForgetPassword;
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ForgetPassword()),
+              );
             },
             child: RichText(
               text: TextSpan(
@@ -256,7 +457,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         SizedBox(height: screenHeight * 0.002),
         const DividerSection(),
         SizedBox(height: screenHeight * 0.02),
-        _socialButtons(),
+        _socialButton("assets/Google.svg", onTap: _signInWithGoogle),
       ],
     );
   }
@@ -279,7 +480,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           ),
         ),
         SizedBox(height: screenHeight * 0.01),
-        _inputField("Enter your Full Name"),
+        _inputField("Enter your Full Name", controller: nameController),
 
         SizedBox(height: screenHeight * 0.01),
 
@@ -295,7 +496,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           ),
         ),
         SizedBox(height: screenHeight * 0.01),
-        _inputField("Enter your Email"),
+        _inputField("Enter your Email", controller: emailController),
 
         SizedBox(height: screenHeight * 0.01),
 
@@ -311,21 +512,36 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           ),
         ),
         SizedBox(height: screenHeight * 0.01),
-        _inputField("Enter your Password", isPassword: true),
+        _inputField(
+          "Enter your Password",
+          controller: passwordController,
+          isPassword: true,
+        ),
 
         SizedBox(height: screenHeight * 0.03),
 
         const DividerSection(),
 
         SizedBox(height: screenHeight * 0.02),
-        _socialButtons(),
+        _socialButton("assets/Google.svg", onTap: _signInWithGoogle),
       ],
     );
   }
 
-  Widget _inputField(String hint, {bool isPassword = false}) {
-    return TextField(
+  Widget _inputField(
+    String hint, {
+    required TextEditingController controller,
+    bool isPassword = false,
+  }) {
+    return TextFormField(
+      controller: controller,
       obscureText: isPassword,
+      validator: (value) {
+        if (value == null || value.trim().isEmpty) {
+          return "Field cannot be empty";
+        }
+        return null;
+      },
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -345,32 +561,20 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     );
   }
 
-  Widget _socialButtons() {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _socialButton("assets/Google.svg"),
-            _socialButton("assets/Apple.svg"),
-            _socialButton("assets/Facebook.svg"),
-          ],
+  Widget _socialButton(String asset, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 70,
+        width: 71,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.grey.shade300),
         ),
-      ],
-    );
-  }
-
-  Widget _socialButton(String asset) {
-    return Container(
-      height: 70,
-      width: 71,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: SvgPicture.asset(asset),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: SvgPicture.asset(asset),
+        ),
       ),
     );
   }

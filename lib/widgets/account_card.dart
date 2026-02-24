@@ -1,3 +1,5 @@
+import 'package:finova_ai/pages/profileScreens/manage_budget.dart';
+import 'package:finova_ai/pages/profileScreens/user_profile.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:flutter/cupertino.dart';
@@ -32,7 +34,10 @@ class _AccountCardState extends ConsumerState<AccountCard> {
           SizedBox(height: screenHeight * 0.02),
           InkWell(
             onTap: () {
-              ref.read(appFlowProvider.notifier).state = AppStatus.userprofile;
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => UserProfile()),
+              );
             },
             child: Row(
               children: [
@@ -134,7 +139,10 @@ class _AccountCardState extends ConsumerState<AccountCard> {
           SizedBox(height: screenHeight * 0.01),
           InkWell(
             onTap: () {
-              ref.read(appFlowProvider.notifier).state = AppStatus.manage_budget;
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ManageBudgetScreen()),
+              );
             },
             child: Row(
               children: [

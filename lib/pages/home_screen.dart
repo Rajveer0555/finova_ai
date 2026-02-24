@@ -2,6 +2,7 @@ import 'package:finova_ai/providers/category_provider.dart';
 import 'package:finova_ai/providers/category_summary_provider.dart';
 import 'package:finova_ai/providers/total_expense_provider.dart';
 import 'package:finova_ai/widgets/mainscreen_catgerories.dart';
+import 'package:finova_ai/widgets/userAvatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:primer_progress_bar/primer_progress_bar.dart';
@@ -14,28 +15,6 @@ class HomeScreen extends ConsumerWidget {
     final categories = ref.watch(categoriesProvider);
     final categorySummary = ref.watch(categorySummaryProvider);
 
-    List<Segment> segments = [
-      Segment(
-        value: 20,
-        color: Colors.lightGreenAccent.shade400,
-        label: Text('Food'),
-      ),
-      Segment(
-        value: 60,
-        color: Colors.lightBlueAccent.shade400,
-        label: Text('Travel'),
-      ),
-      Segment(
-        value: 10,
-        color: const Color.fromARGB(255, 255, 224, 23),
-        label: Text('Bills'),
-      ),
-      Segment(
-        value: 10,
-        color: Colors.redAccent.shade400,
-        label: Text('Shopping'),
-      ),
-    ];
     final totalExpense = ref.watch(totalExpenseProvider);
 
     double screenWidth = MediaQuery.of(context).size.width;
@@ -114,12 +93,7 @@ class HomeScreen extends ConsumerWidget {
                           ],
                         ),
                         Spacer(),
-                        CircleAvatar(
-                          radius: 25,
-                          backgroundImage: AssetImage(
-                            'assets/circle_avatar.jpg',
-                          ),
-                        ),
+                        UserAvatar(radius: 28),
                       ],
                     ),
                     SizedBox(height: screenHeight * 0.02),
@@ -131,30 +105,60 @@ class HomeScreen extends ConsumerWidget {
                       ),
                       child: Padding(
                         padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.04,
                           vertical: screenHeight * 0.01,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SizedBox(height: screenHeight * 0.002),
-                            Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: screenWidth * 0.04,
-                              ),
-                              child: RichText(
-                                text: TextSpan(
-                                  text: 'Budgets Used',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontFamily: 'SFProText',
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                RichText(
+                                  text: TextSpan(
+                                    text: 'Budgets Used',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontFamily: 'SFProText',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
+                                ),
+                                Spacer(),
+                                RichText(
+                                  text: TextSpan(
+                                    text: '75 %',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontFamily: 'SFProText',
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: screenWidth * 0.02),
+                            LinearProgressIndicator(
+                              borderRadius: BorderRadius.circular(12),
+                              minHeight: 10,
+                              value: 0.75,
+                              backgroundColor: Colors.grey.shade300,
+                              color: Color.fromARGB(255, 61, 233, 67),
+                            ),
+                            SizedBox(height: screenWidth * 0.02),
+                            RichText(
+                              text: TextSpan(
+                                text: '₹ 9,550 remaining of ₹ 38,000',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w300,
                                 ),
                               ),
                             ),
-                            SizedBox(height: screenWidth * 0.02),
-                            PrimerProgressBar(segments: segments),
                           ],
                         ),
                       ),

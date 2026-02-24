@@ -1,3 +1,4 @@
+import 'package:finova_ai/pages/profileScreens/faq_screen.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/help_card.dart';
 import 'package:flutter/material.dart';
@@ -127,8 +128,10 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                 "Browse frequently asked questions",
                 "assets/faq.png",
                 () {
-                  ref.read(appFlowProvider.notifier).state =
-                      AppStatus.faq_screen;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => FaqScreen()),
+                  );
                 },
               ),
               SizedBox(height: 10),
