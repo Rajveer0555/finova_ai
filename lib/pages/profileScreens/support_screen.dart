@@ -1,3 +1,4 @@
+import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/pages/profileScreens/faq_screen.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/help_card.dart';
@@ -19,7 +20,10 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            ref.read(appFlowProvider.notifier).state = AppStatus.authenticated;
+            Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => MainNavigation()),
+                  );
           },
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           color: Colors.black,

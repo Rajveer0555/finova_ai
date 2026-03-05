@@ -1,8 +1,10 @@
+import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/alerts_container.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:finova_ai/widgets/expense_adjust_widget.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,14 +16,93 @@ class ManageBudgetScreen extends ConsumerStatefulWidget {
 }
 
 class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
+  double totalSpent = 0;
+  Map<String, double> spentPerCategory = {};
+
+  double calculateUsage(String category) {
+    double spent = spentPerCategory[category] ?? 0;
+    double budget = (budgets[category] ?? 0).toDouble();
+
+    if (budget == 0) return 0;
+
+    return spent / budget;
+  }
+
+  final List<Map<String, dynamic>> categories = [
+    {"key": "food", "title": "Food", "icon": "assets/diet.png"},
+    {"key": "travel", "title": "Travel", "icon": "assets/travel-luggage.png"},
+    {"key": "shopping", "title": "Shopping", "icon": "assets/shopping-bag.png"},
+    {"key": "bills", "title": "Bills", "icon": "assets/bill.png"},
+    {"key": "others", "title": "Others", "icon": "assets/delivery-box.png"},
+  ];
+  Map<String, double> budgets = {};
+  double totalBudget = 0;
+  bool isLoading = true;
+  Future<void> loadBudgetData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final userDoc = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid);
+
+    final userSnapshot = await userDoc.get();
+    final transactionSnapshot = await userDoc.collection('transactions').get();
+
+    Map<String, double> tempBudgets = {};
+    Map<String, double> tempSpent = {};
+
+    /// Budgets
+    final data = userSnapshot.data();
+    if (data != null && data['budgets'] != null) {
+      tempBudgets = Map<String, double>.from(
+        (data['budgets'] as Map).map(
+          (k, v) => MapEntry(k, (v as num).toDouble()),
+        ),
+      );
+    }
+
+    /// Spending
+    for (var doc in transactionSnapshot.docs) {
+      final transaction = doc.data();
+
+      String category = transaction['category'];
+      double amount = (transaction['amount'] as num).toDouble();
+
+      tempSpent[category] = (tempSpent[category] ?? 0) + amount;
+    }
+
+    setState(() {
+      budgets = tempBudgets;
+      spentPerCategory = tempSpent;
+
+      totalBudget = tempBudgets.values.fold(0, (sum, item) => sum + item);
+      totalSpent = tempSpent.values.fold(0, (sum, item) => sum + item);
+
+      isLoading = false;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadBudgetData();
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
+    if (isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            ref.read(appFlowProvider.notifier).state = AppStatus.authenticated;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => MainNavigation()),
+            );
           },
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           color: Colors.black,
@@ -43,7 +124,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
             ),
             SizedBox(height: 1),
             Text(
-              "Your current budget limit is ₹16,000 per month",
+              "Your current budget limit is ₹${totalBudget.toStringAsFixed(0)} per month",
               style: TextStyle(
                 color: Colors.grey.shade700,
                 fontSize: 12,
@@ -59,200 +140,218 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
       backgroundColor: Colors.grey.shade50,
       body: Padding(
         padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 102,
-              width: 380,
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color.fromARGB(31, 112, 112, 112),
-                    blurRadius: 10.0,
-                    spreadRadius: 12,
-                  ),
-                ],
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        SizedBox(height: 20),
-                        Text(
-                          "₹ 9,800",
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: 'SFProText',
-                            color: Colors.black,
-                          ),
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          "spent of",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: 'SFProText',
-                            color: Colors.black,
-                          ),
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          "₹ 16,000",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: 'SFProText',
-                            color: Colors.black,
-                          ),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 102,
+                    width: 380,
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color.fromARGB(31, 112, 112, 112),
+                          blurRadius: 10.0,
+                          spreadRadius: 12,
                         ),
                       ],
-                    ),
-                    SizedBox(height: 8),
-                    LinearProgressIndicator(
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      minHeight: 14,
-                      value: 0.48,
-                      backgroundColor: Colors.grey.shade300,
-                      color: Color.fromARGB(255, 100, 159, 255),
                     ),
-                    SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              "61% ",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: 'SFProText',
-                                color: Color.fromARGB(255, 100, 159, 255),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              SizedBox(height: 20),
+                              Text(
+                                "₹ ${totalSpent.toStringAsFixed(0)}",
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  fontFamily: 'SFProText',
+                                  color: Colors.black,
+                                ),
                               ),
-                            ),
-                            Text(
-                              "Spent",
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: 'SFProText',
-                                color: Colors.black,
+                              SizedBox(width: 4),
+                              Text(
+                                "spent of",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: 'SFProText',
+                                  color: Colors.black,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          "₹ 6,200 Remaining",
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            fontFamily: 'SFProText',
-                            color: Colors.green,
+                              SizedBox(width: 4),
+                              Text(
+                                "₹ ${totalBudget.toStringAsFixed(0)}",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  fontFamily: 'SFProText',
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 17),
-            Text(
-              "Expense Breakdown",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'SFProText',
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: 10),
-            ExpenseAdjustWidget(
-              onTap: () => showAdjustBudgetBottomSheet(context),
-              title: 'Food',
-              imagePath: 'assets/diet.png',
-              budget: '₹ 16,000',
-              spent: '5,900',
-            ),
-
-            SizedBox(height: 10),
-            ExpenseAdjustWidget(
-              onTap: () => showAdjustBudgetBottomSheet(context),
-              title: 'Travel',
-              imagePath: 'assets/travel-luggage.png',
-              budget: '₹ 4,000',
-              spent: '2,300',
-            ),
-
-            SizedBox(height: 10),
-            ExpenseAdjustWidget(
-              onTap: () => showAdjustBudgetBottomSheet(context),
-              title: 'Shopping',
-              imagePath: 'assets/shopping-bag.png',
-              budget: '₹ 4,000',
-              spent: '1,600',
-            ),
-            SizedBox(height: 17),
-            Text(
-              "Alerts",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'SFProText',
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.01),
-            AlertsContainer(
-              title: 'Alert on Budget Exceed',
-              subTitle: 'Receive alerts when budget exceed',
-            ),
-
-            SizedBox(height: screenHeight * 0.01),
-            AlertsContainer(
-              title: 'Alert on Category Limit',
-              subTitle: 'Receive alerts when category budget exceed',
-            ),
-            Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Column(
-                  children: [
-                    ElevatedButtonCust('Adjust Budget', () {}),
-
-                    SizedBox(height: screenHeight * 0.01),
-                    Text(
-                      'Simulation only. No data is changes',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w300,
+                          SizedBox(height: 8),
+                          LinearProgressIndicator(
+                            borderRadius: BorderRadius.circular(12),
+                            minHeight: 14,
+                            value:
+                                totalBudget == 0
+                                    ? 0
+                                    : (totalSpent / totalBudget).clamp(0, 1),
+                            backgroundColor: Colors.grey.shade300,
+                            color: Color.fromARGB(255, 100, 159, 255),
+                          ),
+                          SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    "${((totalBudget == 0 ? 0 : (totalSpent / totalBudget)) * 100).toStringAsFixed(0)}% ",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      fontFamily: 'SFProText',
+                                      color: Color.fromARGB(255, 100, 159, 255),
+                                    ),
+                                  ),
+                                  Text(
+                                    "Spent",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      fontFamily: 'SFProText',
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                "₹ ${(totalBudget - totalSpent).toStringAsFixed(0)} Remaining",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: 'SFProText',
+                                  color: Colors.green,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(height: screenHeight * 0.01),
-          ],
+                  ),
+                  SizedBox(height: 17),
+                  Text(
+                    "Expense Breakdown",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'SFProText',
+                      color: Colors.black,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      final key = category["key"];
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: ExpenseAdjustWidget(
+                          onTap:
+                              () => showAdjustBudgetBottomSheet(
+                                context,
+                                key,
+                                (budgets[key] ?? 0).toDouble(),
+                                category["icon"],
+                                (spentPerCategory[key] ?? 0).toDouble(),
+                              ),
+                          title: category["title"],
+                          imagePath: category["icon"],
+                          budget: (budgets[key] ?? 0).toDouble(),
+                          spent: (spentPerCategory[key] ?? 0).toDouble(),
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(height: 1),
+                  Text(
+                    "Alerts",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'SFProText',
+                      color: Colors.black,
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.01),
+                  AlertsContainer(
+                    title: 'Alert on Budget Exceed',
+                    subTitle: 'Receive alerts when budget exceed',
+                  ),
+
+                  SizedBox(height: screenHeight * 0.01),
+                  AlertsContainer(
+                    title: 'Alert on Category Limit',
+                    subTitle: 'Receive alerts when category budget exceed',
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Column(
+                        children: [
+                          ElevatedButtonCust('Adjust Budget', () {}),
+
+                          SizedBox(height: screenHeight * 0.01),
+                          Text(
+                            'Simulation only. No data is changes',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: screenHeight * 0.01),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-void showAdjustBudgetBottomSheet(BuildContext context) {
+void showAdjustBudgetBottomSheet(
+  BuildContext context,
+  String categoryKey,
+  double currentBudget,
+  String iconPath,
+  double spentAmount,
+) {
   final TextEditingController budgetController = TextEditingController();
+  budgetController.text = currentBudget.toString();
 
   showModalBottomSheet(
     context: context,
@@ -284,8 +383,8 @@ void showAdjustBudgetBottomSheet(BuildContext context) {
               const SizedBox(height: 20),
 
               /// Title
-              const Text(
-                "Adjust Budget",
+              Text(
+                "Adjust ${categoryKey[0].toUpperCase()}${categoryKey.substring(1)} Budget",
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
@@ -297,13 +396,13 @@ void showAdjustBudgetBottomSheet(BuildContext context) {
               /// Budget Info Row
               Row(
                 children: [
-                  Image.asset("assets/diet.png", height: 40, width: 40),
+                  Image.asset(iconPath, height: 40, width: 40),
                   const SizedBox(width: 15),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
-                        "Current Budget : ₹16,000",
+                        "Current Budget : ₹${currentBudget.toStringAsFixed(0)}",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -311,8 +410,11 @@ void showAdjustBudgetBottomSheet(BuildContext context) {
                       ),
                       SizedBox(height: 5),
                       Text(
-                        "Spent : ₹5,900",
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                        "Spent : ₹${spentAmount.toStringAsFixed(0)}",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),
@@ -380,12 +482,38 @@ void showAdjustBudgetBottomSheet(BuildContext context) {
                   /// Save
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        final newBudget = budgetController.text;
+                      onPressed: () async {
+                        final user = FirebaseAuth.instance.currentUser;
+                        if (user == null) return;
 
-                        // TODO: Save budget logic here
+                        double newBudget =
+                            double.tryParse(budgetController.text) ??
+                            currentBudget;
+
+                        final userDoc = FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(user.uid);
+
+                        final snapshot = await userDoc.get();
+                        Map<String, dynamic> budgets =
+                            Map<String, dynamic>.from(
+                              snapshot.data()?['budgets'] ?? {},
+                            );
+
+                        budgets[categoryKey] = newBudget;
+
+                        await userDoc.update({"budgets": budgets});
 
                         Navigator.pop(context);
+
+                        if (context.mounted) {
+                          final state =
+                              context
+                                  .findAncestorStateOfType<
+                                    _ManageBudgetScreenState
+                                  >();
+                          state?.loadBudgetData();
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color.fromARGB(255, 46, 150, 255),

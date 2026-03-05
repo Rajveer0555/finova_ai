@@ -1,3 +1,4 @@
+import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/expandable_card.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +18,10 @@ class _FaqScreenState extends ConsumerState<FaqScreen> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            ref.read(appFlowProvider.notifier).state = AppStatus.authenticated;
+            Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => MainNavigation()),
+                  );
           },
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           color: Colors.black,

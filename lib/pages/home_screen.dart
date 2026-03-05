@@ -1,288 +1,337 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:finova_ai/providers/budget_provider.dart';
 import 'package:finova_ai/providers/category_provider.dart';
-import 'package:finova_ai/providers/category_summary_provider.dart';
-import 'package:finova_ai/providers/total_expense_provider.dart';
+import 'package:finova_ai/providers/transactions_stream_provider.dart';
 import 'package:finova_ai/widgets/mainscreen_catgerories.dart';
 import 'package:finova_ai/widgets/userAvatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:primer_progress_bar/primer_progress_bar.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final categories = ref.watch(categoriesProvider);
-    final categorySummary = ref.watch(categorySummaryProvider);
+    DateTime now = DateTime.now();
 
-    final totalExpense = ref.watch(totalExpenseProvider);
+    DateTime startOfCurrentMonth = DateTime(now.year, now.month, 1);
+    DateTime startOfLastMonth = DateTime(now.year, now.month - 1, 1);
+    DateTime endOfLastMonth = startOfCurrentMonth.subtract(Duration(days: 1));
+
+    final transactionsAsync = ref.watch(transactionsStreamProvider);
+    final budgetAsync = ref.watch(budgetProvider);
+    final categories = ref.watch(categoriesProvider);
 
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(28),
-                  bottomRight: Radius.circular(28),
-                ),
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color.fromARGB(31, 112, 112, 112),
-                    blurRadius: 12.0,
-                    spreadRadius: 1,
-                  ),
-                ],
-              ),
-              width: screenWidth * 1,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+
+    return transactionsAsync.when(
+      data: (snapshot) {
+        return budgetAsync.when(
+          data: (budgetDoc) {
+            final docs = snapshot.docs;
+
+            double totalExpense = 0;
+
+            Map<String, double> categoryTotals = {};
+            Map<String, int> categoryCounts = {};
+            Map<String, double> lastMonthCategoryTotals = {};
+
+            for (var doc in docs) {
+              final data = doc.data();
+
+              double amount = (data['amount'] as num).toDouble();
+              String category = data['category'].toString().toLowerCase();
+
+              DateTime date = (data['date'] as Timestamp).toDate();
+
+              /// CURRENT MONTH
+              if (date.isAfter(
+                startOfCurrentMonth.subtract(const Duration(days: 1)),
+              )) {
+                totalExpense += amount;
+
+                categoryTotals[category] =
+                    (categoryTotals[category] ?? 0) + amount;
+                categoryCounts[category] = (categoryCounts[category] ?? 0) + 1;
+              }
+
+              /// LAST MONTH
+              if (date.isAfter(
+                    startOfLastMonth.subtract(const Duration(days: 1)),
+                  ) &&
+                  date.isBefore(startOfCurrentMonth)) {
+                lastMonthCategoryTotals[category] =
+                    (lastMonthCategoryTotals[category] ?? 0) + amount;
+              }
+            }
+
+            Map<String, dynamic> budgets = Map<String, dynamic>.from(
+              budgetDoc.data()?['budgets'] ?? {},
+            );
+
+            double totalBudget = budgets.values.fold(
+              0,
+              (sum, item) => sum + (item ?? 0),
+            );
+
+            double usage =
+                totalBudget == 0 ? 0 : (totalExpense / totalBudget).clamp(0, 1);
+
+            double remaining = totalBudget - totalExpense;
+
+            return Scaffold(
+              backgroundColor: Colors.white,
+              body: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: screenHeight * 0.08),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            RichText(
-                              text: TextSpan(
-                                text: 'Total Spendings',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontFamily: 'SFProText',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w300,
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: screenHeight * 0.0001),
-                            RichText(
-                              text: TextSpan(
-                                text: '₹ ${totalExpense.toStringAsFixed(2)}',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontFamily: 'SFProText',
-                                  fontSize: 38,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-
-                            SizedBox(height: screenHeight * 0.0001),
-                            RichText(
-                              text: TextSpan(
-                                text: 'This month',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontFamily: 'SFProText',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w300,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Spacer(),
-                        UserAvatar(radius: 28),
-                      ],
-                    ),
-                    SizedBox(height: screenHeight * 0.02),
+                    /// HEADER
                     Container(
-                      width: screenWidth * 0.9,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(18),
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(28),
+                          bottomRight: Radius.circular(28),
+                        ),
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color.fromARGB(31, 112, 112, 112),
+                            blurRadius: 12,
+                            spreadRadius: 1,
+                          ),
+                        ],
                       ),
+                      width: screenWidth,
                       child: Padding(
                         padding: EdgeInsets.symmetric(
-                          horizontal: screenWidth * 0.04,
-                          vertical: screenHeight * 0.01,
+                          horizontal: screenWidth * 0.06,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(height: screenHeight * 0.002),
+                            SizedBox(height: screenHeight * 0.08),
+
                             Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                RichText(
-                                  text: TextSpan(
-                                    text: 'Budgets Used',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontFamily: 'SFProText',
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "Total Spendings",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w300,
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                Spacer(),
-                                RichText(
-                                  text: TextSpan(
-                                    text: '75 %',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontFamily: 'SFProText',
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
+
+                                    Text(
+                                      "₹ ${totalExpense.toStringAsFixed(2)}",
+                                      style: const TextStyle(
+                                        fontSize: 38,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
-                                  ),
+
+                                    const Text(
+                                      "This month",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w300,
+                                      ),
+                                    ),
+                                  ],
                                 ),
+
+                                const Spacer(),
+
+                                const UserAvatar(radius: 28),
                               ],
                             ),
-                            SizedBox(height: screenWidth * 0.02),
-                            LinearProgressIndicator(
-                              borderRadius: BorderRadius.circular(12),
-                              minHeight: 10,
-                              value: 0.75,
-                              backgroundColor: Colors.grey.shade300,
-                              color: Color.fromARGB(255, 61, 233, 67),
-                            ),
-                            SizedBox(height: screenWidth * 0.02),
-                            RichText(
-                              text: TextSpan(
-                                text: '₹ 9,550 remaining of ₹ 38,000',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w300,
+
+                            SizedBox(height: screenHeight * 0.02),
+
+                            /// BUDGET CARD
+                            Container(
+                              width: screenWidth * 0.9,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade50,
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: screenWidth * 0.04,
+                                  vertical: screenHeight * 0.01,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Text(
+                                          "Budgets Used",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        Text(
+                                          "${(usage * 100).toStringAsFixed(0)} %",
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+
+                                    const SizedBox(height: 10),
+
+                                    LinearProgressIndicator(
+                                      borderRadius: BorderRadius.circular(12),
+                                      minHeight: 10,
+                                      value: usage,
+                                      backgroundColor: Colors.grey.shade300,
+                                      color:
+                                          usage < 0.5
+                                              ? Colors.green
+                                              : usage < 0.8
+                                              ? Colors.orange
+                                              : Colors.red,
+                                    ),
+
+                                    const SizedBox(height: 10),
+
+                                    Text(
+                                      "₹ ${remaining.toStringAsFixed(0)} remaining of ₹ ${totalBudget.toStringAsFixed(0)}",
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w300,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
+
+                            SizedBox(height: screenHeight * 0.02),
                           ],
                         ),
                       ),
                     ),
                     SizedBox(height: screenHeight * 0.02),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: screenHeight * 0.025),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.035),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Container(
-                    width: screenWidth * 0.92,
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 255, 251, 237),
-                      border: Border.all(
-                        color: Colors.amber.shade100,
-                        width: 1.5,
-                      ),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Padding(
+                    Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.05,
-                        vertical: screenHeight * 0.02,
+                        horizontal: screenWidth * 0.035,
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Image.asset(
-                            'assets/idea.png',
-                            height: screenHeight * 0.04,
+                      child: Container(
+                        width: screenWidth * 0.92,
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 255, 251, 237),
+                          border: Border.all(
+                            color: Colors.amber.shade100,
+                            width: 1.5,
                           ),
-                          SizedBox(width: screenWidth * 0.04),
-                          Column(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.05,
+                            vertical: screenHeight * 0.02,
+                          ),
+                          child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              RichText(
-                                text: TextSpan(
-                                  text: 'AI Insights',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 18,
-                                    fontFamily: 'SFProText',
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
+                              Image.asset(
+                                'assets/idea.png',
+                                height: screenHeight * 0.04,
                               ),
-                              SizedBox(height: screenHeight * 0.001),
-                              RichText(
-                                text: TextSpan(
-                                  text:
-                                      'Your food expenses are 30% higher than last\nmonth. Consider meal planning to save ₹2,000',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 12,
-                                    fontFamily: 'SFProText',
-                                    fontWeight: FontWeight.w300,
-                                  ),
+
+                              SizedBox(width: screenWidth * 0.04),
+
+                              const Expanded(
+                                child: Text(
+                                  'Your food expenses are higher than usual. Consider meal planning to reduce spending.',
+                                  style: TextStyle(fontSize: 12),
                                 ),
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: 12),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4),
-                    child: RichText(
-                      text: TextSpan(
-                        text: 'Categories',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontFamily: 'SFProText',
-                          fontSize: 18,
-                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 12),
-                  SingleChildScrollView(
-                    child: MediaQuery.removePadding(
-                      context: context,
-                      removeTop: true,
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemCount: categories.length,
-                        itemBuilder: (context, index) {
-                          final category = categories[index];
 
-                          final summary = categorySummary[category.title];
+                    SizedBox(height: screenHeight * 0.025),
 
-                          final int transactionCount = summary?.count ?? 0;
-                          final double totalAmount =
-                              summary?.totalAmount ?? 0.0;
-                          return Padding(
-                            padding: EdgeInsets.only(bottom: 10),
-                            child: MainscreenCatgerories(
-                              category: categories[index],
-                              transactionCount: transactionCount,
-                              totalAmount: totalAmount,
-                              onTap: () {},
+                    /// CATEGORY SECTION
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.035,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Categories",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w400,
                             ),
-                          );
-                        },
+                          ),
+
+                          const SizedBox(height: 2),
+
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: categories.length,
+                            itemBuilder: (context, index) {
+                              final category = categories[index];
+                              final key = category.title.toLowerCase();
+
+                              final transactionCount = categoryCounts[key] ?? 0;
+
+                              final totalAmount = categoryTotals[key] ?? 0;
+
+                              final lastMonthAmount =
+                                  lastMonthCategoryTotals[key] ?? 0;
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: MainscreenCatgerories(
+                                  lastMonthAmount: lastMonthAmount,
+                                  category: category,
+                                  transactionCount: transactionCount,
+                                  totalAmount: totalAmount,
+                                  onTap: () {},
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
+            );
+          },
+
+          loading:
+              () => const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              ),
+
+          error: (e, _) => Scaffold(body: Center(child: Text(e.toString()))),
+        );
+      },
+
+      loading:
+          () =>
+              const Scaffold(body: Center(child: CircularProgressIndicator())),
+
+      error: (e, _) => Scaffold(body: Center(child: Text(e.toString()))),
     );
   }
 }

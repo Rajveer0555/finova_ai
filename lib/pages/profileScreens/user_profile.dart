@@ -1,3 +1,4 @@
+import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:finova_ai/widgets/userAvatar.dart';
@@ -20,7 +21,10 @@ class _UserProfileState extends ConsumerState<UserProfile> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            ref.read(appFlowProvider.notifier).state = AppStatus.authenticated;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => MainNavigation()),
+            );
           },
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           color: Colors.black,
@@ -133,7 +137,7 @@ Widget _inputField(String hintText) {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.black, width: 2),
         ),
-        hintText: 'Enter your First Name',
+        hintText: hintText,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,

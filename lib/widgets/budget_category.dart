@@ -1,4 +1,4 @@
-import 'package:finova_ai/providers/budget_provider.dart';
+import 'package:finova_ai/providers/budget_provider_wid.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -2,130 +2,133 @@ import 'package:flutter/material.dart';
 
 class ExpenseAdjustWidget extends StatelessWidget {
   final String title;
-  final String budget;
-  final String spent;
+  final double budget;
+  final double spent;
   final String imagePath;
   final VoidCallback onTap;
+
   const ExpenseAdjustWidget({
     super.key,
     required this.title,
     required this.imagePath,
     required this.budget,
-    required this.spent, required this.onTap,
+    required this.spent,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
+    final double progress = budget == 0 ? 0 : (spent / budget).clamp(0, 1);
+
+    final Color progressColor =
+        progress < 0.5
+            ? Colors.green
+            : progress < 0.8
+            ? Colors.orange
+            : Colors.red;
+
     return Container(
-      width: 380,
       decoration: BoxDecoration(
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: const Color.fromARGB(31, 112, 112, 112),
-            blurRadius: 10.0,
+            color: Color.fromARGB(31, 112, 112, 112),
+            blurRadius: 10,
             spreadRadius: 1,
           ),
         ],
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
       ),
+
       child: Column(
         children: [
+          /// MAIN ROW
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Image.asset(
-                  imagePath,
-                  fit: BoxFit.contain,
-                  height: 31,
-                  width: 31,
-                ),
-                SizedBox(width: 18),
-                Padding(
-                  padding: EdgeInsets.only(right: screenWidth * 0.22),
-                  child: Row(
+                /// ICON
+                Image.asset(imagePath, height: 32, width: 32),
+
+                const SizedBox(width: 14),
+
+                /// TITLE + SPENT
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              fontFamily: 'SFProText',
-                              color: Colors.black,
-                            ),
-                          ),
-                          Text(
-                            "₹$spent spent",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w300,
-                              fontFamily: 'SFProText',
-                              color: Colors.black,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'SFProText',
+                        ),
+                      ),
+
+                      const SizedBox(height: 2),
+
+                      Text(
+                        "₹${spent.toStringAsFixed(0)} spent",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w300,
+                          fontFamily: 'SFProText',
+                        ),
                       ),
                     ],
                   ),
                 ),
+
+                /// BUDGET + BUTTON
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          budget,
-                          style: TextStyle(
+                          "₹${budget.toStringAsFixed(0)}",
+                          style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             fontFamily: 'SFProText',
-                            color: Colors.black,
                           ),
                         ),
-                        SizedBox(width: screenWidth * 0.01),
-                        Text(
+
+                        const SizedBox(width: 4),
+
+                        const Text(
                           "Budget",
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w400,
                             fontFamily: 'SFProText',
-                            color: Colors.black,
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: screenWidth * 0.019),
+
+                    const SizedBox(height: 6),
+
                     SizedBox(
-                      height: 18,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          side: BorderSide(color: Colors.black, width: 0.2),
+                      height: 22,
+                      child: OutlinedButton(
+                        onPressed: onTap,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          side: const BorderSide(color: Colors.black12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          backgroundColor: Colors.white,
                         ),
-                        onPressed: onTap,
-                        child: Row(
-                          children: [
-                            Text(
-                              "Adjust",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontFamily: 'SFProText',
-                                fontSize: 10,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
+                        child: const Text(
+                          "Adjust",
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: 'SFProText',
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                     ),
@@ -134,17 +137,20 @@ class ExpenseAdjustWidget extends StatelessWidget {
               ],
             ),
           ),
+
+          /// PROGRESS BAR
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: LinearProgressIndicator(
-              borderRadius: BorderRadius.circular(12),
+              value: progress,
               minHeight: 8,
-              value: 0.48,
+              borderRadius: BorderRadius.circular(12),
               backgroundColor: Colors.grey.shade300,
-              color: Color.fromARGB(255, 100, 159, 255),
+              color: progressColor,
             ),
           ),
-          SizedBox(height: 12),
+
+          const SizedBox(height: 12),
         ],
       ),
     );

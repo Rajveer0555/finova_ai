@@ -21,9 +21,19 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
+      // Collect budget values
+      Map<String, dynamic> budgets = {
+        "food": double.tryParse(budgetControllers["food"]!.text) ?? 0,
+        "travel": double.tryParse(budgetControllers["travel"]!.text) ?? 0,
+        "shopping": double.tryParse(budgetControllers["shopping"]!.text) ?? 0,
+        "bills": double.tryParse(budgetControllers["bills"]!.text) ?? 0,
+        "others": double.tryParse(budgetControllers["others"]!.text) ?? 0,
+      };
+
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         'profileCompleted': true,
         'aiEnabled': isAiEnabled,
+        'budgets': budgets, // ✅ SAVE CATEGORY BUDGETS
         'createdAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
@@ -34,6 +44,12 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Something went wrong")));
+    }
+    if (budgetControllers.values.any((c) => c.text.isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all budget fields")),
+      );
+      return;
     }
   }
 

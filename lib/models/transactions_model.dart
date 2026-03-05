@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class TransactionModel2 {
   final String id;
   final String category;
@@ -34,6 +36,38 @@ class TransactionModel2 {
       dateTime: dateTime ?? this.dateTime,
       paymentTitle: paymentTitle ?? this.paymentTitle,
       paymentImage: paymentImage ?? this.paymentImage,
+    );
+  }
+
+  factory TransactionModel2.fromFirestore(QueryDocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    String method = data['paymentMethod'] ?? 'Cash';
+
+    String image;
+
+    switch (method) {
+      case "Cash":
+        image = "assets/money.png";
+        break;
+      case "Debit-card":
+        image = "assets/contactless.png";
+        break;
+      case "Credit-card":
+        image = "assets/credit-card.png";
+        break;
+      default:
+        image = "assets/ewallet.png";
+    }
+
+    return TransactionModel2(
+      id: doc.id,
+      category: data['category'] ?? '',
+      title: data['title'] ?? '',
+      amount: (data['amount'] as num).toDouble(),
+      dateTime: (data['date'] as Timestamp).toDate(),
+      paymentTitle: data['paymentMethod'] ?? '',
+      paymentImage: data['paymentImage'] ?? '',
     );
   }
 }

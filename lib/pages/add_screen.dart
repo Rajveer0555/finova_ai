@@ -3,6 +3,8 @@ import 'package:finova_ai/models/payment_method.dart';
 import 'package:finova_ai/models/transactions_model.dart';
 import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:finova_ai/providers/history_provider.dart';
 import 'package:finova_ai/widgets/category_selector.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
@@ -48,6 +50,23 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     {"title": "Credit Card", "image": "assets/credit-card.png"},
     {"title": "Wallet", "image": "assets/ewallet.png"},
   ];
+
+  Future<void> saveExpenseToFirestore(TransactionModel2 transaction) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('transactions')
+        .add({
+          "category": transaction.category.toLowerCase(),
+          "title": transaction.title,
+          "amount": transaction.amount,
+          "paymentMethod": transaction.paymentTitle,
+          "date": transaction.dateTime,
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -276,7 +295,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ElevatedButtonCust('Save Expense', () {
+              ElevatedButtonCust('Save Expense', () async {
                 if (amountController.text.isEmpty ||
                     titleController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -294,6 +313,8 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                   paymentTitle: selectedPayment.title,
                   paymentImage: selectedPayment.imagePath,
                 );
+
+                await saveExpenseToFirestore(newTransaction);
 
                 ref
                     .read(transactionsProvider.notifier)

@@ -23,6 +23,21 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
     return match['image'];
   }
 
+  String getPaymentImage(String method) {
+    switch (method.toLowerCase()) {
+      case "cash":
+        return "assets/money.png";
+      case "credit card":
+        return "assets/credit-card.png";
+      case "debit card":
+        return "assets/contactless.png";
+      case "wallet":
+        return "assets/ewallet.png";
+      default:
+        return "assets/ewallet.png";
+    }
+  }
+
   late TextEditingController amountController;
   late TextEditingController titleController;
   late String selectedCategory;
@@ -149,14 +164,6 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
         backgroundColor: Colors.white,
         title: const Text("Edit Expense"),
         centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () {
-              showDeleteDialog(context, ref, widget.transaction);
-            },
-            icon: Icon(Icons.delete_outline, color: Colors.red, size: 25),
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -269,13 +276,17 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
                     child: Row(
                       children: [
                         Image.asset(
-                          widget.transaction.paymentImage,
+                          getPaymentImage(widget.transaction.paymentTitle),
                           height: 22,
                           width: 22,
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          widget.transaction.paymentTitle,
+                          widget.transaction.paymentTitle.isNotEmpty
+                              ? widget.transaction.paymentTitle[0]
+                                      .toUpperCase() +
+                                  widget.transaction.paymentTitle.substring(1)
+                              : "Cash",
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
@@ -319,17 +330,30 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ElevatedButtonCust('Save Expense', () {
+                ElevatedButtonCust('Save Expense', () async {
+                  final amount = double.tryParse(amountController.text);
+
+                  if (amount == null || titleController.text.trim().isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Please enter valid amount and title"),
+                      ),
+                    );
+                    return;
+                  }
+
                   final updatedTransaction = widget.transaction.copyWith(
-                    title: titleController.text,
-                    amount: double.parse(amountController.text),
+                    amount: amount,
+                    title: titleController.text.trim(),
                   );
 
-                  ref
+                  await ref
                       .read(transactionsProvider.notifier)
                       .updateTransaction(updatedTransaction);
 
-                  Navigator.pop(context);
+                  if (context.mounted) {
+                    Navigator.popUntil(context, (route) => route.isFirst);
+                  }
                 }),
               ],
             ),

@@ -1,3 +1,4 @@
+import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/pages/profileScreens/billing_history.dart';
 import 'package:finova_ai/pages/profileScreens/upgrade_pro.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
@@ -395,8 +396,10 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
               width: screenWidth * 0.89,
               child: ElevatedButton(
                 onPressed: () {
-                  ref.read(appFlowProvider.notifier).state =
-                      AppStatus.authenticated;
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => MainNavigation()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(

@@ -1,11 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:finova_ai/models/transactions_model.dart';
 import 'package:finova_ai/pages/history_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class MonthHistoryCard extends StatefulWidget {
-  final DateTime monthKey;
-  final List<TransactionModel2> transactions;
+  final String monthKey;
+  final List<QueryDocumentSnapshot> transactions;
 
   const MonthHistoryCard({
     super.key,
@@ -20,28 +21,27 @@ class MonthHistoryCard extends StatefulWidget {
 class _MonthHistoryCardState extends State<MonthHistoryCard> {
   bool isExpanded = true;
 
-  double get totalAmount =>
-      widget.transactions.fold(0, (sum, t) => sum + t.amount);
+  double get totalAmount => widget.transactions.fold(
+    0,
+    (sum, doc) => sum + TransactionModel2.fromFirestore(doc).amount,
+  );
 
-  Image getCategoryImage(String category) {
-    switch (category) {
-      case "Food":
-        return Image.asset('assets/diet.png');
-      case "Travel":
-        return Image.asset('assets/travel-luggage.png');
-      case "Shopping":
-        return Image.asset('assets/shopping-bag.png');
-      case "Bills":
-        return Image.asset('assets/bill.png');
-      default:
-        return Image.asset('assets/delivery-box.png');
-    }
-  }
+  final Map<String, String> categoryIcons = {
+    "food": "assets/diet.png",
+    "travel": "assets/travel-luggage.png",
+    "shopping": "assets/shopping-bag.png",
+    "bills": "assets/bill.png",
+    "others": "assets/delivery-box.png",
+  };
 
   @override
   Widget build(BuildContext context) {
-    final year = DateFormat('yyyy').format(widget.monthKey);
-    final month = DateFormat('MMMM').format(widget.monthKey);
+    
+    final parts = widget.monthKey.split('-');
+    final date = DateTime(int.parse(parts[0]), int.parse(parts[1]));
+
+    final year = DateFormat('yyyy').format(date);
+    final month = DateFormat('MMMM').format(date);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16),
       child: Container(
@@ -99,11 +99,24 @@ class _MonthHistoryCardState extends State<MonthHistoryCard> {
             if (isExpanded) Divider(height: 1),
             if (isExpanded)
               Column(
-                children: widget.transactions.map(_transactionTile).toList(),
+                children:
+                    widget.transactions
+                        .map(
+                          (doc) => _transactionTile(
+                            TransactionModel2.fromFirestore(doc),
+                          ),
+                        )
+                        .toList(),
               ),
           ],
         ),
       ),
+    );
+  }
+
+  Image getCategoryImage(String category) {
+    return Image.asset(
+      categoryIcons[category.toLowerCase()] ?? categoryIcons["others"]!,
     );
   }
 
@@ -114,14 +127,12 @@ class _MonthHistoryCardState extends State<MonthHistoryCard> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: InkWell(
-          focusColor: Colors.black,
-          splashColor: Colors.black,
           borderRadius: BorderRadius.circular(12),
           onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => ExpenseDetailScreen(transactionId: t.id),
+                builder: (_) => ExpenseDetailScreen(transaction: t),
               ),
             );
           },
@@ -130,18 +141,21 @@ class _MonthHistoryCardState extends State<MonthHistoryCard> {
             child: Row(
               children: [
                 SizedBox(
-                  height: 38,
-                  width: 38,
+                  height: 36,
+                  width: 36,
                   child: getCategoryImage(t.category),
                 ),
                 const SizedBox(width: 32),
-        
+
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        t.category,
+                        t.category.isNotEmpty
+                            ? t.category[0].toUpperCase() +
+                                t.category.substring(1)
+                            : 'Unknown',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -157,7 +171,7 @@ class _MonthHistoryCardState extends State<MonthHistoryCard> {
                     ],
                   ),
                 ),
-        
+
                 Text(
                   "₹ ${t.amount.toStringAsFixed(0)}",
                   style: const TextStyle(

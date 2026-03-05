@@ -1,3 +1,4 @@
+import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:flutter/material.dart';
 
@@ -37,7 +38,12 @@ class ErrorStateScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => MainNavigation()),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 15),

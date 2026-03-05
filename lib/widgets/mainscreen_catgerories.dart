@@ -5,6 +5,7 @@ class MainscreenCatgerories extends StatelessWidget {
   final CategoryModel category;
   final int transactionCount;
   final VoidCallback? onTap;
+  final double lastMonthAmount;
   final double totalAmount;
   const MainscreenCatgerories({
     super.key,
@@ -12,10 +13,29 @@ class MainscreenCatgerories extends StatelessWidget {
     this.onTap,
     required this.transactionCount,
     required this.totalAmount,
+    required this.lastMonthAmount,
   });
 
   @override
   Widget build(BuildContext context) {
+    double calculatePercentage(double current, double last) {
+      if (last == 0) return 0;
+      return ((current - last) / last) * 100;
+    }
+
+    double percentage = 0;
+
+    if (lastMonthAmount != 0) {
+      percentage = ((totalAmount - lastMonthAmount) / lastMonthAmount) * 100;
+    }
+
+    bool isIncrease = percentage > 0;
+
+    String percentageText =
+        "${isIncrease ? "+" : ""}${percentage.toStringAsFixed(0)}%";
+
+    Color percentageColor = isIncrease ? Colors.red : Colors.green;
+
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return InkWell(
@@ -75,7 +95,7 @@ class MainscreenCatgerories extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(width: screenWidth * 0.22),
+              Spacer(),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -94,9 +114,9 @@ class MainscreenCatgerories extends StatelessWidget {
                   SizedBox(height: screenHeight * 0.001),
                   RichText(
                     text: TextSpan(
-                      text: category.perc,
+                      text: percentageText,
                       style: TextStyle(
-                        color: Color(category.colorValue),
+                        color: percentageColor,
                         fontFamily: 'SFProText',
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -105,6 +125,7 @@ class MainscreenCatgerories extends StatelessWidget {
                   ),
                 ],
               ),
+              SizedBox(width: screenWidth * 0.1),
             ],
           ),
         ),

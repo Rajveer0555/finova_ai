@@ -1,10 +1,19 @@
+import 'package:finova_ai/pages/auth_screen.dart';
+import 'package:finova_ai/pages/splash_screen.dart';
+import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/userAvatar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ProfilerHeader extends StatelessWidget {
+class ProfilerHeader extends ConsumerStatefulWidget {
   const ProfilerHeader({super.key});
 
+  @override
+  ConsumerState<ProfilerHeader> createState() => _ProfilerHeaderState();
+}
+
+class _ProfilerHeaderState extends ConsumerState<ProfilerHeader> {
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
@@ -59,7 +68,17 @@ class ProfilerHeader extends StatelessWidget {
           ),
           Spacer(),
           IconButton(
-            onPressed: () {},
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+
+              if (context.mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AuthScreen()),
+                  (route) => false,
+                );
+              }
+            },
             icon: Icon(Icons.logout_rounded),
             iconSize: 24,
             color: Colors.black,

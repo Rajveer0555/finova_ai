@@ -5,22 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ExpenseDetailScreen extends ConsumerWidget {
-  final String transactionId;
+  final TransactionModel2 transaction;
 
-  const ExpenseDetailScreen({super.key, required this.transactionId});
+  const ExpenseDetailScreen({super.key, required this.transaction});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final transactions = ref.watch(transactionsProvider);
-    final transaction =
-        transactions.where((t) => t.id == transactionId).toList();
-
-    if (transaction.isEmpty) {
-      return const Scaffold(body: Center(child: Text("Expense deleted")));
-    }
-
-    final t = transaction.first;
-
+    final t = transaction;
     double screenHeight = MediaQuery.of(context).size.height;
 
     void showDeleteDialog(
@@ -116,7 +107,7 @@ class ExpenseDetailScreen extends ConsumerWidget {
             ),
       );
     }
-
+print("Deleting ID: ${transaction.id}");
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -143,11 +134,13 @@ class ExpenseDetailScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  Image.asset(_getCategoryImage(t.category), height: 60),
+                  Image.asset(_getCategoryImage(t.category), height: 46),
                   const SizedBox(height: 8),
 
                   Text(
-                    t.category,
+                    t.category.isNotEmpty
+                        ? t.category[0].toUpperCase() + t.category.substring(1)
+                        : "Other",
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
@@ -176,8 +169,8 @@ class ExpenseDetailScreen extends ConsumerWidget {
                         Text(
                           t.title,
                           style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
+                            fontSize: 16,
+                            color: Colors.black87,
                           ),
                         ),
                       ],
@@ -203,16 +196,26 @@ class ExpenseDetailScreen extends ConsumerWidget {
                     ),
                     child: Row(
                       children: [
-                        Image.asset(t.paymentImage, height: 22),
+                        Image.asset(
+                          getPaymentImage(t.paymentTitle),
+                          height: 22,
+                        ),
+
                         const SizedBox(width: 12),
+
                         Text(
-                          t.paymentTitle,
+                          t.paymentTitle.isNotEmpty
+                              ? t.paymentTitle[0].toUpperCase() +
+                                  t.paymentTitle.substring(1)
+                              : "Unknown",
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
+
                         const Spacer(),
+
                         const CircleAvatar(
                           radius: 10,
                           backgroundColor: Colors.green,
@@ -313,17 +316,32 @@ class ExpenseDetailScreen extends ConsumerWidget {
   }
 
   String _getCategoryImage(String category) {
-    switch (category) {
-      case "Food":
+    switch (category.toLowerCase()) {
+      case "food":
         return "assets/diet.png";
-      case "Travel":
+      case "travel":
         return "assets/travel-luggage.png";
-      case "Bills":
+      case "bills":
         return "assets/bill.png";
-      case "Shopping":
+      case "shopping":
         return "assets/shopping-bag.png";
       default:
         return "assets/diet.png";
+    }
+  }
+
+  String getPaymentImage(String method) {
+    switch (method.toLowerCase()) {
+      case "cash":
+        return "assets/money.png";
+      case "credit card":
+        return "assets/credit-card.png";
+      case "debit card":
+        return "assets/contactless.png";
+      case "wallet":
+        return "assets/ewallet.png";
+      default:
+        return "assets/ewallet.png";
     }
   }
 
