@@ -4,14 +4,23 @@ import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/pages/onBoarding/onboarding.dart';
 import 'package:finova_ai/pages/splash_screen.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp();
-  runApp(const ProviderScope(child: MyApp()));
+
+  await Supabase.initialize(
+    url: 'https://gkixzsxddipioyqwcbtr.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdraXh6c3hkZGlwaW95cXdjYnRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3ODg2NTEsImV4cCI6MjA4ODM2NDY1MX0.w-h9Wbn0A5XfbuYD6B9o_z7qz4Klw54FXF3G2JLizGk',
+  );
+
+  runApp(ProviderScope(child: const MyApp()));
 }
 
 class MyApp extends ConsumerWidget {

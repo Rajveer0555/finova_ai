@@ -46,7 +46,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _initializeApp() async {
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 1));
 
     final flowNotifier = ref.read(appFlowProvider.notifier);
     final user = FirebaseAuth.instance.currentUser;

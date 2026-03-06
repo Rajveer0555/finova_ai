@@ -93,7 +93,10 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     if (isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        backgroundColor: Colors.white,
+        body: Center(child: CircularProgressIndicator(color: Colors.blue)),
+      );
     }
     return Scaffold(
       appBar: AppBar(
@@ -138,12 +141,13 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
         backgroundColor: Colors.white,
       ),
       backgroundColor: Colors.grey.shade50,
-      body: Padding(
-        padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Column(
+      body: Column(
+        children: [
+          /// SCROLLABLE AREA
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
@@ -152,9 +156,9 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: const Color.fromARGB(31, 112, 112, 112),
-                          blurRadius: 10.0,
-                          spreadRadius: 12,
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 15,
+                          offset: Offset(0, 5),
                         ),
                       ],
                       color: Colors.white,
@@ -253,17 +257,21 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 17),
-                  Text(
+
+                  const SizedBox(height: 20),
+
+                  const Text(
                     "Expense Breakdown",
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'SFProText',
-                      color: Colors.black,
                     ),
                   ),
-                  SizedBox(height: 10),
+
+                  const SizedBox(height: 10),
+
+                  /// CATEGORY LIST
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -291,53 +299,65 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                       );
                     },
                   ),
-                  SizedBox(height: 1),
-                  Text(
+
+                  const SizedBox(height: 20),
+
+                  /// ALERTS
+                  const Text(
                     "Alerts",
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'SFProText',
-                      color: Colors.black,
                     ),
                   ),
-                  SizedBox(height: screenHeight * 0.01),
+
+                  const SizedBox(height: 10),
+
                   AlertsContainer(
                     title: 'Alert on Budget Exceed',
                     subTitle: 'Receive alerts when budget exceed',
                   ),
 
-                  SizedBox(height: screenHeight * 0.01),
+                  const SizedBox(height: 10),
+
                   AlertsContainer(
                     title: 'Alert on Category Limit',
                     subTitle: 'Receive alerts when category budget exceed',
                   ),
-                  SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Column(
-                        children: [
-                          ElevatedButtonCust('Adjust Budget', () {}),
 
-                          SizedBox(height: screenHeight * 0.01),
-                          Text(
-                            'Simulation only. No data is changes',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w300,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: screenHeight * 0.01),
+                  const SizedBox(height: 30),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
+
+          /// FIXED BUTTON AREA
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 25),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                ElevatedButtonCust('Adjust Budget', () {}),
+
+                const SizedBox(height: 8),
+
+                const Text(
+                  'Simulation only. No data is changed',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

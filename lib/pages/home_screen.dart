@@ -242,7 +242,7 @@ class HomeScreen extends ConsumerWidget {
                             vertical: screenHeight * 0.02,
                           ),
                           child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Image.asset(
                                 'assets/idea.png',
@@ -251,10 +251,35 @@ class HomeScreen extends ConsumerWidget {
 
                               SizedBox(width: screenWidth * 0.04),
 
-                              const Expanded(
-                                child: Text(
-                                  'Your food expenses are higher than usual. Consider meal planning to reduce spending.',
-                                  style: TextStyle(fontSize: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    RichText(
+                                      text: TextSpan(
+                                        text: 'AI Insights',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 18,
+                                          fontFamily: 'SFProText',
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: screenHeight * 0.004),
+                                    RichText(
+                                      text: TextSpan(
+                                        text:
+                                            'Your food expenses are 30% higher than last month. Consider meal planning to save ₹2,000',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 12,
+                                          fontFamily: 'SFProText',
+                                          fontWeight: FontWeight.w300,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -320,7 +345,10 @@ class HomeScreen extends ConsumerWidget {
 
           loading:
               () => const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
+                backgroundColor: Colors.white,
+                body: Center(
+                  child: CircularProgressIndicator(color: Colors.blue),
+                ),
               ),
 
           error: (e, _) => Scaffold(body: Center(child: Text(e.toString()))),
@@ -328,8 +356,9 @@ class HomeScreen extends ConsumerWidget {
       },
 
       loading:
-          () =>
-              const Scaffold(body: Center(child: CircularProgressIndicator())),
+          () => const Scaffold(
+            body: Center(child: CircularProgressIndicator(color: Colors.blue)),
+          ),
 
       error: (e, _) => Scaffold(body: Center(child: Text(e.toString()))),
     );

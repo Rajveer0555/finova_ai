@@ -1,6 +1,7 @@
 import 'package:finova_ai/pages/add_screen.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/providers/bottom_nav_provider.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -33,9 +34,9 @@ class FinovaBottomNav extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _navItem(Icons.home, 0, currentIndex, ref),
-                _navItem(Icons.analytics_outlined, 1, currentIndex, ref),
+                _navItem(CupertinoIcons.chart_bar_square, 1, currentIndex, ref),
                 const SizedBox(width: 60), // space for +
-                _navItem(Icons.history_edu_rounded, 2, currentIndex, ref),
+                _navItem(CupertinoIcons.doc_plaintext, 2, currentIndex, ref),
                 _navItem(Icons.person, 3, currentIndex, ref),
               ],
             ),

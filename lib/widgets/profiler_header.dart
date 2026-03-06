@@ -2,9 +2,11 @@ import 'package:finova_ai/pages/auth_screen.dart';
 import 'package:finova_ai/pages/splash_screen.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/userAvatar.dart';
+import 'package:finova_ai/widgets/user_name.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class ProfilerHeader extends ConsumerStatefulWidget {
   const ProfilerHeader({super.key});
@@ -52,23 +54,18 @@ class _ProfilerHeaderState extends ConsumerState<ProfilerHeader> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.005),
-              RichText(
-                text: TextSpan(
-                  text:
-                      FirebaseAuth.instance.currentUser?.displayName ?? "User",
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'SFProText',
-                  ),
-                ),
+              UserName(
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ],
           ),
           Spacer(),
           IconButton(
             onPressed: () async {
+              final GoogleSignIn googleSignIn = GoogleSignIn();
+
+              await googleSignIn.disconnect();
+              await googleSignIn.signOut();
               await FirebaseAuth.instance.signOut();
 
               if (context.mounted) {
@@ -79,7 +76,7 @@ class _ProfilerHeaderState extends ConsumerState<ProfilerHeader> {
                 );
               }
             },
-            icon: Icon(Icons.logout_rounded),
+            icon: const Icon(Icons.logout_rounded),
             iconSize: 24,
             color: Colors.black,
           ),

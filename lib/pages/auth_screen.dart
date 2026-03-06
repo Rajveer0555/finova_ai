@@ -17,6 +17,7 @@ class AuthScreen extends ConsumerStatefulWidget {
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -25,16 +26,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   Future<void> _signInWithGoogle() async {
     try {
       setState(() => isLoading = true);
+      await _googleSignIn.signOut();
 
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
         setState(() => isLoading = false);
-        return; // user cancelled
+        return;
       }
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      final googleAuth = await googleUser.authentication;
 
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
@@ -45,38 +46,39 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         credential,
       );
 
-      final userDoc =
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(userCredential.user!.uid)
-              .get();
+      final userRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid);
+
+      final userDoc = await userRef.get();
+
+      bool profileCompleted = userDoc.data()?['profileCompleted'] ?? false;
 
       if (!userDoc.exists) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userCredential.user!.uid)
-            .set({
-              'name': userCredential.user!.displayName,
-              'email': userCredential.user!.email,
-              'profileCompleted': false,
-              'createdAt': FieldValue.serverTimestamp(),
-            });
+        await userRef.set({
+          'name': userCredential.user!.displayName,
+          'email': userCredential.user!.email,
+          'profileCompleted': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      } else {
+        profileCompleted = userDoc.data()?['profileCompleted'] ?? false;
       }
-
-      final profileCompleted = userDoc.data()?['profileCompleted'] ?? false;
 
       if (!mounted) return;
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(appFlowProvider.notifier).state =
-            profileCompleted ? AppStatus.authenticated : AppStatus.infoscreen;
-      });
+      ref.read(appFlowProvider.notifier).state =
+          profileCompleted ? AppStatus.authenticated : AppStatus.infoscreen;
     } catch (e) {
-      if (mounted) setState(() => isLoading = false);
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Google Sign-In failed")));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Google Sign-In failed")));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -104,25 +106,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
       if (!mounted) return;
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(appFlowProvider.notifier).state = AppStatus.infoscreen;
-      });
+      ref.read(appFlowProvider.notifier).state = AppStatus.infoscreen;
     } on FirebaseAuthException catch (e) {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
-
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(e.message ?? "Auth error")));
-    } catch (e) {
+    } finally {
       if (mounted) {
         setState(() => isLoading = false);
       }
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
 
@@ -147,32 +139,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
       final profileCompleted = userDoc.data()?['profileCompleted'] ?? false;
 
-      if (!userDoc.exists) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(credential.user!.uid)
-            .set({
-              'email': email,
-              'profileCompleted': false,
-              'createdAt': FieldValue.serverTimestamp(),
-            });
-      }
-
       if (!mounted) return;
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (profileCompleted) {
-          ref.read(appFlowProvider.notifier).state = AppStatus.authenticated;
-        } else {
-          ref.read(appFlowProvider.notifier).state = AppStatus.infoscreen;
-        }
-      });
+      ref.read(appFlowProvider.notifier).state =
+          profileCompleted ? AppStatus.authenticated : AppStatus.infoscreen;
     } on FirebaseAuthException catch (e) {
-      if (mounted) setState(() => isLoading = false);
-
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(e.message ?? "Login failed")));
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -562,20 +540,25 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Widget _socialButton(String asset, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 70,
-        width: 71,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.grey.shade300),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            height: 70,
+            width: 71,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: SvgPicture.asset(asset),
+            ),
+          ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: SvgPicture.asset(asset),
-        ),
-      ),
+      ],
     );
   }
 }

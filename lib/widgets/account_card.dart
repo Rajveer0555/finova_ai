@@ -66,38 +66,6 @@ class _AccountCardState extends ConsumerState<AccountCard> {
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
             child: Divider(),
           ),
-          SizedBox(height: screenHeight * 0.01),
-          InkWell(
-            onTap: () {
-              showChangePasswordBottomSheet(context);
-            },
-            child: Row(
-              children: [
-                SizedBox(width: screenWidth * 0.08),
-                Icon(Icons.lock_outline, size: 28),
-                SizedBox(width: screenWidth * 0.08),
-                RichText(
-                  text: TextSpan(
-                    text: 'Change Passoword',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'SFProText',
-                    ),
-                  ),
-                ),
-                Spacer(),
-                Icon(Icons.arrow_forward_ios_rounded, size: 16),
-                SizedBox(width: screenWidth * 0.08),
-              ],
-            ),
-          ),
-          SizedBox(height: screenHeight * 0.01),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-            child: Divider(),
-          ),
           Row(
             children: [
               SizedBox(width: screenWidth * 0.08),

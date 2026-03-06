@@ -194,34 +194,36 @@ class _AnalyticsState extends ConsumerState<Analytics> {
                 children: [
                   Image.asset('assets/idea.png', height: screenHeight * 0.04),
                   SizedBox(width: screenWidth * 0.04),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      RichText(
-                        text: TextSpan(
-                          text: 'AI Insights',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 18,
-                            fontFamily: 'SFProText',
-                            fontWeight: FontWeight.w500,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        RichText(
+                          text: TextSpan(
+                            text: 'AI Insights',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 18,
+                              fontFamily: 'SFProText',
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(height: screenHeight * 0.004),
-                      RichText(
-                        text: TextSpan(
-                          text:
-                              'Your spending increased by 8.5% this month.\nTravel is your highest expense category.',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 12,
-                            fontFamily: 'SFProText',
-                            fontWeight: FontWeight.w300,
+                        SizedBox(height: screenHeight * 0.004),
+                        RichText(
+                          text: TextSpan(
+                            text:
+                                'Your spending increased by 8.5% this month.Travel is your highest expense category.',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 12,
+                              fontFamily: 'SFProText',
+                              fontWeight: FontWeight.w300,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
