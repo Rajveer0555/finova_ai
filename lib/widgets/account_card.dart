@@ -1,4 +1,8 @@
+import 'package:finova_ai/pages/profileScreens/faq_screen.dart';
 import 'package:finova_ai/pages/profileScreens/manage_budget.dart';
+import 'package:finova_ai/pages/profileScreens/privacy_policy.dart';
+import 'package:finova_ai/pages/profileScreens/support_screen.dart';
+import 'package:finova_ai/pages/profileScreens/terms_condtions.dart';
 import 'package:finova_ai/pages/profileScreens/user_profile.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
@@ -42,14 +46,14 @@ class _AccountCardState extends ConsumerState<AccountCard> {
             child: Row(
               children: [
                 SizedBox(width: screenWidth * 0.08),
-                Icon(Icons.person_2_rounded, size: 28),
+                Icon(Icons.person_2_rounded, size: 30),
                 SizedBox(width: screenWidth * 0.08),
                 RichText(
                   text: TextSpan(
                     text: 'User Profile',
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: 14,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'SFProText',
                     ),
@@ -66,17 +70,18 @@ class _AccountCardState extends ConsumerState<AccountCard> {
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
             child: Divider(),
           ),
+          SizedBox(height: screenHeight * 0.004),
           Row(
             children: [
               SizedBox(width: screenWidth * 0.08),
-              Icon(Icons.notifications_rounded, size: 28),
+              Icon(Icons.notifications_rounded, size: 30),
               SizedBox(width: screenWidth * 0.08),
               RichText(
                 text: TextSpan(
                   text: 'Push Notification',
                   style: TextStyle(
                     color: Colors.black,
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     fontFamily: 'SFProText',
                   ),
@@ -100,6 +105,7 @@ class _AccountCardState extends ConsumerState<AccountCard> {
               SizedBox(width: screenWidth * 0.06),
             ],
           ),
+          SizedBox(height: screenHeight * 0.004),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
             child: Divider(),
@@ -117,8 +123,8 @@ class _AccountCardState extends ConsumerState<AccountCard> {
                 SizedBox(width: screenWidth * 0.09),
                 Image(
                   image: AssetImage('assets/pie-chart.png'),
-                  height: 24,
-                  width: 24,
+                  height: 30,
+                  width: 30,
                 ),
                 SizedBox(width: screenWidth * 0.08),
                 RichText(
@@ -126,7 +132,149 @@ class _AccountCardState extends ConsumerState<AccountCard> {
                     text: 'Manage Budget',
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: 14,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'SFProText',
+                    ),
+                  ),
+                ),
+                Spacer(),
+                Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                SizedBox(width: screenWidth * 0.08),
+              ],
+            ),
+          ),
+          SizedBox(height: screenHeight * 0.01),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+            child: Divider(),
+          ),
+          SizedBox(height: screenHeight * 0.01),
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => FaqScreen()),
+              );
+            },
+            child: Row(
+              children: [
+                SizedBox(width: screenWidth * 0.08),
+                Icon(Icons.quiz_rounded, size: 30),
+                SizedBox(width: screenWidth * 0.08),
+                RichText(
+                  text: TextSpan(
+                    text: "FAQ's",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'SFProText',
+                    ),
+                  ),
+                ),
+                Spacer(),
+                Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                SizedBox(width: screenWidth * 0.08),
+              ],
+            ),
+          ),
+          SizedBox(height: screenHeight * 0.01),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+            child: Divider(),
+          ),
+          SizedBox(height: screenHeight * 0.01),
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => SupportScreen()),
+              );
+            },
+            child: Row(
+              children: [
+                SizedBox(width: screenWidth * 0.08),
+                Icon(Icons.support_agent_rounded, size: 30),
+                SizedBox(width: screenWidth * 0.08),
+                RichText(
+                  text: TextSpan(
+                    text: 'Help & Support',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'SFProText',
+                    ),
+                  ),
+                ),
+                Spacer(),
+                Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                SizedBox(width: screenWidth * 0.08),
+              ],
+            ),
+          ),
+          SizedBox(height: screenHeight * 0.01),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+            child: Divider(),
+          ),
+
+          SizedBox(height: screenHeight * 0.01),
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => PrivacyPolicy()),
+              );
+            },
+            child: Row(
+              children: [
+                SizedBox(width: screenWidth * 0.08),
+                Icon(Icons.privacy_tip_rounded, size: 30),
+                SizedBox(width: screenWidth * 0.08),
+                RichText(
+                  text: TextSpan(
+                    text: 'Privacy Policy',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'SFProText',
+                    ),
+                  ),
+                ),
+                Spacer(),
+                Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                SizedBox(width: screenWidth * 0.08),
+              ],
+            ),
+          ),
+
+          SizedBox(height: screenHeight * 0.01),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+            child: Divider(),
+          ),
+          SizedBox(height: screenHeight * 0.01),
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => TermsConditions()),
+              );
+            },
+            child: Row(
+              children: [
+                SizedBox(width: screenWidth * 0.08),
+                Icon(Icons.article_rounded, size: 30),
+                SizedBox(width: screenWidth * 0.08),
+                RichText(
+                  text: TextSpan(
+                    text: 'Terms & Conditions',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                       fontFamily: 'SFProText',
                     ),

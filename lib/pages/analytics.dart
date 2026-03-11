@@ -1,6 +1,9 @@
+import 'package:finova_ai/providers/analytics_provider.dart';
 import 'package:finova_ai/providers/total_expense_provider.dart';
+import 'package:finova_ai/widgets/graph.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pie_chart/pie_chart.dart';
 
 class Analytics extends ConsumerStatefulWidget {
   const Analytics({super.key});
@@ -10,12 +13,26 @@ class Analytics extends ConsumerStatefulWidget {
 }
 
 class _AnalyticsState extends ConsumerState<Analytics> {
+  final Map<String, Color> categoryColors = {
+    "food": const Color.fromARGB(255, 157, 255, 46),
+    "travel": Colors.red,
+    "shopping": Colors.purpleAccent,
+    "bills": Colors.yellow,
+    "other": Colors.lightBlue,
+  };
+  final colorList = <Color>[
+    const Color.fromARGB(255, 157, 255, 46),
+    Colors.red,
+    Colors.purpleAccent,
+    Colors.yellow,
+    Colors.lightBlue,
+  ];
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
-    final totalExpense = ref.watch(totalExpenseProvider);
+    final analytics = ref.watch(analyticsProvider);
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
@@ -97,7 +114,7 @@ class _AnalyticsState extends ConsumerState<Analytics> {
                                     RichText(
                                       text: TextSpan(
                                         text:
-                                            '₹ ${totalExpense.toStringAsFixed(2)}', // Replace with actual total expenses
+                                            '₹ ${analytics.totalSpent.toStringAsFixed(2)}', // Replace with actual total expenses
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontFamily: 'SFProText',
@@ -152,7 +169,7 @@ class _AnalyticsState extends ConsumerState<Analytics> {
                                     RichText(
                                       text: TextSpan(
                                         text:
-                                            '₹ 26,242', // Replace with actual total expenses
+                                            '₹ ${analytics.avgPerMonth.toStringAsFixed(2)}',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontFamily: 'SFProText',
@@ -177,54 +194,247 @@ class _AnalyticsState extends ConsumerState<Analytics> {
             ),
           ),
           SizedBox(height: screenHeight * 0.02),
-          Container(
-            width: screenWidth * 0.92,
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 237, 247, 255),
-              border: Border.all(color: Colors.lightBlue.shade100, width: 1.5),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.05,
-                vertical: screenHeight * 0.02,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
                 children: [
-                  Image.asset('assets/idea.png', height: screenHeight * 0.04),
-                  SizedBox(width: screenWidth * 0.04),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            text: 'AI Insights',
+                  Container(
+                    width: screenWidth * 0.92,
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 237, 247, 255),
+                      border: Border.all(
+                        color: Colors.lightBlue.shade100,
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.05,
+                        vertical: screenHeight * 0.02,
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.lightbulb, color: Colors.blue, size: 30),
+                          SizedBox(width: screenWidth * 0.04),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                RichText(
+                                  text: TextSpan(
+                                    text: 'AI Insights',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 18,
+                                      fontFamily: 'SFProText',
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: screenHeight * 0.004),
+                                RichText(
+                                  text: TextSpan(
+                                    text:
+                                        'Your spending increased by 8.5% this month.Travel is your highest expense category.',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 12,
+                                      fontFamily: 'SFProText',
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.02),
+                  Container(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          spreadRadius: 0.5,
+                          blurRadius: 0.5,
+                        ),
+                      ],
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    width: screenWidth * 0.9,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.12,
+                        vertical: screenHeight * 0.02,
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            "Category Breakdown",
                             style: TextStyle(
                               color: Colors.black,
                               fontSize: 18,
-                              fontFamily: 'SFProText',
                               fontWeight: FontWeight.w500,
+                              fontFamily: 'SFPro',
                             ),
                           ),
-                        ),
-                        SizedBox(height: screenHeight * 0.004),
-                        RichText(
-                          text: TextSpan(
-                            text:
-                                'Your spending increased by 8.5% this month.Travel is your highest expense category.',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 12,
-                              fontFamily: 'SFProText',
-                              fontWeight: FontWeight.w300,
+                          SizedBox(height: 22),
+                          PieChart(
+                            chartValuesOptions: ChartValuesOptions(
+                              showChartValueBackground: true,
+                              showChartValues: false,
+                              showChartValuesInPercentage: false,
+                              decimalPlaces: 1,
                             ),
+                            chartRadius: 180,
+                            legendOptions: LegendOptions(
+                              showLegends: false,
+                              legendPosition: LegendPosition.bottom,
+                            ),
+                            dataMap: analytics.categoryMap,
+                            chartType: ChartType.ring,
+                            baseChartColor: Colors.grey[300]!,
+                            colorList:
+                                analytics.categoryMap.keys
+                                    .map(
+                                      (cat) =>
+                                          categoryColors[cat] ?? Colors.grey,
+                                    )
+                                    .toList(),
                           ),
-                        ),
-                      ],
+                          SizedBox(height: 22),
+                          Column(
+                            children:
+                                analytics.categoryMap.entries.map((entry) {
+                                  double percent =
+                                      (entry.value / analytics.totalSpent) *
+                                      100;
+
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 8,
+                                          backgroundColor:
+                                              categoryColors[entry.key] ??
+                                              Colors.grey,
+                                        ),
+                                        SizedBox(width: 28),
+
+                                        Text(
+                                          entry.key,
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+
+                                        Spacer(),
+
+                                        Text(
+                                          "${percent.toStringAsFixed(1)}%",
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
+                  SizedBox(height: screenHeight * 0.02),
+                  Container(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          spreadRadius: 0.5,
+                          blurRadius: 0.5,
+                        ),
+                      ],
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    width: screenWidth * 0.9,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.12,
+                        vertical: screenHeight * 0.02,
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            "Monthly Trend",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: 'SFPro',
+                            ),
+                          ),
+                          SizedBox(height: 22),
+                          MonthlyBarGraph(),
+                          SizedBox(height: 12),
+                          Divider(),
+                          Row(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Highest",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                  ),
+                                  SizedBox(height: 6),
+                                  Text(
+                                    "₹ ${analytics.highestValue.toStringAsFixed(0)} (${analytics.highestMonth})",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Spacer(),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    "Lowest",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                  ),
+                                  SizedBox(height: 6),
+                                  Text(
+                                    "₹ ${analytics.lowestValue.toStringAsFixed(0)} (${analytics.lowestMonth})",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.2),
                 ],
               ),
             ),

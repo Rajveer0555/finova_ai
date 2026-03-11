@@ -82,3 +82,33 @@ final filteredTransactionsProvider = Provider((ref) {
 
   return transactions.where((tx) => tx.paymentTitle == filter).toList();
 });
+final monthlyTransactionsProvider =
+    Provider<Map<String, List<TransactionModel2>>>((ref) {
+      final transactions = ref.watch(timeSortedTransactionsProvider);
+
+      Map<String, List<TransactionModel2>> grouped = {};
+
+      for (var tx in transactions) {
+        final date = tx.dateTime;
+
+        final monthKey =
+            "${date.year}-${date.month.toString().padLeft(2, '0')}";
+
+        if (!grouped.containsKey(monthKey)) {
+          grouped[monthKey] = [];
+        }
+
+        grouped[monthKey]!.add(tx);
+      }
+
+      return grouped;
+    });
+final sortedMonthKeysProvider = Provider<List<String>>((ref) {
+  final grouped = ref.watch(monthlyTransactionsProvider);
+
+  final keys = grouped.keys.toList();
+
+  keys.sort((a, b) => b.compareTo(a)); // newest first
+
+  return keys;
+});

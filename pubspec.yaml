@@ -33,6 +33,7 @@ dependencies:
   firebase_auth: ^6.1.4
   firebase_core: ^4.4.0
   firebase_storage: ^13.1.0
+  fl_chart: ^0.66.2
   flutter:
     sdk: flutter
   flutter_launcher_icons: ^0.14.4
@@ -43,6 +44,7 @@ dependencies:
   google_sign_in: ^6.2.1
   image_picker: ^1.2.1
   intl: ^0.20.2
+  pie_chart: ^5.4.0
   primer_progress_bar: ^0.5.0
   shared_preferences: ^2.2.2
   smooth_page_indicator: ^1.1.0

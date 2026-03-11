@@ -244,9 +244,10 @@ class HomeScreen extends ConsumerWidget {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Image.asset(
-                                'assets/idea.png',
-                                height: screenHeight * 0.04,
+                              Icon(
+                                Icons.lightbulb,
+                                color: Colors.yellow,
+                                size: 30,
                               ),
 
                               SizedBox(width: screenWidth * 0.04),

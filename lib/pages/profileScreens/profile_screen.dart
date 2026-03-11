@@ -1,9 +1,6 @@
-import 'package:finova_ai/pages/profileScreens/upgrade_pro.dart';
 import 'package:finova_ai/pages/statesScreens/error_state.dart';
-import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/account_card.dart';
 import 'package:finova_ai/widgets/profiler_header.dart';
-import 'package:finova_ai/widgets/support_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -46,7 +43,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: screenHeight * 0.02),
+                SizedBox(height: screenHeight * 0.04),
                 InkWell(
                   onTap: () {
                     Navigator.push(
@@ -56,133 +53,133 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   },
                   child: ProfilerHeader(),
                 ),
-                SizedBox(height: screenHeight * 0.01),
-                RichText(
-                  text: TextSpan(
-                    text: 'Account',
-                    style: TextStyle(
-                      color: Colors.grey.shade500,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'SFProText',
-                    ),
-                  ),
-                ),
+                SizedBox(height: screenHeight * 0.04),
+                // RichText(
+                //   text: TextSpan(
+                //     text: 'Account',
+                //     style: TextStyle(
+                //       color: Colors.grey.shade500,
+                //       fontSize: 16,
+                //       fontWeight: FontWeight.w600,
+                //       fontFamily: 'SFProText',
+                //     ),
+                //   ),
+                // ),
                 SizedBox(height: screenHeight * 0.01),
                 AccountCard(),
+                // SizedBox(height: screenHeight * 0.01),
+                // RichText(
+                //   text: TextSpan(
+                //     text: 'Support',
+                //     style: TextStyle(
+                //       color: Colors.grey.shade500,
+                //       fontSize: 16,
+                //       fontWeight: FontWeight.w600,
+                //       fontFamily: 'SFProText',
+                //     ),
+                //   ),
+                // ),
                 SizedBox(height: screenHeight * 0.01),
-                RichText(
-                  text: TextSpan(
-                    text: 'Support',
-                    style: TextStyle(
-                      color: Colors.grey.shade500,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'SFProText',
-                    ),
-                  ),
-                ),
-                SizedBox(height: screenHeight * 0.01),
-                SupportCard(),
-                SizedBox(height: screenHeight * 0.03),
-                Container(
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        spreadRadius: 0.5,
-                        blurRadius: 0.5,
-                      ),
-                    ],
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.lightBlue.shade500,
-                        const Color.fromARGB(255, 8, 82, 147),
-                      ],
-                      begin: Alignment.bottomLeft,
-                      end: Alignment.topRight,
-                    ),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  width: screenWidth * 0.9,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                RichText(
-                                  text: TextSpan(
-                                    text: 'Curent Plan',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w300,
-                                      fontFamily: 'SFProText',
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: screenHeight * 0.005),
-                                RichText(
-                                  text: TextSpan(
-                                    text: 'Free Plan',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      fontFamily: 'SFProText',
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Spacer(),
-                            Icon(
-                              Icons.workspace_premium_rounded,
-                              size: 40,
-                              color: Colors.yellow.shade600,
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: screenHeight * 0.015),
-                        InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => UpgradeProScreen(),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            width: screenWidth * 0.9,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Center(
-                              child: RichText(
-                                text: TextSpan(
-                                  text: 'Upgrade to Pro',
-                                  style: TextStyle(
-                                    color: Colors.blue.shade800,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    fontFamily: 'SFProText',
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                // SupportCard(),
+                // SizedBox(height: screenHeight * 0.03),
+                // Container(
+                //   decoration: BoxDecoration(
+                //     boxShadow: [
+                //       BoxShadow(
+                //         color: Colors.black12,
+                //         spreadRadius: 0.5,
+                //         blurRadius: 0.5,
+                //       ),
+                //     ],
+                //     gradient: LinearGradient(
+                //       colors: [
+                //         Colors.lightBlue.shade500,
+                //         const Color.fromARGB(255, 8, 82, 147),
+                //       ],
+                //       begin: Alignment.bottomLeft,
+                //       end: Alignment.topRight,
+                //     ),
+                //     borderRadius: BorderRadius.circular(18),
+                //   ),
+                //   width: screenWidth * 0.9,
+                //   child: Padding(
+                //     padding: const EdgeInsets.all(16.0),
+                //     child: Column(
+                //       children: [
+                //         Row(
+                //           children: [
+                //             Column(
+                //               crossAxisAlignment: CrossAxisAlignment.start,
+                //               children: [
+                //                 RichText(
+                //                   text: TextSpan(
+                //                     text: 'Curent Plan',
+                //                     style: TextStyle(
+                //                       color: Colors.white,
+                //                       fontSize: 14,
+                //                       fontWeight: FontWeight.w300,
+                //                       fontFamily: 'SFProText',
+                //                     ),
+                //                   ),
+                //                 ),
+                //                 SizedBox(height: screenHeight * 0.005),
+                //                 RichText(
+                //                   text: TextSpan(
+                //                     text: 'Free Plan',
+                //                     style: TextStyle(
+                //                       color: Colors.white,
+                //                       fontSize: 18,
+                //                       fontWeight: FontWeight.w600,
+                //                       fontFamily: 'SFProText',
+                //                     ),
+                //                   ),
+                //                 ),
+                //               ],
+                //             ),
+                //             Spacer(),
+                //             Icon(
+                //               Icons.workspace_premium_rounded,
+                //               size: 40,
+                //               color: Colors.yellow.shade600,
+                //             ),
+                //           ],
+                //         ),
+                //         SizedBox(height: screenHeight * 0.015),
+                //         InkWell(
+                //           onTap: () {
+                //             Navigator.push(
+                //               context,
+                //               MaterialPageRoute(
+                //                 builder: (_) => UpgradeProScreen(),
+                //               ),
+                //             );
+                //           },
+                //           child: Container(
+                //             width: screenWidth * 0.9,
+                //             height: 44,
+                //             decoration: BoxDecoration(
+                //               color: Colors.white,
+                //               borderRadius: BorderRadius.circular(12),
+                //             ),
+                //             child: Center(
+                //               child: RichText(
+                //                 text: TextSpan(
+                //                   text: 'Upgrade to Pro',
+                //                   style: TextStyle(
+                //                     color: Colors.blue.shade800,
+                //                     fontSize: 16,
+                //                     fontWeight: FontWeight.w600,
+                //                     fontFamily: 'SFProText',
+                //                   ),
+                //                 ),
+                //               ),
+                //             ),
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
                 SizedBox(height: screenHeight * 0.18),
               ],
             ),
