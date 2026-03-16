@@ -1,9 +1,13 @@
 import 'package:finova_ai/providers/analytics_provider.dart';
-import 'package:finova_ai/providers/total_expense_provider.dart';
+import 'package:finova_ai/providers/monthly_graph_provider.dart';
 import 'package:finova_ai/widgets/graph.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pie_chart/pie_chart.dart';
+
+String formatMonth(String key) {
+  return key;
+}
 
 class Analytics extends ConsumerStatefulWidget {
   const Analytics({super.key});
@@ -33,6 +37,7 @@ class _AnalyticsState extends ConsumerState<Analytics> {
     double screenHeight = MediaQuery.of(context).size.height;
 
     final analytics = ref.watch(analyticsProvider);
+    final graph = ref.watch(monthlyGraphProvider);
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
@@ -396,7 +401,7 @@ class _AnalyticsState extends ConsumerState<Analytics> {
                                   ),
                                   SizedBox(height: 6),
                                   Text(
-                                    "₹ ${analytics.highestValue.toStringAsFixed(0)} (${analytics.highestMonth})",
+                                    "₹ ${graph.highestValue.toStringAsFixed(0)} (${formatMonth(graph.highestMonth)})",
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontSize: 14,
@@ -419,7 +424,7 @@ class _AnalyticsState extends ConsumerState<Analytics> {
                                   ),
                                   SizedBox(height: 6),
                                   Text(
-                                    "₹ ${analytics.lowestValue.toStringAsFixed(0)} (${analytics.lowestMonth})",
+                                    "₹ ${graph.lowestValue.toStringAsFixed(0)} (${formatMonth(graph.lowestMonth)})",
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontSize: 14,

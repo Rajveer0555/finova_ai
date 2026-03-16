@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:finova_ai/providers/income_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -87,7 +89,10 @@ class Container2 extends ConsumerWidget {
                       ),
                       onChanged: (value) {
                         final parsed = double.tryParse(value) ?? 0.0;
-                        ref.read(monthlyIncomeProvider.notifier).state = parsed;
+                        FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(FirebaseAuth.instance.currentUser!.uid)
+                            .update({"monthlyIncome": parsed});
                       },
                       controller: TextEditingController(
                         text: income == 0 ? "" : income.toString(),

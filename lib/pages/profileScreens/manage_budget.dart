@@ -127,7 +127,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
             ),
             SizedBox(height: 1),
             Text(
-              "Your current budget limit is ₹${totalBudget.toStringAsFixed(0)} per month",
+              "Your monthly income is ₹${totalBudget.toStringAsFixed(0)} per month",
               style: TextStyle(
                 color: Colors.grey.shade700,
                 fontSize: 12,
@@ -202,6 +202,16 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                                   fontFamily: 'SFProText',
                                   color: Colors.black,
                                 ),
+                              ),
+                              Spacer(),
+                              GestureDetector(
+                                onTap: () {
+                                  showAdjustIncomeBottomSheet(
+                                    context,
+                                    totalBudget,
+                                  );
+                                },
+                                child: Icon(Icons.edit, size: 18),
                               ),
                             ],
                           ),
@@ -537,6 +547,203 @@ void showAdjustBudgetBottomSheet(
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color.fromARGB(255, 46, 150, 255),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: const Text(
+                        "Save Changes",
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 10),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+void showAdjustIncomeBottomSheet(BuildContext context, double currentIncome) {
+  final TextEditingController incomeController = TextEditingController();
+  incomeController.text = currentIncome.toString();
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              /// Drag Indicator
+              Container(
+                height: 5,
+                width: 50,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              /// Title
+              const Text(
+                "Adjust Monthly Income",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+
+              const SizedBox(height: 20),
+
+              const Divider(),
+
+              const SizedBox(height: 10),
+
+              /// Income Info Row
+              Row(
+                children: [
+                  const Icon(
+                    Icons.account_balance_wallet,
+                    size: 40,
+                    color: Colors.blue,
+                  ),
+
+                  const SizedBox(width: 15),
+
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Current Income : ₹${currentIncome.toStringAsFixed(0)}",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+
+                      const SizedBox(height: 5),
+
+                      const Text(
+                        "Change your monthly income",
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+              const Divider(),
+              const SizedBox(height: 15),
+
+              /// Enter Income Label
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Enter New Income",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              /// TextField
+              TextField(
+                controller: incomeController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  hintText: "30000",
+                  prefixText: "₹ ",
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 18,
+                    horizontal: 20,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 25),
+
+              /// Buttons Row
+              Row(
+                children: [
+                  /// Cancel
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: const Text(
+                        "Cancel",
+                        style: TextStyle(fontSize: 16, color: Colors.black),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 15),
+
+                  /// Save
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final user = FirebaseAuth.instance.currentUser;
+                        if (user == null) return;
+
+                        double newIncome =
+                            double.tryParse(incomeController.text) ??
+                            currentIncome;
+
+                        final userDoc = FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(user.uid);
+
+                        await userDoc.update({"monthlyIncome": newIncome});
+
+                        Navigator.pop(context);
+
+                        /// Refresh screen
+                        if (context.mounted) {
+                          final state =
+                              context
+                                  .findAncestorStateOfType<
+                                    _ManageBudgetScreenState
+                                  >();
+                          state?.loadBudgetData();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(
+                          255,
+                          46,
+                          150,
+                          255,
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
