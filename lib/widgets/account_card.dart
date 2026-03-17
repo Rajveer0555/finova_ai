@@ -105,7 +105,7 @@ class _AccountCardState extends ConsumerState<AccountCard> {
               SizedBox(width: screenWidth * 0.06),
             ],
           ),
-          SizedBox(height: screenHeight * 0.004),
+          SizedBox(height: screenHeight * 0.006),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
             child: Divider(),
@@ -120,12 +120,8 @@ class _AccountCardState extends ConsumerState<AccountCard> {
             },
             child: Row(
               children: [
-                SizedBox(width: screenWidth * 0.09),
-                Image(
-                  image: AssetImage('assets/pie-chart.png'),
-                  height: 30,
-                  width: 30,
-                ),
+                SizedBox(width: screenWidth * 0.08),
+                Icon(CupertinoIcons.money_dollar_circle_fill, size: 30),
                 SizedBox(width: screenWidth * 0.08),
                 RichText(
                   text: TextSpan(

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:finova_ai/providers/income_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:finova_ai/providers/budget_provider.dart';
 import 'package:finova_ai/providers/category_provider.dart';
@@ -18,6 +19,12 @@ class HomeScreen extends ConsumerWidget {
     DateTime startOfCurrentMonth = DateTime(now.year, now.month, 1);
     DateTime startOfLastMonth = DateTime(now.year, now.month - 1, 1);
     DateTime endOfLastMonth = startOfCurrentMonth.subtract(Duration(days: 1));
+    final incomeAsync = ref.watch(monthlyIncomeProvider);
+
+    final income = incomeAsync.maybeWhen(
+      data: (value) => value,
+      orElse: () => 0.0,
+    );
 
     final transactionsAsync = ref.watch(transactionsStreamProvider);
     final budgetAsync = ref.watch(budgetProvider);
@@ -205,7 +212,7 @@ class HomeScreen extends ConsumerWidget {
                                     const SizedBox(height: 10),
 
                                     Text(
-                                      "₹ ${remaining.toStringAsFixed(0)} remaining of ₹ ${totalBudget.toStringAsFixed(0)}",
+                                      "₹ ${remaining.toStringAsFixed(0)} remaining of ₹ ${income.toStringAsFixed(0)}",
                                       style: const TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w300,

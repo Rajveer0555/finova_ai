@@ -16,3 +16,12 @@ final transactionsStreamProvider = StreamProvider((ref) {
       .orderBy('date', descending: true)
       .snapshots();
 });
+final transactionsProvider = StreamProvider<QuerySnapshot>((ref) {
+  final user = FirebaseAuth.instance.currentUser;
+
+  return FirebaseFirestore.instance
+      .collection('users')
+      .doc(user!.uid)
+      .collection('transactions')
+      .snapshots();
+});

@@ -30,7 +30,7 @@ final lastSixMonthsExpenseProvider = Provider<List<double>>((ref) {
   DateTime now = DateTime.now();
 
   for (int i = 5; i >= 0; i--) {
-    DateTime month = DateTime(now.year, now.month - i);
+    DateTime month = DateTime(now.year, now.month - i, 1);
 
     String key = "${month.year}-${month.month.toString().padLeft(2, '0')}";
 

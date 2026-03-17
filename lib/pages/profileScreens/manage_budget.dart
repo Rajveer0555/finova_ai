@@ -1,5 +1,6 @@
 import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
+import 'package:finova_ai/providers/income_provider.dart';
 import 'package:finova_ai/widgets/alerts_container.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:finova_ai/widgets/expense_adjust_widget.dart';
@@ -7,6 +8,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:intl/intl.dart';
+
+String formatCurrency(double amount) {
+  final formatter = NumberFormat.currency(
+    locale: 'en_IN', // Indian format
+    symbol: '₹',
+    decimalDigits: 0,
+  );
+
+  return formatter.format(amount);
+}
 
 class ManageBudgetScreen extends ConsumerStatefulWidget {
   const ManageBudgetScreen({super.key});
@@ -91,6 +104,12 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final incomeAsync = ref.watch(monthlyIncomeProvider);
+
+    final income = incomeAsync.maybeWhen(
+      data: (value) => value,
+      orElse: () => 0.0,
+    );
     double screenHeight = MediaQuery.of(context).size.height;
     if (isLoading) {
       return const Scaffold(
@@ -127,7 +146,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
             ),
             SizedBox(height: 1),
             Text(
-              "Your monthly income is ₹${totalBudget.toStringAsFixed(0)} per month",
+              "Your monthly income is ${formatCurrency(income)} per month",
               style: TextStyle(
                 color: Colors.grey.shade700,
                 fontSize: 12,
@@ -195,7 +214,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                               ),
                               SizedBox(width: 4),
                               Text(
-                                "₹ ${totalBudget.toStringAsFixed(0)}",
+                                "₹ ${income.toStringAsFixed(0)}",
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
@@ -206,10 +225,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                               Spacer(),
                               GestureDetector(
                                 onTap: () {
-                                  showAdjustIncomeBottomSheet(
-                                    context,
-                                    totalBudget,
-                                  );
+                                  showAdjustIncomeBottomSheet(context, ref);
                                 },
                                 child: Icon(Icons.edit, size: 18),
                               ),
@@ -356,12 +372,14 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
             ),
             child: Column(
               children: [
-                ElevatedButtonCust('Adjust Budget', () {}),
+                ElevatedButtonCust('Adjust Budget', () {
+                  Navigator.pop(context);
+                }),
 
                 const SizedBox(height: 8),
 
                 const Text(
-                  'Simulation only. No data is changed',
+                  'Simulation only. No data is changes',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w300),
                 ),
               ],
@@ -520,6 +538,10 @@ void showAdjustBudgetBottomSheet(
                             double.tryParse(budgetController.text) ??
                             currentBudget;
 
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
+
                         final userDoc = FirebaseFirestore.instance
                             .collection('users')
                             .doc(user.uid);
@@ -533,8 +555,6 @@ void showAdjustBudgetBottomSheet(
                         budgets[categoryKey] = newBudget;
 
                         await userDoc.update({"budgets": budgets});
-
-                        Navigator.pop(context);
 
                         if (context.mounted) {
                           final state =
@@ -570,10 +590,17 @@ void showAdjustBudgetBottomSheet(
   );
 }
 
-void showAdjustIncomeBottomSheet(BuildContext context, double currentIncome) {
-  final TextEditingController incomeController = TextEditingController();
-  incomeController.text = currentIncome.toString();
+void showAdjustIncomeBottomSheet(BuildContext context, WidgetRef ref) {
+  final incomeAsync = ref.watch(monthlyIncomeProvider);
 
+  final income = incomeAsync.maybeWhen(
+    data: (value) => value,
+    orElse: () => 0.0,
+  );
+
+  final TextEditingController incomeController = TextEditingController(
+    text: income == 0 ? "" : income.toString(),
+  );
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -612,47 +639,6 @@ void showAdjustIncomeBottomSheet(BuildContext context, double currentIncome) {
 
               const SizedBox(height: 20),
 
-              const Divider(),
-
-              const SizedBox(height: 10),
-
-              /// Income Info Row
-              Row(
-                children: [
-                  const Icon(
-                    Icons.account_balance_wallet,
-                    size: 40,
-                    color: Colors.blue,
-                  ),
-
-                  const SizedBox(width: 15),
-
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Current Income : ₹${currentIncome.toStringAsFixed(0)}",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-
-                      const SizedBox(height: 5),
-
-                      const Text(
-                        "Change your monthly income",
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-              const Divider(),
-              const SizedBox(height: 15),
-
               /// Enter Income Label
               const Align(
                 alignment: Alignment.centerLeft,
@@ -669,7 +655,7 @@ void showAdjustIncomeBottomSheet(BuildContext context, double currentIncome) {
                 controller: incomeController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  hintText: "30000",
+                  // hintText: "$income",
                   prefixText: "₹ ",
                   contentPadding: const EdgeInsets.symmetric(
                     vertical: 18,
@@ -716,26 +702,17 @@ void showAdjustIncomeBottomSheet(BuildContext context, double currentIncome) {
                         if (user == null) return;
 
                         double newIncome =
-                            double.tryParse(incomeController.text) ??
-                            currentIncome;
+                            double.tryParse(incomeController.text) ?? income;
 
-                        final userDoc = FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(user.uid);
-
-                        await userDoc.update({"monthlyIncome": newIncome});
-
-                        Navigator.pop(context);
-
-                        /// Refresh screen
                         if (context.mounted) {
-                          final state =
-                              context
-                                  .findAncestorStateOfType<
-                                    _ManageBudgetScreenState
-                                  >();
-                          state?.loadBudgetData();
+                          Navigator.pop(context);
                         }
+                        await FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(user.uid)
+                            .update({"monthlyIncome": newIncome});
+
+                        ref.invalidate(monthlyIncomeProvider);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromARGB(

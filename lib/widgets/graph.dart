@@ -26,7 +26,12 @@ class MonthlyBarGraph extends ConsumerWidget {
     final budgetAsync = ref.watch(budgetProvider);
     final values = ref.watch(lastSixMonthsExpenseProvider);
     final labels = ref.watch(lastSixMonthLabelsProvider);
-    final income = ref.watch(monthlyIncomeProvider);
+    final incomeAsync = ref.watch(monthlyIncomeProvider);
+
+    final income = incomeAsync.maybeWhen(
+      data: (value) => value,
+      orElse: () => 0.0,
+    );
 
     final totalBudget = budgetAsync.maybeWhen(
       data: (budgetDoc) {
@@ -47,7 +52,7 @@ class MonthlyBarGraph extends ConsumerWidget {
         values.isEmpty
             ? 0.0
             : values.reduce((a, b) => a > b ? a : b).toDouble();
-    final double maxY = totalBudget > 0 ? totalBudget.toDouble() : 100.0;
+    final double maxY = income > 0 ? income.toDouble() : 100.0;
     return SizedBox(
       height: 200,
       child: BarChart(
