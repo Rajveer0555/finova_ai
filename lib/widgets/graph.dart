@@ -1,5 +1,6 @@
 import 'package:finova_ai/providers/income_provider.dart';
 import 'package:finova_ai/providers/monthly_graph_provider.dart';
+import 'package:finova_ai/utils/formatters.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -115,7 +116,7 @@ class MonthlyBarGraph extends ConsumerWidget {
               tooltipBgColor: Colors.lightBlue,
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
                 return BarTooltipItem(
-                  "₹${rod.toY.toStringAsFixed(0)}",
+                  formatCurrency(rod.toY),
                   const TextStyle(color: Colors.white),
                 );
               },

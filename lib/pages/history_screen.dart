@@ -171,7 +171,7 @@ class HistoryScreen extends ConsumerWidget {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                '₹ ${totalExpense.toStringAsFixed(2)}',
+                                formatCurrency(totalExpense),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 24,
