@@ -91,7 +91,7 @@ class HomeScreen extends ConsumerWidget {
             );
 
             double usage =
-                totalBudget == 0 ? 0 : (totalExpense / totalBudget).clamp(0, 1);
+                income == 0 ? 0 : (totalExpense / income).clamp(0, 1);
 
             double remaining = income - totalExpense;
 

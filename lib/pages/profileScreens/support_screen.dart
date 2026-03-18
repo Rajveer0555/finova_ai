@@ -15,7 +15,7 @@ class SupportScreen extends ConsumerStatefulWidget {
 
 class _SupportScreenState extends ConsumerState<SupportScreen> {
   Future<void> _contactSupport() async {
-    final Uri emailUri = Uri.parse('mailto:support@finova.ai?subject=${Uri.encodeComponent('Contact Support')}');
+    final Uri emailUri = Uri.parse('mailto:rivexstudio22@gmail.com?subject=${Uri.encodeComponent('Contact Support')}');
     try {
       await launchUrl(emailUri);
     } catch (e) {
@@ -26,7 +26,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
   }
 
   Future<void> _emailSupport() async {
-    final Uri emailUri = Uri.parse('mailto:support@finova.ai?subject=${Uri.encodeComponent('Email Support')}');
+    final Uri emailUri = Uri.parse('mailto:rivexstudio22@gmail.com?subject=${Uri.encodeComponent('Email Support')}');
     try {
       await launchUrl(emailUri);
     } catch (e) {
@@ -37,7 +37,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
   }
 
   Future<void> _reportProblem() async {
-    final Uri emailUri = Uri.parse('mailto:support@finova.ai?subject=${Uri.encodeComponent('Problem Report')}');
+    final Uri emailUri = Uri.parse('mailto:rivexstudio22@gmail.com?subject=${Uri.encodeComponent('Problem Report')}');
     try {
       await launchUrl(emailUri);
     } catch (e) {
@@ -215,7 +215,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                         ),
                       ),
                       Text(
-                        "support@finova.ai",
+                        "rivexstudio22@gmail.com",
                         style: TextStyle(
                           fontFamily: 'SFProTexts',
                           fontSize: 12,
