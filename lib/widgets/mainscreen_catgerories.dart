@@ -1,4 +1,5 @@
 import 'package:finova_ai/models/category_model.dart';
+import 'package:finova_ai/utils/formatters.dart';
 import 'package:flutter/material.dart';
 
 class MainscreenCatgerories extends StatelessWidget {
@@ -32,7 +33,7 @@ class MainscreenCatgerories extends StatelessWidget {
     bool isIncrease = percentage > 0;
 
     String percentageText =
-        "${isIncrease ? "+" : ""}${percentage.toStringAsFixed(0)}%";
+        "${isIncrease ? "+" : ""}${formatPercentage(percentage)}";
 
     Color percentageColor = isIncrease ? Colors.red : Colors.green;
 
@@ -101,7 +102,7 @@ class MainscreenCatgerories extends StatelessWidget {
                 children: [
                   RichText(
                     text: TextSpan(
-                      text: "₹ ${totalAmount.toStringAsFixed(0)}",
+                      text: "${formatCurrency(totalAmount)}",
                       style: TextStyle(
                         color: Colors.black,
                         fontFamily: 'SFProText',

@@ -1,4 +1,5 @@
 import 'package:finova_ai/pages/forget_password.dart';
+import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/providers/auth_ui_provider.dart';
 import 'package:flutter/material.dart';
@@ -69,6 +70,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
       ref.read(appFlowProvider.notifier).state =
           profileCompleted ? AppStatus.authenticated : AppStatus.infoscreen;
+
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const MainNavigation()),
+          (route) => false,
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -143,6 +152,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
       ref.read(appFlowProvider.notifier).state =
           profileCompleted ? AppStatus.authenticated : AppStatus.infoscreen;
+
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const MainNavigation()),
+          (route) => false,
+        );
+      }
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(
         context,

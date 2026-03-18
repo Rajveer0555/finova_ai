@@ -1,3 +1,4 @@
+import 'package:finova_ai/utils/formatters.dart';
 import 'package:flutter/material.dart';
 
 class ExpenseAdjustWidget extends StatelessWidget {
@@ -69,7 +70,7 @@ class ExpenseAdjustWidget extends StatelessWidget {
                       const SizedBox(height: 2),
 
                       Text(
-                        "₹${spent.toStringAsFixed(0)} spent",
+                        "${formatCurrency(spent)} spent",
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w300,
@@ -87,7 +88,7 @@ class ExpenseAdjustWidget extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          "₹${budget.toStringAsFixed(0)}",
+                          formatCurrency(budget),
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,

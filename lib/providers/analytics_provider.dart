@@ -50,7 +50,7 @@ final analyticsProvider = Provider<AnalyticsData>((ref) {
     final data = doc.data();
 
     double amount = (data['amount'] ?? 0).toDouble();
-    String categoryName = data['category'] ?? "Other";
+    String categoryName = data['category'] ?? "other";
 
     DateTime date = (data['date']).toDate();
 

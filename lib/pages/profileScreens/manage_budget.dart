@@ -1,5 +1,4 @@
 import 'package:finova_ai/pages/main_navigation.dart';
-import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/providers/income_provider.dart';
 import 'package:finova_ai/widgets/alerts_container.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
@@ -9,17 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:intl/intl.dart';
-
-String formatCurrency(double amount) {
-  final formatter = NumberFormat.currency(
-    locale: 'en_IN', // Indian format
-    symbol: '₹',
-    decimalDigits: 0,
-  );
-
-  return formatter.format(amount);
-}
+import 'package:finova_ai/utils/formatters.dart';
 
 class ManageBudgetScreen extends ConsumerStatefulWidget {
   const ManageBudgetScreen({super.key});
@@ -46,7 +35,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
     {"key": "travel", "title": "Travel", "icon": "assets/travel-luggage.png"},
     {"key": "shopping", "title": "Shopping", "icon": "assets/shopping-bag.png"},
     {"key": "bills", "title": "Bills", "icon": "assets/bill.png"},
-    {"key": "others", "title": "Others", "icon": "assets/delivery-box.png"},
+    {"key": "other", "title": "Others", "icon": "assets/delivery-box.png"},
   ];
   Map<String, double> budgets = {};
   double totalBudget = 0;
@@ -110,7 +99,6 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
       data: (value) => value,
       orElse: () => 0.0,
     );
-    double screenHeight = MediaQuery.of(context).size.height;
     if (isLoading) {
       return const Scaffold(
         backgroundColor: Colors.white,
@@ -194,7 +182,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                             children: [
                               SizedBox(height: 20),
                               Text(
-                                "₹ ${totalSpent.toStringAsFixed(0)}",
+                                  formatCurrency(totalSpent),
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w700,
@@ -214,7 +202,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                               ),
                               SizedBox(width: 4),
                               Text(
-                                "₹ ${income.toStringAsFixed(0)}",
+                                formatCurrency(income),
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
@@ -236,9 +224,9 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                             borderRadius: BorderRadius.circular(12),
                             minHeight: 14,
                             value:
-                                totalBudget == 0
+                                income == 0
                                     ? 0
-                                    : (totalSpent / totalBudget).clamp(0, 1),
+                                    : (totalSpent / income).clamp(0, 1),
                             backgroundColor: Colors.grey.shade300,
                             color: Color.fromARGB(255, 100, 159, 255),
                           ),
@@ -249,7 +237,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                               Row(
                                 children: [
                                   Text(
-                                    "${((totalBudget == 0 ? 0 : (totalSpent / totalBudget)) * 100).toStringAsFixed(0)}% ",
+                                    "${((income == 0 ? 0 : (totalSpent / income)) * 100).toStringAsFixed(1)}% ",
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
@@ -269,7 +257,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                                 ],
                               ),
                               Text(
-                                "₹ ${(totalBudget - totalSpent).toStringAsFixed(0)} Remaining",
+                                "${formatCurrency(income - totalSpent)} Remaining",
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
@@ -309,14 +297,18 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: ExpenseAdjustWidget(
-                          onTap:
-                              () => showAdjustBudgetBottomSheet(
-                                context,
-                                key,
-                                (budgets[key] ?? 0).toDouble(),
-                                category["icon"],
-                                (spentPerCategory[key] ?? 0).toDouble(),
-                              ),
+                          onTap: () async {
+                            final updated = await showAdjustBudgetBottomSheet(
+                              context,
+                              key,
+                              (budgets[key] ?? 0).toDouble(),
+                              category["icon"],
+                              (spentPerCategory[key] ?? 0).toDouble(),
+                            );
+                            if (updated == true) {
+                              loadBudgetData();
+                            }
+                          },
                           title: category["title"],
                           imagePath: category["icon"],
                           budget: (budgets[key] ?? 0).toDouble(),
@@ -391,7 +383,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
   }
 }
 
-void showAdjustBudgetBottomSheet(
+Future<bool?> showAdjustBudgetBottomSheet(
   BuildContext context,
   String categoryKey,
   double currentBudget,
@@ -399,9 +391,9 @@ void showAdjustBudgetBottomSheet(
   double spentAmount,
 ) {
   final TextEditingController budgetController = TextEditingController();
-  budgetController.text = currentBudget.toString();
+  budgetController.text = currentBudget.toStringAsFixed(0);
 
-  showModalBottomSheet(
+  return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -450,7 +442,7 @@ void showAdjustBudgetBottomSheet(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Current Budget : ₹${currentBudget.toStringAsFixed(0)}",
+                        "Current Budget : ${formatCurrency(currentBudget)}",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -458,7 +450,7 @@ void showAdjustBudgetBottomSheet(
                       ),
                       SizedBox(height: 5),
                       Text(
-                        "Spent : ₹${spentAmount.toStringAsFixed(0)}",
+                        "Spent : ${formatCurrency(spentAmount)}",
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
@@ -489,7 +481,7 @@ void showAdjustBudgetBottomSheet(
                 controller: budgetController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  hintText: "20,000",
+                  hintText: "",
                   prefixText: "₹ ",
                   contentPadding: const EdgeInsets.symmetric(
                     vertical: 18,
@@ -509,7 +501,7 @@ void showAdjustBudgetBottomSheet(
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.pop(context, false);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
@@ -538,10 +530,6 @@ void showAdjustBudgetBottomSheet(
                             double.tryParse(budgetController.text) ??
                             currentBudget;
 
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                        }
-
                         final userDoc = FirebaseFirestore.instance
                             .collection('users')
                             .doc(user.uid);
@@ -557,12 +545,7 @@ void showAdjustBudgetBottomSheet(
                         await userDoc.update({"budgets": budgets});
 
                         if (context.mounted) {
-                          final state =
-                              context
-                                  .findAncestorStateOfType<
-                                    _ManageBudgetScreenState
-                                  >();
-                          state?.loadBudgetData();
+                          Navigator.pop(context, true);
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -599,7 +582,7 @@ void showAdjustIncomeBottomSheet(BuildContext context, WidgetRef ref) {
   );
 
   final TextEditingController incomeController = TextEditingController(
-    text: income == 0 ? "" : income.toString(),
+    text: income == 0 ? "" : income.toStringAsFixed(0),
   );
   showModalBottomSheet(
     context: context,

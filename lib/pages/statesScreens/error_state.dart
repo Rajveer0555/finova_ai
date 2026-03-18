@@ -1,9 +1,11 @@
 import 'package:finova_ai/pages/main_navigation.dart';
+import 'package:finova_ai/pages/profileScreens/support_screen.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:flutter/material.dart';
 
 class ErrorStateScreen extends StatelessWidget {
-  const ErrorStateScreen({super.key});
+  final VoidCallback? onRetry;
+  const ErrorStateScreen({super.key, this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -15,24 +17,41 @@ class ErrorStateScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset("assets/error.png", width: 50, height: 50),
-              SizedBox(height: 20),
-              Text(
-                'Something Went Wrong',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
+              AnimatedScale(
+                scale: 1.0,
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.elasticOut,
+                child: Image.asset("assets/error.png", width: 50, height: 50),
+              ),
+              AnimatedOpacity(
+                opacity: 1.0,
+                duration: const Duration(milliseconds: 1000),
+                child: Column(
+                  children: [
+                    SizedBox(height: 20),
+                    Text(
+                      'Something Went Wrong',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'We couldn\'t load your data right now. This might be a temporary issue. Please check your connection and try again.',
+                      style: TextStyle(fontSize: 16, color: Colors.black54),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 10),
-              Text(
-                'We couldn\'t load your data right now. This might be a temporary issue. Please check your connection and try again.',
-                style: TextStyle(fontSize: 16, color: Colors.black54),
-                textAlign: TextAlign.center,
-              ),
               SizedBox(height: 20),
-              ElevatedButtonCust('Try Again', () {}),
+              AnimatedOpacity(
+                opacity: 1.0,
+                duration: const Duration(milliseconds: 1200),
+                child: ElevatedButtonCust('Try Again', onRetry ?? () {}),
+              ),
               SizedBox(height: 20),
               Row(
                 children: [
@@ -41,7 +60,22 @@ class ErrorStateScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (_) => MainNavigation()),
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) => const MainNavigation(),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              const begin = Offset(-1.0, 0.0);
+                              const end = Offset.zero;
+                              const curve = Curves.easeInOut;
+
+                              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                              var offsetAnimation = animation.drive(tween);
+
+                              return SlideTransition(
+                                position: offsetAnimation,
+                                child: child,
+                              );
+                            },
+                          ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -70,10 +104,30 @@ class ErrorStateScreen extends StatelessWidget {
 
                   const SizedBox(width: 15),
 
-                  /// Save
+                  /// Support
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) => const SupportScreen(),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              const begin = Offset(1.0, 0.0);
+                              const end = Offset.zero;
+                              const curve = Curves.easeInOut;
+
+                              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                              var offsetAnimation = animation.drive(tween);
+
+                              return SlideTransition(
+                                position: offsetAnimation,
+                                child: child,
+                              );
+                            },
+                          ),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 15),
@@ -109,8 +163,8 @@ class ErrorStateScreen extends StatelessWidget {
                     horizontal: 16,
                   ),
                   child: Text(
+                    "Donâ€™t worry your data is safe. If this issue persists our teams is here to help you ",
                     textAlign: TextAlign.center,
-                    "Don’t worry your data is safe. If this issue persists our teams is here to help you ",
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 14,

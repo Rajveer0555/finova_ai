@@ -1,6 +1,7 @@
 import 'package:finova_ai/models/transactions_model.dart';
 import 'package:finova_ai/pages/edit_screen.dart';
 import 'package:finova_ai/providers/history_provider.dart';
+import 'package:finova_ai/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -159,7 +160,7 @@ print("Deleting ID: ${transaction.id}");
                     child: Column(
                       children: [
                         Text(
-                          "₹ ${t.amount.toStringAsFixed(2)}",
+                          formatCurrency(t.amount),
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w600,

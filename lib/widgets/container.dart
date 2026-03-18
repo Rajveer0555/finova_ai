@@ -98,7 +98,7 @@ class Container2 extends ConsumerWidget {
                         text: income == 0 ? "" : income.toString(),
                       ),
                       decoration: InputDecoration(
-                        hintText: "00.00",
+                        hintText: "0",
                         hintStyle: TextStyle(
                           color: Colors.grey.shade400,
                           fontSize: 18,

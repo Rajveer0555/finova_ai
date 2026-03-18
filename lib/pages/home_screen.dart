@@ -1,5 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:finova_ai/pages/statesScreens/error_state.dart';
+import 'package:finova_ai/pages/statesScreens/loading_state.dart';
+import 'package:finova_ai/pages/statesScreens/no_internet_screen.dart';
+import 'package:finova_ai/providers/connectivity_provider.dart';
 import 'package:finova_ai/providers/income_provider.dart';
+import 'package:finova_ai/utils/formatters.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:finova_ai/providers/budget_provider.dart';
 import 'package:finova_ai/providers/category_provider.dart';
@@ -28,6 +34,7 @@ class HomeScreen extends ConsumerWidget {
 
     final transactionsAsync = ref.watch(transactionsStreamProvider);
     final budgetAsync = ref.watch(budgetProvider);
+    final connectivityAsync = ref.watch(connectivityProvider);
     final categories = ref.watch(categoriesProvider);
 
     double screenWidth = MediaQuery.of(context).size.width;
@@ -86,7 +93,7 @@ class HomeScreen extends ConsumerWidget {
             double usage =
                 totalBudget == 0 ? 0 : (totalExpense / totalBudget).clamp(0, 1);
 
-            double remaining = totalBudget - totalExpense;
+            double remaining = income - totalExpense;
 
             return Scaffold(
               backgroundColor: Colors.white,
@@ -134,7 +141,7 @@ class HomeScreen extends ConsumerWidget {
                                     ),
 
                                     Text(
-                                      "₹ ${totalExpense.toStringAsFixed(2)}",
+                                      "${formatCurrency(totalExpense)}",
                                       style: const TextStyle(
                                         fontSize: 38,
                                         fontWeight: FontWeight.w500,
@@ -185,7 +192,7 @@ class HomeScreen extends ConsumerWidget {
                                         ),
                                         const Spacer(),
                                         Text(
-                                          "${(usage * 100).toStringAsFixed(0)} %",
+                                          "${formatPercentage(usage * 100)}",
                                           style: const TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.w500,
@@ -212,7 +219,7 @@ class HomeScreen extends ConsumerWidget {
                                     const SizedBox(height: 10),
 
                                     Text(
-                                      "₹ ${remaining.toStringAsFixed(0)} remaining of ₹ ${income.toStringAsFixed(0)}",
+                                      "${formatCurrency(remaining)} remaining of ${formatCurrency(income)}",
                                       style: const TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w300,
@@ -351,24 +358,53 @@ class HomeScreen extends ConsumerWidget {
             );
           },
 
-          loading:
-              () => const Scaffold(
-                backgroundColor: Colors.white,
-                body: Center(
-                  child: CircularProgressIndicator(color: Colors.blue),
-                ),
-              ),
+          loading: () => const LoadingState(),
 
-          error: (e, _) => Scaffold(body: Center(child: Text(e.toString()))),
+          error: (e, _) {
+            return connectivityAsync.when(
+              data: (connectivity) {
+                if (connectivity == ConnectivityResult.none) {
+                  return NoInternetScreen(
+                    onRetry: () => ref.invalidate(budgetProvider),
+                  );
+                } else {
+                  return ErrorStateScreen(
+                    onRetry: () => ref.invalidate(budgetProvider),
+                  );
+                }
+              },
+              loading: () => const LoadingState(),
+              error:
+                  (_, __) => ErrorStateScreen(
+                    onRetry: () => ref.invalidate(budgetProvider),
+                  ),
+            );
+          },
         );
       },
 
-      loading:
-          () => const Scaffold(
-            body: Center(child: CircularProgressIndicator(color: Colors.blue)),
-          ),
+      loading: () => const LoadingState(),
 
-      error: (e, _) => Scaffold(body: Center(child: Text(e.toString()))),
+      error: (e, _) {
+        return connectivityAsync.when(
+          data: (connectivity) {
+            if (connectivity == ConnectivityResult.none) {
+              return NoInternetScreen(
+                onRetry: () => ref.invalidate(transactionsStreamProvider),
+              );
+            } else {
+              return ErrorStateScreen(
+                onRetry: () => ref.invalidate(transactionsStreamProvider),
+              );
+            }
+          },
+          loading: () => const LoadingState(),
+          error:
+              (_, __) => ErrorStateScreen(
+                onRetry: () => ref.invalidate(transactionsStreamProvider),
+              ),
+        );
+      },
     );
   }
 }

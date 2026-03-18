@@ -68,6 +68,8 @@ class _ProfilerHeaderState extends ConsumerState<ProfilerHeader> {
               await googleSignIn.signOut();
               await FirebaseAuth.instance.signOut();
 
+              ref.read(appFlowProvider.notifier).state = AppStatus.unauthenticated;
+
               if (context.mounted) {
                 Navigator.pushAndRemoveUntil(
                   context,

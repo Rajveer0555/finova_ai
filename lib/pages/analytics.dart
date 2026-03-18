@@ -1,5 +1,12 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:finova_ai/pages/statesScreens/error_state.dart';
+import 'package:finova_ai/pages/statesScreens/loading_state.dart';
+import 'package:finova_ai/pages/statesScreens/no_internet_screen.dart';
 import 'package:finova_ai/providers/analytics_provider.dart';
+import 'package:finova_ai/providers/connectivity_provider.dart';
 import 'package:finova_ai/providers/monthly_graph_provider.dart';
+import 'package:finova_ai/providers/transactions_stream_provider.dart';
+import 'package:finova_ai/utils/formatters.dart';
 import 'package:finova_ai/widgets/graph.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,10 +43,15 @@ class _AnalyticsState extends ConsumerState<Analytics> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
-    final analytics = ref.watch(analyticsProvider);
-    final graph = ref.watch(monthlyGraphProvider);
+    final transactionsAsync = ref.watch(transactionsStreamProvider);
+    final connectivityAsync = ref.watch(connectivityProvider);
 
-    return Scaffold(
+    return transactionsAsync.when(
+      data: (snapshot) {
+        final analytics = ref.watch(analyticsProvider);
+        final graph = ref.watch(monthlyGraphProvider);
+
+        return Scaffold(
       backgroundColor: Colors.grey.shade50,
       body: Column(
         children: [
@@ -119,7 +131,7 @@ class _AnalyticsState extends ConsumerState<Analytics> {
                                     RichText(
                                       text: TextSpan(
                                         text:
-                                            '₹ ${analytics.totalSpent.toStringAsFixed(2)}', // Replace with actual total expenses
+                                            '₹ ${formatCurrency(analytics.totalSpent)}'.replaceAll('₹ ₹', '₹'),
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontFamily: 'SFProText',
@@ -174,7 +186,7 @@ class _AnalyticsState extends ConsumerState<Analytics> {
                                     RichText(
                                       text: TextSpan(
                                         text:
-                                            '₹ ${analytics.avgPerMonth.toStringAsFixed(2)}',
+                                            '₹ ${formatCurrency(analytics.avgPerMonth)}'.replaceAll('₹ ₹', '₹'),
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontFamily: 'SFProText',
@@ -314,39 +326,38 @@ class _AnalyticsState extends ConsumerState<Analytics> {
                           ),
                           SizedBox(height: 22),
                           Column(
-                            children:
-                                analytics.categoryMap.entries.map((entry) {
-                                  double percent =
-                                      (entry.value / analytics.totalSpent) *
-                                      100;
+                            children: [
+                              for (final entry in (
+                                analytics.categoryMap.entries.toList()
+                                  ..sort((a, b) => b.value.compareTo(a.value))
+                              ))
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 8,
+                                        backgroundColor:
+                                            categoryColors[entry.key] ??
+                                            Colors.grey,
+                                      ),
+                                      SizedBox(width: 28),
 
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 12),
-                                    child: Row(
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 8,
-                                          backgroundColor:
-                                              categoryColors[entry.key] ??
-                                              Colors.grey,
-                                        ),
-                                        SizedBox(width: 28),
+                                      Text(
+                                        entry.key.isEmpty ? entry.key : entry.key[0].toUpperCase() + entry.key.substring(1),
+                                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                                      ),
 
-                                        Text(
-                                          entry.key,
-                                          style: TextStyle(fontSize: 14),
-                                        ),
+                                      Spacer(),
 
-                                        Spacer(),
-
-                                        Text(
-                                          "${percent.toStringAsFixed(1)}%",
-                                          style: TextStyle(fontSize: 14),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
+                                      Text(
+                                        "${(analytics.totalSpent == 0 ? 0 : (entry.value / analytics.totalSpent) * 100).toStringAsFixed(1)}%",
+                                        style: TextStyle(fontSize: 14),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
                           ),
                         ],
                       ),
@@ -401,7 +412,7 @@ class _AnalyticsState extends ConsumerState<Analytics> {
                                   ),
                                   SizedBox(height: 6),
                                   Text(
-                                    "₹ ${graph.highestValue.toStringAsFixed(0)} (${formatMonth(graph.highestMonth)})",
+                                    "₹ ${formatCurrency(graph.highestValue)} (${formatMonth(graph.highestMonth)})".replaceAll('₹ ₹', '₹'),
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontSize: 14,
@@ -424,7 +435,7 @@ class _AnalyticsState extends ConsumerState<Analytics> {
                                   ),
                                   SizedBox(height: 6),
                                   Text(
-                                    "₹ ${graph.lowestValue.toStringAsFixed(0)} (${formatMonth(graph.lowestMonth)})",
+                                    "₹ ${formatCurrency(graph.lowestValue)} (${formatMonth(graph.lowestMonth)})".replaceAll('₹ ₹', '₹'),
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontSize: 14,
@@ -446,6 +457,30 @@ class _AnalyticsState extends ConsumerState<Analytics> {
           ),
         ],
       ),
+    );
+      },
+
+      loading: () => const LoadingState(),
+
+      error: (e, _) {
+        return connectivityAsync.when(
+          data: (connectivity) {
+            if (connectivity == ConnectivityResult.none) {
+              return NoInternetScreen(
+                onRetry: () => ref.invalidate(transactionsStreamProvider),
+              );
+            } else {
+              return ErrorStateScreen(
+                onRetry: () => ref.invalidate(transactionsStreamProvider),
+              );
+            }
+          },
+          loading: () => const LoadingState(),
+          error: (_, __) => ErrorStateScreen(
+            onRetry: () => ref.invalidate(transactionsStreamProvider),
+          ),
+        );
+      },
     );
   }
 }

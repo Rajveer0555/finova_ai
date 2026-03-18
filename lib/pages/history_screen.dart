@@ -1,8 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:finova_ai/models/category_selector_model.dart';
+import 'package:finova_ai/models/payment_method.dart';
+import 'package:finova_ai/pages/statesScreens/error_state.dart';
+import 'package:finova_ai/pages/statesScreens/loading_state.dart';
+import 'package:finova_ai/pages/statesScreens/no_internet_screen.dart';
+import 'package:finova_ai/providers/connectivity_provider.dart';
 import 'package:finova_ai/providers/history_filter_provider.dart';
 import 'package:finova_ai/providers/transactions_stream_provider.dart';
+import 'package:finova_ai/utils/formatters.dart';
+import 'package:finova_ai/widgets/category_selector.dart';
 import 'package:finova_ai/widgets/month_history_card.dart';
 import 'package:finova_ai/widgets/outlined_btn.dart';
+import 'package:finova_ai/widgets/payment_methodsheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,6 +23,7 @@ class HistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transactionsAsync = ref.watch(transactionsStreamProvider);
     final filters = ref.watch(historyFilterProvider);
+    final connectivityAsync = ref.watch(connectivityProvider);
 
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
@@ -22,18 +33,18 @@ class HistoryScreen extends ConsumerWidget {
         final docs = snapshot.docs;
         Map<String, List<Map<String, dynamic>>> groupedTransactions = {};
         for (var doc in docs) {
-  final data = doc.data();
+          final data = doc.data();
 
-  DateTime date = (data['date'] as Timestamp).toDate();
+          DateTime date = (data['date'] as Timestamp).toDate();
 
-  String monthKey = "${date.year}-${date.month}";
+          String monthKey = "${date.year}-${date.month}";
 
-  if (!groupedTransactions.containsKey(monthKey)) {
-    groupedTransactions[monthKey] = [];
-  }
+          if (!groupedTransactions.containsKey(monthKey)) {
+            groupedTransactions[monthKey] = [];
+          }
 
-  groupedTransactions[monthKey]!.add(data);
-}
+          groupedTransactions[monthKey]!.add(data);
+        }
 
         double totalExpense = 0;
         Map<String, List<QueryDocumentSnapshot>> grouped = {};
@@ -85,6 +96,21 @@ class HistoryScreen extends ConsumerWidget {
         }
 
         final groupedList = grouped.entries.toList();
+
+        // Ensure current month is always shown at the top
+        DateTime now = DateTime.now();
+        String currentMonthKey = "${now.year}-${now.month}";
+        if (!grouped.containsKey(currentMonthKey)) {
+          grouped[currentMonthKey] = [];
+          groupedList.add(MapEntry(currentMonthKey, []));
+        }
+
+        // Sort: current month first, then others in descending order
+        groupedList.sort((a, b) {
+          if (a.key == currentMonthKey) return -1;
+          if (b.key == currentMonthKey) return 1;
+          return b.key.compareTo(a.key);
+        });
 
         return Scaffold(
           backgroundColor: Colors.white,
@@ -175,12 +201,14 @@ class HistoryScreen extends ConsumerWidget {
                   children: [
                     OutlinedBtn(
                       title: 'Payment Method',
-                      onTap: () => showPaymentMethodSheet(context),
+                      onTap:
+                          () async =>
+                              await showPaymentMethodSheet(context, ref),
                     ),
                     const SizedBox(width: 10),
                     OutlinedBtn(
                       title: 'Category',
-                      onTap: () => showCategorySheet(context),
+                      onTap: () async => await showCategorySheet(context, ref),
                     ),
                     const SizedBox(width: 10),
                     OutlinedBtn(
@@ -229,75 +257,71 @@ class HistoryScreen extends ConsumerWidget {
         );
       },
 
-      loading:
-          () =>
-              const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => const LoadingState(),
 
-      error: (e, _) => Scaffold(body: Center(child: Text(e.toString()))),
+      error: (e, _) {
+        return connectivityAsync.when(
+          data: (connectivity) {
+            if (connectivity == ConnectivityResult.none) {
+              return NoInternetScreen(
+                onRetry: () => ref.invalidate(transactionsStreamProvider),
+              );
+            } else {
+              return ErrorStateScreen(
+                onRetry: () => ref.invalidate(transactionsStreamProvider),
+              );
+            }
+          },
+          loading: () => const LoadingState(),
+          error: (_, __) => ErrorStateScreen(
+            onRetry: () => ref.invalidate(transactionsStreamProvider),
+          ),
+        );
+      },
     );
   }
 }
 
-void showPaymentMethodSheet(BuildContext context) {
-  showModalBottomSheet(
+Future<void> showPaymentMethodSheet(BuildContext context, WidgetRef ref) async {
+  final currentMethod = ref.read(historyFilterProvider).paymentMethod;
+  final initialMethod = PaymentMethod(
+    title: currentMethod ?? "Cash",
+    imagePath: _paymentMethodIcon(currentMethod ?? "Cash"),
+  );
+
+  final result = await showModalBottomSheet<PaymentMethod>(
     context: context,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
-    builder:
-        (_) => Consumer(
-          builder: (context, ref, _) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children:
-                  ['Cash', 'Debit Card', 'Credit Card', 'Wallet']
-                      .map(
-                        (method) => ListTile(
-                          title: Text(method),
-                          onTap: () {
-                            ref
-                                .read(historyFilterProvider.notifier)
-                                .setPaymentMethod(method);
-                            Navigator.pop(context);
-                          },
-                        ),
-                      )
-                      .toList(),
-            );
-          },
-        ),
+    builder: (_) => PaymentMethodSheet(initialMethod: initialMethod),
   );
+
+  if (result != null) {
+    ref.read(historyFilterProvider.notifier).setPaymentMethod(result.title);
+  }
 }
 
-void showCategorySheet(BuildContext context) {
-  showModalBottomSheet(
+Future<void> showCategorySheet(BuildContext context, WidgetRef ref) async {
+  final currentCategory = ref.read(historyFilterProvider).category;
+  final initialCategory = CategorySelectorModel(
+    title: currentCategory != null ? _capitalize(currentCategory) : "Food",
+    imagePath: _categoryIcon(currentCategory ?? "food"),
+  );
+
+  final result = await showModalBottomSheet<CategorySelectorModel>(
     context: context,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
-    builder:
-        (_) => Consumer(
-          builder: (context, ref, _) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children:
-                  ['food', 'travel', 'shopping', 'bills', 'others']
-                      .map(
-                        (cat) => ListTile(
-                          title: Text(cat),
-                          onTap: () {
-                            ref
-                                .read(historyFilterProvider.notifier)
-                                .setCategory(cat.toLowerCase());
-                            Navigator.pop(context);
-                          },
-                        ),
-                      )
-                      .toList(),
-            );
-          },
-        ),
+    builder: (_) => CategorySelector(initialMethod: initialCategory),
   );
+
+  if (result != null) {
+    var selected = result.title.toLowerCase();
+    if (selected == 'other') selected = 'others';
+    ref.read(historyFilterProvider.notifier).setCategory(selected);
+  }
 }
 
 void showDateRangeSheet(BuildContext context, WidgetRef ref) async {
@@ -309,5 +333,42 @@ void showDateRangeSheet(BuildContext context, WidgetRef ref) async {
 
   if (range != null) {
     ref.read(historyFilterProvider.notifier).setDateRange(range);
+  }
+}
+
+String _capitalize(String? input) {
+  if (input == null || input.isEmpty) return '';
+  final normalized = input.toLowerCase();
+  if (normalized == 'others' || normalized == 'other') return 'Other';
+  return normalized[0].toUpperCase() + normalized.substring(1);
+}
+
+String _categoryIcon(String? category) {
+  switch (category?.toLowerCase()) {
+    case 'food':
+      return 'assets/diet.png';
+    case 'travel':
+      return 'assets/travel-luggage.png';
+    case 'shopping':
+      return 'assets/shopping-bag.png';
+    case 'bills':
+      return 'assets/bill.png';
+    default:
+      return 'assets/delivery-box.png';
+  }
+}
+
+String _paymentMethodIcon(String? method) {
+  switch (method?.toLowerCase()) {
+    case 'cash':
+      return 'assets/money.png';
+    case 'debit card':
+      return 'assets/contactless.png';
+    case 'credit card':
+      return 'assets/credit-card.png';
+    case 'wallet':
+      return 'assets/ewallet.png';
+    default:
+      return 'assets/money.png';
   }
 }

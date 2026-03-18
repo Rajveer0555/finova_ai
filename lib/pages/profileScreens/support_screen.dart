@@ -4,6 +4,7 @@ import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/help_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SupportScreen extends ConsumerStatefulWidget {
   const SupportScreen({super.key});
@@ -13,6 +14,39 @@ class SupportScreen extends ConsumerStatefulWidget {
 }
 
 class _SupportScreenState extends ConsumerState<SupportScreen> {
+  Future<void> _contactSupport() async {
+    final Uri emailUri = Uri.parse('mailto:support@finova.ai?subject=${Uri.encodeComponent('Contact Support')}');
+    try {
+      await launchUrl(emailUri);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not launch email app')),
+      );
+    }
+  }
+
+  Future<void> _emailSupport() async {
+    final Uri emailUri = Uri.parse('mailto:support@finova.ai?subject=${Uri.encodeComponent('Email Support')}');
+    try {
+      await launchUrl(emailUri);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not launch email app')),
+      );
+    }
+  }
+
+  Future<void> _reportProblem() async {
+    final Uri emailUri = Uri.parse('mailto:support@finova.ai?subject=${Uri.encodeComponent('Problem Report')}');
+    try {
+      await launchUrl(emailUri);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not launch email app')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -21,9 +55,9 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
         leading: IconButton(
           onPressed: () {
             Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => MainNavigation()),
-                  );
+              context,
+              MaterialPageRoute(builder: (_) => MainNavigation()),
+            );
           },
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           color: Colors.black,
@@ -107,7 +141,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                 "Contact Support",
                 "Chat with our support team",
                 "assets/comments.png",
-                () {},
+                () => _contactSupport(),
               ),
 
               SizedBox(height: 10),
@@ -115,7 +149,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                 "Email Support",
                 "Send us an email",
                 "assets/gmail.png",
-                () {},
+                () => _emailSupport(),
               ),
 
               SizedBox(height: 10),
@@ -123,7 +157,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                 "Report a Problem",
                 "Let us know about any issues",
                 "assets/error.png",
-                () {},
+                () => _reportProblem(),
               ),
 
               SizedBox(height: 10),
@@ -265,6 +299,8 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                   ),
                 ),
               ),
+
+              SizedBox(height: 100),
             ],
           ),
         ),

@@ -49,13 +49,42 @@ class FinovaBottomNav extends ConsumerWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => AddTransactionScreen()),
+                  PageRouteBuilder(
+                    pageBuilder:
+                        (context, animation, secondaryAnimation) =>
+                            const AddTransactionScreen(),
+                    transitionsBuilder: (
+                      context,
+                      animation,
+                      secondaryAnimation,
+                      child,
+                    ) {
+                      const begin = Offset(0.0, 1.0);
+                      const end = Offset.zero;
+                      const curve = Curves.easeInOut;
+
+                      var tween = Tween(
+                        begin: begin,
+                        end: end,
+                      ).chain(CurveTween(curve: curve));
+                      var offsetAnimation = animation.drive(tween);
+
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                  ),
                 );
               },
-              child: CircleAvatar(
-                radius: 32,
-                backgroundColor: const Color(0xFF4A90FF),
-                child: const Icon(Icons.add, color: Colors.white, size: 32),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+                child: CircleAvatar(
+                  radius: 32,
+                  backgroundColor: const Color(0xFF4A90FF),
+                  child: const Icon(Icons.add, color: Colors.white, size: 32),
+                ),
               ),
             ),
           ),
@@ -71,7 +100,25 @@ class FinovaBottomNav extends ConsumerWidget {
       onTap: () {
         ref.read(bottomNavIndexProvider.notifier).state = index;
       },
-      child: Icon(icon, size: 24, color: isActive ? Colors.black : Colors.grey),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.lightBlue.shade50 : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: AnimatedScale(
+          scale: isActive ? 1.2 : 1.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          child: Icon(
+            icon,
+            size: 24,
+            color: isActive ? Colors.blue : Colors.grey,
+          ),
+        ),
+      ),
     );
   }
 }

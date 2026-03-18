@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:finova_ai/models/transactions_model.dart';
 import 'package:finova_ai/pages/history_detail_screen.dart';
+import 'package:finova_ai/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -86,7 +87,7 @@ class _MonthHistoryCardState extends State<MonthHistoryCard> {
                       ],
                     ),
                     Text(
-                      '₹ ${totalAmount.toStringAsFixed(0)}',
+                      formatCurrency(totalAmount),
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w600,
@@ -173,7 +174,7 @@ class _MonthHistoryCardState extends State<MonthHistoryCard> {
                 ),
 
                 Text(
-                  "₹ ${t.amount.toStringAsFixed(0)}",
+                  "₹ ${formatCurrency(t.amount)}".replaceAll('₹ ₹', '₹'),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,

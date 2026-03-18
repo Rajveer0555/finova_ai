@@ -2,7 +2,8 @@ import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:flutter/material.dart';
 
 class NoInternetScreen extends StatelessWidget {
-  const NoInternetScreen({super.key});
+  final VoidCallback? onRetry;
+  const NoInternetScreen({super.key, this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -14,24 +15,41 @@ class NoInternetScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset("assets/no-wifi.png", width: 50, height: 50),
-              SizedBox(height: 20),
-              Text(
-                'No Internet Connection',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black,
+              AnimatedScale(
+                scale: 1.0,
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.elasticOut,
+                child: Image.asset("assets/no-wifi.png", width: 50, height: 50),
+              ),
+              AnimatedOpacity(
+                opacity: 1.0,
+                duration: const Duration(milliseconds: 1000),
+                child: Column(
+                  children: [
+                    SizedBox(height: 20),
+                    Text(
+                      'No Internet Connection',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Please check your connection and try again. Make sure your device is connected to WiFi or mobile data.',
+                      style: TextStyle(fontSize: 16, color: Colors.black54),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 10),
-              Text(
-                'Please check your connection and try again. Make sure your device is connected to WiFi or mobile data.',
-                style: TextStyle(fontSize: 16, color: Colors.black54),
-                textAlign: TextAlign.center,
-              ),
               SizedBox(height: 20),
-              ElevatedButtonCust('Retry', () {}),
+              AnimatedOpacity(
+                opacity: 1.0,
+                duration: const Duration(milliseconds: 1200),
+                child: ElevatedButtonCust('Retry', onRetry ?? () {}),
+              ),
 
               SizedBox(height: 20),
               Container(
