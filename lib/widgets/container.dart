@@ -4,15 +4,45 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class Container2 extends ConsumerWidget {
+class Container2 extends ConsumerStatefulWidget {
   const Container2({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final income = ref.watch(monthlyIncomeProvider);
+  ConsumerState<Container2> createState() => _Container2State();
+}
+
+class _Container2State extends ConsumerState<Container2> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+
+    // Keep the controller in sync with the provider.
+    ref.listen<AsyncValue<double>>(monthlyIncomeProvider, (previous, next) {
+      next.whenData((value) {
+        final textValue = value == 0 ? "" : value.toStringAsFixed(0);
+        if (_controller.text != textValue) {
+          _controller.text = textValue;
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final incomeAsync = ref.watch(monthlyIncomeProvider);
 
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
+
     return Container(
       width: screenWidth * 1,
       decoration: BoxDecoration(
@@ -94,9 +124,7 @@ class Container2 extends ConsumerWidget {
                             .doc(FirebaseAuth.instance.currentUser!.uid)
                             .update({"monthlyIncome": parsed});
                       },
-                      controller: TextEditingController(
-                        text: income == 0 ? "" : income.toString(),
-                      ),
+                      controller: _controller,
                       decoration: InputDecoration(
                         hintText: "0",
                         hintStyle: TextStyle(
@@ -111,7 +139,6 @@ class Container2 extends ConsumerWidget {
                 ],
               ),
             ),
-
             SizedBox(height: screenHeight * 0.028),
           ],
         ),
