@@ -4,7 +4,7 @@ import 'package:finova_ai/pages/profileScreens/privacy_policy.dart';
 import 'package:finova_ai/pages/profileScreens/support_screen.dart';
 import 'package:finova_ai/pages/profileScreens/terms_condtions.dart';
 import 'package:finova_ai/pages/profileScreens/user_profile.dart';
-import 'package:finova_ai/providers/app_flow_providers.dart';
+import 'package:finova_ai/utils/page_transitions.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -40,7 +40,7 @@ class _AccountCardState extends ConsumerState<AccountCard> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => UserProfile()),
+                buildSlideFromRightRoute(const UserProfile()),
               );
             },
             child: Row(
@@ -115,7 +115,7 @@ class _AccountCardState extends ConsumerState<AccountCard> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => ManageBudgetScreen()),
+                buildSlideFromRightRoute(const ManageBudgetScreen()),
               );
             },
             child: Row(
@@ -150,7 +150,7 @@ class _AccountCardState extends ConsumerState<AccountCard> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => FaqScreen()),
+                buildSlideFromRightRoute(const FaqScreen()),
               );
             },
             child: Row(
@@ -185,7 +185,7 @@ class _AccountCardState extends ConsumerState<AccountCard> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => SupportScreen()),
+                buildSlideFromRightRoute(const SupportScreen()),
               );
             },
             child: Row(
@@ -221,7 +221,7 @@ class _AccountCardState extends ConsumerState<AccountCard> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => PrivacyPolicy()),
+                buildSlideFromRightRoute(const PrivacyPolicy()),
               );
             },
             child: Row(
@@ -257,7 +257,7 @@ class _AccountCardState extends ConsumerState<AccountCard> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => TermsConditions()),
+                buildSlideFromRightRoute(const TermsConditions()),
               );
             },
             child: Row(

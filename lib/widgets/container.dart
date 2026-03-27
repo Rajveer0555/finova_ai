@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:finova_ai/providers/income_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,25 +15,17 @@ class Container2 extends ConsumerStatefulWidget {
 
 class _Container2State extends ConsumerState<Container2> {
   late final TextEditingController _controller;
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController();
-
-    // Keep the controller in sync with the provider.
-    ref.listen<AsyncValue<double>>(monthlyIncomeProvider, (previous, next) {
-      next.whenData((value) {
-        final textValue = value == 0 ? "" : value.toStringAsFixed(0);
-        if (_controller.text != textValue) {
-          _controller.text = textValue;
-        }
-      });
-    });
   }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -39,6 +33,20 @@ class _Container2State extends ConsumerState<Container2> {
   @override
   Widget build(BuildContext context) {
     final incomeAsync = ref.watch(monthlyIncomeProvider);
+    final syncedText = incomeAsync.maybeWhen(
+      data: (value) => value == 0 ? "" : value.toStringAsFixed(0),
+      orElse: () => _controller.text,
+    );
+
+    if (_controller.text != syncedText) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _controller.text == syncedText) return;
+        _controller.value = TextEditingValue(
+          text: syncedText,
+          selection: TextSelection.collapsed(offset: syncedText.length),
+        );
+      });
+    }
 
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
@@ -118,11 +126,17 @@ class _Container2State extends ConsumerState<Container2> {
                         fontWeight: FontWeight.w500,
                       ),
                       onChanged: (value) {
-                        final parsed = double.tryParse(value) ?? 0.0;
-                        FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(FirebaseAuth.instance.currentUser!.uid)
-                            .update({"monthlyIncome": parsed});
+                        _debounce?.cancel();
+                        _debounce = Timer(const Duration(milliseconds: 400), () {
+                          final user = FirebaseAuth.instance.currentUser;
+                          if (user == null) return;
+
+                          final parsed = double.tryParse(value) ?? 0.0;
+                          FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(user.uid)
+                              .update({"monthlyIncome": parsed});
+                        });
                       },
                       controller: _controller,
                       decoration: InputDecoration(

@@ -60,6 +60,7 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
     {"title": "Travel", "image": "assets/travel-luggage.png"},
     {"title": "Bills", "image": "assets/bill.png"},
     {"title": "Shopping", "image": "assets/shopping-bag.png"},
+    {"title": "Other", "image": "assets/delivery-box.png"},
   ];
 
   @override
@@ -355,6 +356,18 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
                     Navigator.popUntil(context, (route) => route.isFirst);
                   }
                 }),
+                const SizedBox(width: 12),
+                OutlinedButton(
+                  onPressed:
+                      () => showDeleteDialog(context, ref, widget.transaction),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.red),
+                  ),
+                  child: const Text(
+                    'Delete',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
               ],
             ),
             SizedBox(height: screenHeight * 0.02),

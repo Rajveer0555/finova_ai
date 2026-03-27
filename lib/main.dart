@@ -51,9 +51,6 @@ class MyApp extends ConsumerWidget {
       case AppStatus.authenticated:
         currentScreen = const MainNavigation();
         break;
-
-      default:
-        currentScreen = const SplashScreen();
     }
 
     return MaterialApp(

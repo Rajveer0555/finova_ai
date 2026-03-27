@@ -1,14 +1,12 @@
-import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ElevatedButtonCust extends ConsumerWidget {
+class ElevatedButtonCust extends StatelessWidget {
   final String title;
   final VoidCallback route;
   const ElevatedButtonCust(this.title, this.route, {super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 

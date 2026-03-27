@@ -24,7 +24,7 @@ class _MonthHistoryCardState extends State<MonthHistoryCard> {
 
   double get totalAmount => widget.transactions.fold(
     0,
-    (sum, doc) => sum + TransactionModel2.fromFirestore(doc).amount,
+    (acc, doc) => acc + TransactionModel2.fromFirestore(doc).amount,
   );
 
   final Map<String, String> categoryIcons = {
@@ -37,7 +37,6 @@ class _MonthHistoryCardState extends State<MonthHistoryCard> {
 
   @override
   Widget build(BuildContext context) {
-    
     final parts = widget.monthKey.split('-');
     final date = DateTime(int.parse(parts[0]), int.parse(parts[1]));
 
@@ -51,7 +50,7 @@ class _MonthHistoryCardState extends State<MonthHistoryCard> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Color.fromRGBO(0, 0, 0, 0.08),
               blurRadius: 10,
               spreadRadius: 1,
               offset: Offset(0, 4), // shadow position

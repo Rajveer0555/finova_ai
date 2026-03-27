@@ -2,11 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final transactionsStreamProvider = StreamProvider((ref) {
+final transactionsStreamProvider =
+    StreamProvider<QuerySnapshot<Map<String, dynamic>>>((ref) {
   final user = FirebaseAuth.instance.currentUser;
 
   if (user == null) {
-    return const Stream.empty();
+    return const Stream<QuerySnapshot<Map<String, dynamic>>>.empty();
   }
 
   return FirebaseFirestore.instance
@@ -16,7 +17,9 @@ final transactionsStreamProvider = StreamProvider((ref) {
       .orderBy('date', descending: true)
       .snapshots();
 });
-final transactionsProvider = StreamProvider<QuerySnapshot>((ref) {
+final transactionsProvider = StreamProvider<QuerySnapshot<Map<String, dynamic>>>((
+  ref,
+) {
   final user = FirebaseAuth.instance.currentUser;
 
   return FirebaseFirestore.instance

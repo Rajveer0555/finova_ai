@@ -1,4 +1,5 @@
 import 'package:finova_ai/pages/forget_password.dart';
+import 'package:finova_ai/pages/info_screen.dart';
 import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/providers/auth_ui_provider.dart';
@@ -17,8 +18,12 @@ class AuthScreen extends ConsumerStatefulWidget {
 }
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
+  static const _googleWebClientId =
+      '1034108295430-chor39j77pahrpiori38u9efragnppo8.apps.googleusercontent.com';
   final _formKey = GlobalKey<FormState>();
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    serverClientId: _googleWebClientId,
+  );
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -27,12 +32,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   Future<void> _signInWithGoogle() async {
     try {
       setState(() => isLoading = true);
-      await _googleSignIn.signOut();
 
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
-        setState(() => isLoading = false);
         return;
       }
 
@@ -71,14 +74,25 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       ref.read(appFlowProvider.notifier).state =
           profileCompleted ? AppStatus.authenticated : AppStatus.infoscreen;
 
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder:
+              (_) =>
+                  profileCompleted
+                      ? const MainNavigation()
+                      : const InfoScreen(),
+        ),
+        (route) => false,
+      );
+    } on FirebaseAuthException catch (e) {
       if (mounted) {
-        Navigator.pushAndRemoveUntil(
+        ScaffoldMessenger.of(
           context,
-          MaterialPageRoute(builder: (_) => const MainNavigation()),
-          (route) => false,
-        );
+        ).showSnackBar(SnackBar(content: Text(e.message ?? "Google Sign-In failed")));
       }
     } catch (e) {
+      debugPrint('Google Sign-In error: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -116,6 +130,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       if (!mounted) return;
 
       ref.read(appFlowProvider.notifier).state = AppStatus.infoscreen;
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const InfoScreen()),
+        (route) => false,
+      );
+    } on FirebaseException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message ?? "Firestore access failed")),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -153,11 +179,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       ref.read(appFlowProvider.notifier).state =
           profileCompleted ? AppStatus.authenticated : AppStatus.infoscreen;
 
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder:
+              (_) =>
+                  profileCompleted
+                      ? const MainNavigation()
+                      : const InfoScreen(),
+        ),
+        (route) => false,
+      );
+    } on FirebaseException catch (e) {
       if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const MainNavigation()),
-          (route) => false,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message ?? "Firestore access failed")),
         );
       }
     } on FirebaseAuthException catch (e) {

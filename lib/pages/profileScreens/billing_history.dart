@@ -1,5 +1,3 @@
-import 'package:finova_ai/pages/profileScreens/subscription.dart';
-import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/billing_history_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,10 +17,7 @@ class _BillingHistoryScreenState extends ConsumerState<BillingHistoryScreen> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => SubscriptionScreen()),
-            );
+            Navigator.pop(context);
           },
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           color: Colors.black,

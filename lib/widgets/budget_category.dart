@@ -30,7 +30,6 @@ class _BudgetCategoryState extends ConsumerState<BudgetCategory> {
 
   @override
   Widget build(BuildContext context) {
-    final amount = ref.read(budgetAmountProvider(widget.id));
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Row(

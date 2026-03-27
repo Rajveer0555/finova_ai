@@ -1,30 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:finova_ai/models/transactions_model.dart';
-import 'package:finova_ai/providers/payment_filter_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-
-final timeSortOrderProvider = StateProvider<bool>((ref) {
-  return true; // true = Newest first, false = Oldest first
-});
-
-final timeSortedTransactionsProvider = Provider<List<TransactionModel2>>((ref) {
-  final transactions = ref.watch(transactionsProvider);
-  final isNewestFirst = ref.watch(timeSortOrderProvider);
-
-  final sortedList = [...transactions];
-
-  sortedList.sort((a, b) {
-    if (isNewestFirst) {
-      return b.dateTime.compareTo(a.dateTime); // Newest → Oldest
-    } else {
-      return a.dateTime.compareTo(b.dateTime); // Oldest → Newest
-    }
-  });
-
-  return sortedList;
-});
 
 final transactionsProvider =
     StateNotifierProvider<TransactionsNotifier, List<TransactionModel2>>((ref) {
@@ -52,8 +30,6 @@ class TransactionsNotifier extends StateNotifier<List<TransactionModel2>> {
         });
   }
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
   Future<void> removeTransaction(String id) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -70,45 +46,3 @@ class TransactionsNotifier extends StateNotifier<List<TransactionModel2>> {
     state = [...state, transaction];
   }
 }
-
-final filteredTransactionsProvider = Provider((ref) {
-  final transactions = ref.watch(transactionsProvider);
-
-  final filter = ref.watch(paymentFilterProvider);
-
-  if (filter == null) {
-    return transactions;
-  }
-
-  return transactions.where((tx) => tx.paymentTitle == filter).toList();
-});
-final monthlyTransactionsProvider =
-    Provider<Map<String, List<TransactionModel2>>>((ref) {
-      final transactions = ref.watch(timeSortedTransactionsProvider);
-
-      Map<String, List<TransactionModel2>> grouped = {};
-
-      for (var tx in transactions) {
-        final date = tx.dateTime;
-
-        final monthKey =
-            "${date.year}-${date.month.toString().padLeft(2, '0')}";
-
-        if (!grouped.containsKey(monthKey)) {
-          grouped[monthKey] = [];
-        }
-
-        grouped[monthKey]!.add(tx);
-      }
-
-      return grouped;
-    });
-final sortedMonthKeysProvider = Provider<List<String>>((ref) {
-  final grouped = ref.watch(monthlyTransactionsProvider);
-
-  final keys = grouped.keys.toList();
-
-  keys.sort((a, b) => b.compareTo(a)); // newest first
-
-  return keys;
-});

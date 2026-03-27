@@ -11,11 +11,11 @@ String formatNumber(double value) {
   return formatter.format(value);
 }
 
-/// Formats a value as currency in Indian format (₹) without decimals.
+/// Formats a value as currency in Indian format without decimals.
 String formatCurrency(double value) {
   final formatter = NumberFormat.currency(
     locale: 'en_IN',
-    symbol: '₹',
+    symbol: '\u20B9',
     decimalDigits: 0,
   );
   return formatter.format(value);

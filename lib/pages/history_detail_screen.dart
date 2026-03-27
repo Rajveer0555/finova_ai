@@ -108,7 +108,7 @@ class ExpenseDetailScreen extends ConsumerWidget {
             ),
       );
     }
-print("Deleting ID: ${transaction.id}");
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -326,8 +326,11 @@ print("Deleting ID: ${transaction.id}");
         return "assets/bill.png";
       case "shopping":
         return "assets/shopping-bag.png";
+      case "other":
+      case "others":
+        return "assets/delivery-box.png";
       default:
-        return "assets/diet.png";
+        return "assets/delivery-box.png";
     }
   }
 

@@ -27,106 +27,127 @@ class _PaymentMethodSheetState extends State<PaymentMethodSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+    final maxHeight = MediaQuery.of(context).size.height * 0.65;
+
+    return SafeArea(
+      top: false,
+      child: Container(
+        constraints: BoxConstraints(maxHeight: maxHeight),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+        ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Payment Method",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                fontFamily: 'SFProText',
+            const SizedBox(height: 12),
+            Center(
+              child: Container(
+                width: 42,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
             ),
-
-            const SizedBox(height: 16),
-
-            ...methods.map((method) {
-              final bool isSelected = selectedMethod.title == method["title"];
-
-              return GestureDetector(
-                onTap: () {
-                  final selected = PaymentMethod(
-                    title: method["title"],
-                    imagePath: method["image"],
-                  );
-
-                  setState(() {
-                    selectedMethod = selected;
-                  });
-                  Navigator.pop(context, selected);
-                },
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Image.asset(
-                        height: 40,
-                        width: 40,
-                        method["image"],
-                        fit: BoxFit.contain,
-                      ),
-
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Text(
-                          method["title"],
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        height: 22,
-                        width: 22,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color:
-                                isSelected
-                                    ? Colors.green
-                                    : Colors.grey.shade300,
-                            width: 2,
-                          ),
-                          color: isSelected ? Colors.green : Colors.transparent,
-                        ),
-                        child:
-                            isSelected
-                                ? const Icon(
-                                  Icons.check,
-                                  size: 14,
-                                  color: Colors.white,
-                                )
-                                : null,
-                      ),
-                    ],
-                  ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 16, 20, 12),
+              child: Text(
+                "Payment Method",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'SFProText',
                 ),
-              );
-            }).toList(),
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                itemCount: methods.length,
+                itemBuilder: (context, index) {
+                  final method = methods[index];
+                  final bool isSelected =
+                      selectedMethod.title == method["title"];
+
+                  return GestureDetector(
+                    onTap: () {
+                      final selected = PaymentMethod(
+                        title: method["title"],
+                        imagePath: method["image"],
+                      );
+                      Navigator.pop(context, selected);
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color.fromRGBO(0, 0, 0, 0.05),
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Image.asset(
+                            height: 40,
+                            width: 40,
+                            method["image"],
+                            fit: BoxFit.contain,
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Text(
+                              method["title"],
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            height: 22,
+                            width: 22,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color:
+                                    isSelected
+                                        ? Colors.green
+                                        : Colors.grey.shade300,
+                                width: 2,
+                              ),
+                              color:
+                                  isSelected
+                                      ? Colors.green
+                                      : Colors.transparent,
+                            ),
+                            child:
+                                isSelected
+                                    ? const Icon(
+                                      Icons.check,
+                                      size: 14,
+                                      color: Colors.white,
+                                    )
+                                    : null,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),

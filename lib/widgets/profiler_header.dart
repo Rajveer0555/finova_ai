@@ -1,7 +1,6 @@
 import 'package:finova_ai/pages/auth_screen.dart';
-import 'package:finova_ai/pages/splash_screen.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
-import 'package:finova_ai/widgets/userAvatar.dart';
+import 'package:finova_ai/widgets/user_avatar.dart';
 import 'package:finova_ai/widgets/user_name.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -68,7 +67,8 @@ class _ProfilerHeaderState extends ConsumerState<ProfilerHeader> {
               await googleSignIn.signOut();
               await FirebaseAuth.instance.signOut();
 
-              ref.read(appFlowProvider.notifier).state = AppStatus.unauthenticated;
+              ref.read(appFlowProvider.notifier).state =
+                  AppStatus.unauthenticated;
 
               if (context.mounted) {
                 Navigator.pushAndRemoveUntil(

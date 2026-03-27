@@ -19,11 +19,6 @@ class MainscreenCatgerories extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double calculatePercentage(double current, double last) {
-      if (last == 0) return 0;
-      return ((current - last) / last) * 100;
-    }
-
     double percentage = 0;
 
     if (lastMonthAmount != 0) {
@@ -33,7 +28,7 @@ class MainscreenCatgerories extends StatelessWidget {
     bool isIncrease = percentage > 0;
 
     String percentageText =
-        "${isIncrease ? "+" : ""}${formatPercentage(percentage)}";
+        (isIncrease ? "+" : "") + formatPercentage(percentage);
 
     Color percentageColor = isIncrease ? Colors.red : Colors.green;
 
@@ -102,7 +97,7 @@ class MainscreenCatgerories extends StatelessWidget {
                 children: [
                   RichText(
                     text: TextSpan(
-                      text: "${formatCurrency(totalAmount)}",
+                      text: formatCurrency(totalAmount),
                       style: TextStyle(
                         color: Colors.black,
                         fontFamily: 'SFProText',

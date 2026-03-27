@@ -50,9 +50,11 @@ class TransactionModel2 {
       case "Cash":
         image = "assets/money.png";
         break;
+      case "Debit Card":
       case "Debit-card":
         image = "assets/contactless.png";
         break;
+      case "Credit Card":
       case "Credit-card":
         image = "assets/credit-card.png";
         break;
@@ -67,7 +69,7 @@ class TransactionModel2 {
       amount: (data['amount'] as num).toDouble(),
       dateTime: (data['date'] as Timestamp).toDate(),
       paymentTitle: data['paymentMethod'] ?? '',
-      paymentImage: data['paymentImage'] ?? '',
+      paymentImage: data['paymentImage'] ?? image,
     );
   }
 }

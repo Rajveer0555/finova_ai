@@ -1,6 +1,5 @@
-import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/pages/profileScreens/faq_screen.dart';
-import 'package:finova_ai/providers/app_flow_providers.dart';
+import 'package:finova_ai/utils/page_transitions.dart';
 import 'package:finova_ai/widgets/help_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,10 +14,13 @@ class SupportScreen extends ConsumerStatefulWidget {
 
 class _SupportScreenState extends ConsumerState<SupportScreen> {
   Future<void> _contactSupport() async {
-    final Uri emailUri = Uri.parse('mailto:rivexstudio22@gmail.com?subject=${Uri.encodeComponent('Contact Support')}');
+    final Uri emailUri = Uri.parse(
+      'mailto:rivexstudio22@gmail.com?subject=${Uri.encodeComponent('Contact Support')}',
+    );
     try {
       await launchUrl(emailUri);
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Could not launch email app')),
       );
@@ -26,10 +28,13 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
   }
 
   Future<void> _emailSupport() async {
-    final Uri emailUri = Uri.parse('mailto:rivexstudio22@gmail.com?subject=${Uri.encodeComponent('Email Support')}');
+    final Uri emailUri = Uri.parse(
+      'mailto:rivexstudio22@gmail.com?subject=${Uri.encodeComponent('Email Support')}',
+    );
     try {
       await launchUrl(emailUri);
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Could not launch email app')),
       );
@@ -37,10 +42,13 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
   }
 
   Future<void> _reportProblem() async {
-    final Uri emailUri = Uri.parse('mailto:rivexstudio22@gmail.com?subject=${Uri.encodeComponent('Problem Report')}');
+    final Uri emailUri = Uri.parse(
+      'mailto:rivexstudio22@gmail.com?subject=${Uri.encodeComponent('Problem Report')}',
+    );
     try {
       await launchUrl(emailUri);
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Could not launch email app')),
       );
@@ -54,10 +62,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => MainNavigation()),
-            );
+            Navigator.pop(context);
           },
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           color: Colors.black,
@@ -168,7 +173,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
                 () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => FaqScreen()),
+                    buildSlideFromRightRoute(const FaqScreen()),
                   );
                 },
               ),

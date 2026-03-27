@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,29 +19,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   void initState() {
     super.initState();
     _initializeApp();
-  }
-
-  Future<void> checkUserStatus(WidgetRef ref) async {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      ref.read(appFlowProvider.notifier).state = AppStatus.unauthenticated;
-      return;
-    }
-
-    final userDoc =
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-
-    final profileCompleted = userDoc.data()?['profileCompleted'] ?? false;
-
-    if (profileCompleted) {
-      ref.read(appFlowProvider.notifier).state = AppStatus.authenticated;
-    } else {
-      ref.read(appFlowProvider.notifier).state = AppStatus.infoscreen;
-    }
   }
 
   Future<void> _initializeApp() async {

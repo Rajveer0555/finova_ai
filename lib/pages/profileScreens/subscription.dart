@@ -1,8 +1,6 @@
 import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/pages/profileScreens/billing_history.dart';
-import 'package:finova_ai/pages/profileScreens/upgrade_pro.dart';
-import 'package:finova_ai/providers/app_flow_providers.dart';
-import 'package:finova_ai/widgets/billing_history_card.dart';
+import 'package:finova_ai/utils/page_transitions.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,10 +22,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => UpgradeProScreen()),
-            );
+            Navigator.pop(context);
           },
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           color: Colors.black,
@@ -346,7 +341,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => BillingHistoryScreen()),
+                  buildSlideFromRightRoute(const BillingHistoryScreen()),
                 );
               },
               child: Container(

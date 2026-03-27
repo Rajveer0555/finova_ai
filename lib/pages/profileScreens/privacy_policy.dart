@@ -1,5 +1,3 @@
-import 'package:finova_ai/pages/main_navigation.dart';
-import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,10 +15,8 @@ class _PrivacyPolicyState extends ConsumerState<PrivacyPolicy> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          onPressed: () {Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => MainNavigation()),
-                  );
+          onPressed: () {
+            Navigator.pop(context);
           },
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           color: Colors.black,

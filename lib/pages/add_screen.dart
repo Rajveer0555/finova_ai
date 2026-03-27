@@ -1,8 +1,6 @@
 import 'package:finova_ai/models/category_selector_model.dart';
 import 'package:finova_ai/models/payment_method.dart';
 import 'package:finova_ai/models/transactions_model.dart';
-import 'package:finova_ai/pages/main_navigation.dart';
-import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:finova_ai/providers/history_provider.dart';
@@ -37,20 +35,6 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
   final TextEditingController amountController = TextEditingController();
   final TextEditingController titleController = TextEditingController();
 
-  final List<Map<String, dynamic>> categories = [
-    {"title": "Food", "image": "assets/diet.png"},
-    {"title": "Travel", "image": "assets/travel-luggage.png"},
-    {"title": "Bills", "image": "assets/bill.png"},
-    {"title": "Shopping", "image": "assets/shopping-bag.png"},
-  ];
-
-  final List<Map<String, dynamic>> paymentMethods = [
-    {"title": "Cash", "image": "assets/money.png"},
-    {"title": "Debit Card", "image": "assets/contactless.png"},
-    {"title": "Credit Card", "image": "assets/credit-card.png"},
-    {"title": "Wallet", "image": "assets/ewallet.png"},
-  ];
-
   Future<void> saveExpenseToFirestore(TransactionModel2 transaction) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -69,8 +53,14 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
   }
 
   @override
+  void dispose() {
+    amountController.dispose();
+    titleController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -78,10 +68,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       appBar: AppBar(
         leading: TextButton(
           onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => MainNavigation()),
-            );
+            Navigator.pop(context);
           },
           child: Icon(Icons.arrow_back_ios, color: Colors.black, size: 24),
         ),
@@ -136,9 +123,13 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
                     GestureDetector(
                       onTap: () async {
+                        FocusScope.of(context).unfocus();
+
                         final result =
                             await showModalBottomSheet<CategorySelectorModel>(
                               context: context,
+                              isScrollControlled: true,
+                              useSafeArea: true,
                               backgroundColor: Colors.transparent,
                               builder:
                                   (_) => CategorySelector(
@@ -214,9 +205,13 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
                     GestureDetector(
                       onTap: () async {
+                        FocusScope.of(context).unfocus();
+
                         final result =
                             await showModalBottomSheet<PaymentMethod>(
                               context: context,
+                              isScrollControlled: true,
+                              useSafeArea: true,
                               backgroundColor: Colors.transparent,
                               builder:
                                   (_) => PaymentMethodSheet(
@@ -296,6 +291,8 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButtonCust('Save Expense', () async {
+                FocusScope.of(context).unfocus();
+
                 if (amountController.text.isEmpty ||
                     titleController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -319,13 +316,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                 ref
                     .read(transactionsProvider.notifier)
                     .addTransaction(newTransaction);
-                ref.read(appFlowProvider.notifier).state =
-                    AppStatus.authenticated;
 
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => MainNavigation()),
-                );
+                if (!mounted) return;
+                Navigator.pop(context, newTransaction);
               }),
             ],
           ),
@@ -360,24 +353,6 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
         pickedTime.minute,
       );
     });
-  }
-
-  void showPaymentSheet() async {
-    final result = await showModalBottomSheet<PaymentMethod>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return PaymentMethodSheet(initialMethod: selectedPayment);
-      },
-    );
-
-    if (result != null) {
-      setState(() {
-        selectedPayment = result;
-      });
-    }
   }
 
   Widget _inputBox({

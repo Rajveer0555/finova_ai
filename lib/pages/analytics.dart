@@ -1,47 +1,65 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:finova_ai/pages/ai_prediction_screen.dart';
 import 'package:finova_ai/pages/statesScreens/error_state.dart';
 import 'package:finova_ai/pages/statesScreens/loading_state.dart';
 import 'package:finova_ai/pages/statesScreens/no_internet_screen.dart';
+import 'package:finova_ai/providers/ai_insight_provider.dart';
 import 'package:finova_ai/providers/analytics_provider.dart';
 import 'package:finova_ai/providers/connectivity_provider.dart';
 import 'package:finova_ai/providers/monthly_graph_provider.dart';
 import 'package:finova_ai/providers/transactions_stream_provider.dart';
 import 'package:finova_ai/utils/formatters.dart';
+import 'package:finova_ai/utils/page_transitions.dart';
 import 'package:finova_ai/widgets/graph.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pie_chart/pie_chart.dart';
 
 String formatMonth(String key) {
-  return key;
+  if (key.isEmpty || !key.contains('-')) return key;
+
+  final parts = key.split('-');
+  if (parts.length != 2) return key;
+
+  final year = int.tryParse(parts[0]);
+  final month = int.tryParse(parts[1]);
+  if (year == null || month == null || month < 1 || month > 12) {
+    return key;
+  }
+
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  return '${months[month - 1]} $year';
 }
 
-class Analytics extends ConsumerStatefulWidget {
+class Analytics extends ConsumerWidget {
   const Analytics({super.key});
 
-  @override
-  ConsumerState<Analytics> createState() => _AnalyticsState();
-}
-
-class _AnalyticsState extends ConsumerState<Analytics> {
-  final Map<String, Color> categoryColors = {
-    "food": const Color.fromARGB(255, 157, 255, 46),
-    "travel": Colors.red,
-    "shopping": Colors.purpleAccent,
-    "bills": Colors.yellow,
-    "other": Colors.lightBlue,
+  static const Map<String, Color> _categoryColors = {
+    'food': Color.fromARGB(255, 157, 255, 46),
+    'travel': Colors.red,
+    'shopping': Colors.purpleAccent,
+    'bills': Colors.yellow,
+    'other': Colors.lightBlue,
+    'others': Colors.lightBlue,
   };
-  final colorList = <Color>[
-    const Color.fromARGB(255, 157, 255, 46),
-    Colors.red,
-    Colors.purpleAccent,
-    Colors.yellow,
-    Colors.lightBlue,
-  ];
+
   @override
-  Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     final transactionsAsync = ref.watch(transactionsStreamProvider);
     final connectivityAsync = ref.watch(connectivityProvider);
@@ -49,419 +67,349 @@ class _AnalyticsState extends ConsumerState<Analytics> {
     return transactionsAsync.when(
       data: (snapshot) {
         final analytics = ref.watch(analyticsProvider);
+        final ai = ref.watch(aiInsightProvider);
         final graph = ref.watch(monthlyGraphProvider);
 
-        return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      body: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(18),
-                bottomRight: Radius.circular(18),
-              ),
-              color: Color(0xFF4A90FF),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color.fromARGB(31, 112, 112, 112),
-                  blurRadius: 12.0,
-                  spreadRadius: 0,
-                ),
-              ],
-            ),
-            width: screenWidth * 1,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(height: screenHeight * 0.08),
-                  RichText(
-                    text: TextSpan(
-                      text: 'Analytics',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'SFProText',
-                        fontSize: 24,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
+        final hasCategoryData = analytics.categoryMap.isNotEmpty;
+        final pieData =
+            hasCategoryData ? analytics.categoryMap : const {'No Data': 1.0};
+        final pieColors =
+            hasCategoryData
+                ? pieData.keys
+                    .map((cat) => _categoryColors[cat] ?? Colors.grey)
+                    .toList()
+                : [Colors.grey.shade300];
 
-                  SizedBox(height: screenHeight * 0.02),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return Scaffold(
+          backgroundColor: Colors.grey.shade50,
+          body: Column(
+            children: [
+              Container(
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(18),
+                    bottomRight: Radius.circular(18),
+                  ),
+                  color: Color(0xFF4A90FF),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color.fromARGB(31, 112, 112, 112),
+                      blurRadius: 12.0,
+                      spreadRadius: 0,
+                    ),
+                  ],
+                ),
+                width: screenWidth,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Container(
-                        width: screenWidth * 0.4,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white),
-                          color: Color.fromARGB(255, 100, 159, 255),
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: screenHeight * 0.01,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(height: screenHeight * 0.002),
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: screenWidth * 0.04,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(height: 6),
-                                    RichText(
-                                      text: TextSpan(
-                                        text: 'Total Spent',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontFamily: 'SFProText',
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(height: 12),
-                                    RichText(
-                                      text: TextSpan(
-                                        text:
-                                            '₹ ${formatCurrency(analytics.totalSpent)}'.replaceAll('₹ ₹', '₹'),
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontFamily: 'SFProText',
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(height: 6),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
+                      SizedBox(height: screenHeight * 0.08),
+                      const Text(
+                        'Analytics',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'SFProText',
+                          fontSize: 24,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      Container(
-                        width: screenWidth * 0.4,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white),
-                          color: Color.fromARGB(255, 100, 159, 255),
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            vertical: screenHeight * 0.01,
+                      SizedBox(height: screenHeight * 0.02),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _SummaryCard(
+                            width: screenWidth * 0.4,
+                            title: 'Total Spent',
+                            value: formatCurrency(analytics.totalSpent),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(height: screenHeight * 0.002),
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: screenWidth * 0.04,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(height: 6),
-                                    RichText(
-                                      text: TextSpan(
-                                        text: 'Avg/Month',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontFamily: 'SFProText',
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(height: 12),
-                                    RichText(
-                                      text: TextSpan(
-                                        text:
-                                            '₹ ${formatCurrency(analytics.avgPerMonth)}'.replaceAll('₹ ₹', '₹'),
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontFamily: 'SFProText',
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(height: 6),
-                                  ],
-                                ),
-                              ),
-                            ],
+                          _SummaryCard(
+                            width: screenWidth * 0.4,
+                            title: 'Avg/Month',
+                            value: formatCurrency(analytics.avgPerMonth),
                           ),
-                        ),
+                        ],
                       ),
+                      SizedBox(height: screenHeight * 0.03),
                     ],
                   ),
-                  SizedBox(height: screenHeight * 0.03),
-                ],
+                ),
               ),
-            ),
-          ),
-          SizedBox(height: screenHeight * 0.02),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Container(
-                    width: screenWidth * 0.92,
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 237, 247, 255),
-                      border: Border.all(
-                        color: Colors.lightBlue.shade100,
-                        width: 1.5,
-                      ),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.05,
-                        vertical: screenHeight * 0.02,
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(Icons.lightbulb, color: Colors.blue, size: 30),
-                          SizedBox(width: screenWidth * 0.04),
-                          Expanded(
-                            child: Column(
+              SizedBox(height: screenHeight * 0.02),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            buildSlideFromRightRoute(
+                              const AiPredictionScreen(),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(18),
+                        child: Container(
+                          width: screenWidth * 0.92,
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 237, 247, 255),
+                            border: Border.all(
+                              color: Colors.lightBlue.shade100,
+                              width: 1.5,
+                            ),
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth * 0.05,
+                              vertical: screenHeight * 0.02,
+                            ),
+                            child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                RichText(
-                                  text: TextSpan(
-                                    text: 'AI Insights',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 18,
-                                      fontFamily: 'SFProText',
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
+                                const Icon(
+                                  Icons.lightbulb,
+                                  color: Colors.blue,
+                                  size: 30,
                                 ),
-                                SizedBox(height: screenHeight * 0.004),
-                                RichText(
-                                  text: TextSpan(
-                                    text:
-                                        'Your spending increased by 8.5% this month.Travel is your highest expense category.',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 12,
-                                      fontFamily: 'SFProText',
-                                      fontWeight: FontWeight.w300,
-                                    ),
+                                SizedBox(width: screenWidth * 0.04),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'AI Prediction',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 18,
+                                          fontFamily: 'SFProText',
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      SizedBox(height: screenHeight * 0.004),
+                                      Text(
+                                        ai.analyticsPreviewText,
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 12,
+                                          fontFamily: 'SFProText',
+                                          fontWeight: FontWeight.w300,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.02),
-                  Container(
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          spreadRadius: 0.5,
-                          blurRadius: 0.5,
                         ),
-                      ],
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    width: screenWidth * 0.9,
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.12,
-                        vertical: screenHeight * 0.02,
                       ),
-                      child: Column(
-                        children: [
-                          Text(
-                            "Category Breakdown",
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              fontFamily: 'SFPro',
+                      SizedBox(height: screenHeight * 0.02),
+                      Container(
+                        decoration: BoxDecoration(
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              spreadRadius: 0.5,
+                              blurRadius: 0.5,
                             ),
+                          ],
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        width: screenWidth * 0.9,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.12,
+                            vertical: screenHeight * 0.02,
                           ),
-                          SizedBox(height: 22),
-                          PieChart(
-                            chartValuesOptions: ChartValuesOptions(
-                              showChartValueBackground: true,
-                              showChartValues: false,
-                              showChartValuesInPercentage: false,
-                              decimalPlaces: 1,
-                            ),
-                            chartRadius: 180,
-                            legendOptions: LegendOptions(
-                              showLegends: false,
-                              legendPosition: LegendPosition.bottom,
-                            ),
-                            dataMap: analytics.categoryMap,
-                            chartType: ChartType.ring,
-                            baseChartColor: Colors.grey[300]!,
-                            colorList:
-                                analytics.categoryMap.keys
-                                    .map(
-                                      (cat) =>
-                                          categoryColors[cat] ?? Colors.grey,
-                                    )
-                                    .toList(),
-                          ),
-                          SizedBox(height: 22),
-                          Column(
+                          child: Column(
                             children: [
-                              for (final entry in (
-                                analytics.categoryMap.entries.toList()
-                                  ..sort((a, b) => b.value.compareTo(a.value))
-                              ))
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: Row(
-                                    children: [
-                                      CircleAvatar(
-                                        radius: 8,
-                                        backgroundColor:
-                                            categoryColors[entry.key] ??
-                                            Colors.grey,
-                                      ),
-                                      SizedBox(width: 28),
-
-                                      Text(
-                                        entry.key.isEmpty ? entry.key : entry.key[0].toUpperCase() + entry.key.substring(1),
-                                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                                      ),
-
-                                      Spacer(),
-
-                                      Text(
-                                        "${(analytics.totalSpent == 0 ? 0 : (entry.value / analytics.totalSpent) * 100).toStringAsFixed(1)}%",
-                                        style: TextStyle(fontSize: 14),
-                                      ),
-                                    ],
+                              const Text(
+                                'Category Breakdown',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: 'SFPro',
+                                ),
+                              ),
+                              const SizedBox(height: 22),
+                              PieChart(
+                                chartValuesOptions: const ChartValuesOptions(
+                                  showChartValueBackground: true,
+                                  showChartValues: false,
+                                  showChartValuesInPercentage: false,
+                                  decimalPlaces: 1,
+                                ),
+                                chartRadius: 180,
+                                legendOptions: const LegendOptions(
+                                  showLegends: false,
+                                  legendPosition: LegendPosition.bottom,
+                                ),
+                                dataMap: pieData,
+                                chartType: ChartType.ring,
+                                baseChartColor: Colors.grey[300]!,
+                                colorList: pieColors,
+                              ),
+                              const SizedBox(height: 22),
+                              if (!hasCategoryData)
+                                const Padding(
+                                  padding: EdgeInsets.only(bottom: 8),
+                                  child: Text(
+                                    'No expenses yet',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                    ),
                                   ),
+                                ),
+                              if (hasCategoryData)
+                                Column(
+                                  children: [
+                                    for (final entry
+                                        in (analytics.categoryMap.entries.toList()
+                                          ..sort(
+                                            (a, b) =>
+                                                b.value.compareTo(a.value),
+                                          )))
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          bottom: 12,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            CircleAvatar(
+                                              radius: 8,
+                                              backgroundColor:
+                                                  _categoryColors[entry.key] ??
+                                                  Colors.grey,
+                                            ),
+                                            const SizedBox(width: 28),
+                                            Text(
+                                              _formatCategoryName(entry.key),
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            Text(
+                                              "${(analytics.totalSpent == 0 ? 0 : (entry.value / analytics.totalSpent) * 100).toStringAsFixed(1)}%",
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                  ],
                                 ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.02),
-                  Container(
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          spreadRadius: 0.5,
-                          blurRadius: 0.5,
                         ),
-                      ],
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    width: screenWidth * 0.9,
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.12,
-                        vertical: screenHeight * 0.02,
                       ),
-                      child: Column(
-                        children: [
-                          Text(
-                            "Monthly Trend",
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              fontFamily: 'SFPro',
+                      SizedBox(height: screenHeight * 0.02),
+                      Container(
+                        decoration: BoxDecoration(
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              spreadRadius: 0.5,
+                              blurRadius: 0.5,
                             ),
+                          ],
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        width: screenWidth * 0.9,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.12,
+                            vertical: screenHeight * 0.02,
                           ),
-                          SizedBox(height: 22),
-                          MonthlyBarGraph(),
-                          SizedBox(height: 12),
-                          Divider(),
-                          Row(
+                          child: Column(
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Highest",
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w300,
-                                    ),
-                                  ),
-                                  SizedBox(height: 6),
-                                  Text(
-                                    "₹ ${formatCurrency(graph.highestValue)} (${formatMonth(graph.highestMonth)})".replaceAll('₹ ₹', '₹'),
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
+                              const Text(
+                                'Monthly Trend',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: 'SFPro',
+                                ),
                               ),
-                              Spacer(),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                              const SizedBox(height: 22),
+                              const MonthlyBarGraph(),
+                              const SizedBox(height: 12),
+                              const Divider(),
+                              Row(
                                 children: [
-                                  Text(
-                                    "Lowest",
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w300,
-                                    ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Highest',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w300,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        "${formatCurrency(graph.highestValue)} (${formatMonth(graph.highestMonth)})",
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  SizedBox(height: 6),
-                                  Text(
-                                    "₹ ${formatCurrency(graph.lowestValue)} (${formatMonth(graph.lowestMonth)})".replaceAll('₹ ₹', '₹'),
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                  const Spacer(),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      const Text(
+                                        'Lowest',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w300,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        "${formatCurrency(graph.lowestValue)} (${formatMonth(graph.lowestMonth)})",
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
                             ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                      SizedBox(height: screenHeight * 0.2),
+                    ],
                   ),
-                  SizedBox(height: screenHeight * 0.2),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
-    );
+        );
       },
-
       loading: () => const LoadingState(),
-
       error: (e, _) {
         return connectivityAsync.when(
           data: (connectivity) {
@@ -469,11 +417,11 @@ class _AnalyticsState extends ConsumerState<Analytics> {
               return NoInternetScreen(
                 onRetry: () => ref.invalidate(transactionsStreamProvider),
               );
-            } else {
-              return ErrorStateScreen(
-                onRetry: () => ref.invalidate(transactionsStreamProvider),
-              );
             }
+
+            return ErrorStateScreen(
+              onRetry: () => ref.invalidate(transactionsStreamProvider),
+            );
           },
           loading: () => const LoadingState(),
           error: (_, __) => ErrorStateScreen(
@@ -483,4 +431,66 @@ class _AnalyticsState extends ConsumerState<Analytics> {
       },
     );
   }
+}
+
+class _SummaryCard extends StatelessWidget {
+  final double width;
+  final String title;
+  final String value;
+
+  const _SummaryCard({
+    required this.width,
+    required this.title,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.white),
+        color: const Color.fromARGB(255, 100, 159, 255),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 6),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'SFProText',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                value,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'SFProText',
+                  fontSize: 24,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              const SizedBox(height: 6),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+String _formatCategoryName(String key) {
+  if (key.isEmpty) return 'Other';
+  final normalized = key == 'others' ? 'other' : key;
+  return normalized[0].toUpperCase() + normalized.substring(1);
 }

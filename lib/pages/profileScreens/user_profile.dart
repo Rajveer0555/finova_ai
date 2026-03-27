@@ -1,12 +1,8 @@
-import 'package:finova_ai/pages/main_navigation.dart';
-import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:finova_ai/widgets/userAvatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -69,23 +65,43 @@ class _UserProfileState extends ConsumerState<UserProfile> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    String? uploadedImage = await uploadImage();
-
-    await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
-      "name": nameController.text.trim(),
-      "email": emailController.text.trim(),
-      "phone": phoneController.text.trim(),
-      "profileImage": uploadedImage,
-    });
     setState(() {
-      isSaving = false;
+      isSaving = true;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Profile Updated Successfully")),
-    );
+    try {
+      String? uploadedImage = await uploadImage();
 
-    Navigator.pop(context);
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+        "name": nameController.text.trim(),
+        "email": emailController.text.trim(),
+        "phone": phoneController.text.trim(),
+        "profileImage": uploadedImage ?? imageUrl,
+      });
+
+      if (!mounted) return;
+
+      setState(() {
+        imageUrl = uploadedImage ?? imageUrl;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Profile Updated Successfully")),
+      );
+
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Could not update profile")),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isSaving = false;
+        });
+      }
+    }
   }
 
   Future<String?> uploadImage() async {
@@ -131,8 +147,6 @@ class _UserProfileState extends ConsumerState<UserProfile> {
 
   @override
   Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
-
     if (isLoading) {
       return const Scaffold(
         backgroundColor: Colors.white,
@@ -144,10 +158,7 @@ class _UserProfileState extends ConsumerState<UserProfile> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => MainNavigation()),
-            );
+            Navigator.pop(context);
           },
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           color: Colors.black,
@@ -267,10 +278,7 @@ class _UserProfileState extends ConsumerState<UserProfile> {
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                ),
+                BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.05), blurRadius: 10),
               ],
             ),
             child:

@@ -31,21 +31,6 @@ class HistoryScreen extends ConsumerWidget {
     return transactionsAsync.when(
       data: (snapshot) {
         final docs = snapshot.docs;
-        Map<String, List<Map<String, dynamic>>> groupedTransactions = {};
-        for (var doc in docs) {
-          final data = doc.data();
-
-          DateTime date = (data['date'] as Timestamp).toDate();
-
-          String monthKey = "${date.year}-${date.month}";
-
-          if (!groupedTransactions.containsKey(monthKey)) {
-            groupedTransactions[monthKey] = [];
-          }
-
-          groupedTransactions[monthKey]!.add(data);
-        }
-
         double totalExpense = 0;
         Map<String, List<QueryDocumentSnapshot>> grouped = {};
 
@@ -64,7 +49,8 @@ class HistoryScreen extends ConsumerWidget {
 
           /// CATEGORY FILTER
           if (filters.category != null) {
-            if (category.toLowerCase() != filters.category!.toLowerCase()) {
+            if (_normalizeCategoryKey(category) !=
+                _normalizeCategoryKey(filters.category!)) {
               continue;
             }
           }
@@ -318,8 +304,7 @@ Future<void> showCategorySheet(BuildContext context, WidgetRef ref) async {
   );
 
   if (result != null) {
-    var selected = result.title.toLowerCase();
-    if (selected == 'other') selected = 'others';
+    final selected = _normalizeCategoryKey(result.title);
     ref.read(historyFilterProvider.notifier).setCategory(selected);
   }
 }
@@ -338,9 +323,15 @@ void showDateRangeSheet(BuildContext context, WidgetRef ref) async {
 
 String _capitalize(String? input) {
   if (input == null || input.isEmpty) return '';
-  final normalized = input.toLowerCase();
+  final normalized = _normalizeCategoryKey(input);
   if (normalized == 'others' || normalized == 'other') return 'Other';
   return normalized[0].toUpperCase() + normalized.substring(1);
+}
+
+String _normalizeCategoryKey(String input) {
+  final normalized = input.toLowerCase();
+  if (normalized == 'others') return 'other';
+  return normalized;
 }
 
 String _categoryIcon(String? category) {

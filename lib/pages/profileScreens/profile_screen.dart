@@ -1,4 +1,3 @@
-import 'package:finova_ai/pages/statesScreens/error_state.dart';
 import 'package:finova_ai/widgets/account_card.dart';
 import 'package:finova_ai/widgets/profiler_header.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +14,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
-    double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(

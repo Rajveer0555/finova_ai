@@ -1,4 +1,3 @@
-import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/providers/income_provider.dart';
 import 'package:finova_ai/widgets/alerts_container.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
@@ -78,8 +77,8 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
       budgets = tempBudgets;
       spentPerCategory = tempSpent;
 
-      totalBudget = tempBudgets.values.fold(0, (sum, item) => sum + item);
-      totalSpent = tempSpent.values.fold(0, (sum, item) => sum + item);
+      totalBudget = tempBudgets.values.fold(0, (acc, item) => acc + item);
+      totalSpent = tempSpent.values.fold(0, (acc, item) => acc + item);
 
       isLoading = false;
     });
@@ -109,17 +108,14 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => MainNavigation()),
-            );
+            Navigator.pop(context);
           },
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           color: Colors.black,
         ),
         surfaceTintColor: Colors.white,
         elevation: 2,
-        shadowColor: Colors.black,
+        shadowColor: Colors.black12,
         toolbarHeight: 84,
         title: Column(
           children: [
@@ -163,7 +159,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Color.fromRGBO(0, 0, 0, 0.05),
                           blurRadius: 15,
                           offset: Offset(0, 5),
                         ),
@@ -182,7 +178,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                             children: [
                               SizedBox(height: 20),
                               Text(
-                                  formatCurrency(totalSpent),
+                                formatCurrency(totalSpent),
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w700,
@@ -356,10 +352,7 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                ),
+                BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.05), blurRadius: 10),
               ],
             ),
             child: Column(

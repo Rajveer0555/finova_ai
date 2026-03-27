@@ -16,7 +16,15 @@ class InfoScreen extends ConsumerStatefulWidget {
 }
 
 class _InfoScreenState extends ConsumerState<InfoScreen> {
-  Future<void> _completeProfile() async {
+  Future<void> _completeProfile({bool skipBudgetValidation = false}) async {
+    if (!skipBudgetValidation &&
+        budgetControllers.values.any((c) => c.text.trim().isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all budget fields")),
+      );
+      return;
+    }
+
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
@@ -44,12 +52,6 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Something went wrong")));
-    }
-    if (budgetControllers.values.any((c) => c.text.isEmpty)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all budget fields")),
-      );
-      return;
     }
   }
 
@@ -270,14 +272,14 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButtonCust('Get Started', () async {
-                      await _completeProfile();
+                      await _completeProfile(skipBudgetValidation: false);
                     }),
                   ],
                 ),
                 Center(
                   child: TextButton(
                     onPressed: () async {
-                      await _completeProfile();
+                      await _completeProfile(skipBudgetValidation: true);
                     },
                     child: RichText(
                       text: TextSpan(
