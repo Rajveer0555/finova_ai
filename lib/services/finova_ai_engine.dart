@@ -52,6 +52,12 @@ class AiInsightResult {
   final bool hasTransactions;
   final String focusCategoryKey;
   final String focusCategoryTitle;
+  final String currentMonthLabel;
+  final String previousMonthLabel;
+  final double currentMonthCategorySpend;
+  final double previousMonthCategorySpend;
+  final double monthlyCategoryDelta;
+  final double monthlyCategoryDeltaPercent;
   final double currentCategorySpend;
   final double previousCategorySpend;
   final double categoryDelta;
@@ -74,6 +80,12 @@ class AiInsightResult {
     required this.hasTransactions,
     required this.focusCategoryKey,
     required this.focusCategoryTitle,
+    required this.currentMonthLabel,
+    required this.previousMonthLabel,
+    required this.currentMonthCategorySpend,
+    required this.previousMonthCategorySpend,
+    required this.monthlyCategoryDelta,
+    required this.monthlyCategoryDeltaPercent,
     required this.currentCategorySpend,
     required this.previousCategorySpend,
     required this.categoryDelta,
@@ -98,6 +110,12 @@ class AiInsightResult {
       hasTransactions: false,
       focusCategoryKey: 'food',
       focusCategoryTitle: 'Food',
+      currentMonthLabel: 'This Month',
+      previousMonthLabel: 'Last Month',
+      currentMonthCategorySpend: 0,
+      previousMonthCategorySpend: 0,
+      monthlyCategoryDelta: 0,
+      monthlyCategoryDeltaPercent: 0,
       currentCategorySpend: 0,
       previousCategorySpend: 0,
       categoryDelta: 0,
@@ -194,6 +212,40 @@ class FinovaAiEngine {
       overallCategoryTotals: allTimeCategoryTotals,
     );
     final focusCategoryTitle = aiCategoryTitle(focusCategoryKey);
+    final currentMonthStart = DateTime(currentNow.year, currentNow.month, 1);
+    final nextMonthStart = DateTime(currentNow.year, currentNow.month + 1, 1);
+    final previousMonthStart = DateTime(currentNow.year, currentNow.month - 1, 1);
+    final currentMonthTransactions =
+        transactions
+            .where(
+              (tx) =>
+                  !tx.date.isBefore(currentMonthStart) &&
+                  tx.date.isBefore(nextMonthStart),
+            )
+            .toList();
+    final previousMonthTransactions =
+        transactions
+            .where(
+              (tx) =>
+                  !tx.date.isBefore(previousMonthStart) &&
+                  tx.date.isBefore(currentMonthStart),
+            )
+            .toList();
+    final currentMonthCategoryTotals = _sumByCategory(currentMonthTransactions);
+    final previousMonthCategoryTotals = _sumByCategory(previousMonthTransactions);
+    final currentMonthCategorySpend =
+        currentMonthCategoryTotals[focusCategoryKey] ?? 0.0;
+    final previousMonthCategorySpend =
+        previousMonthCategoryTotals[focusCategoryKey] ?? 0.0;
+    final monthlyCategoryDelta =
+        currentMonthCategorySpend - previousMonthCategorySpend;
+    final monthlyCategoryDeltaPercent =
+        previousMonthCategorySpend > 0
+            ? (monthlyCategoryDelta / previousMonthCategorySpend) * 100
+            : (currentMonthCategorySpend > 0 ? 100.0 : 0.0);
+    final currentMonthLabel = _monthLabel(currentMonthStart);
+    final previousMonthLabel = _monthLabel(previousMonthStart);
+
     final currentCategorySpend = currentCategoryTotals[focusCategoryKey] ?? 0.0;
     final previousCategorySpend = previousCategoryTotals[focusCategoryKey] ?? 0.0;
     final categoryDelta = currentCategorySpend - previousCategorySpend;
@@ -291,6 +343,12 @@ class FinovaAiEngine {
       hasTransactions: true,
       focusCategoryKey: focusCategoryKey,
       focusCategoryTitle: focusCategoryTitle,
+      currentMonthLabel: currentMonthLabel,
+      previousMonthLabel: previousMonthLabel,
+      currentMonthCategorySpend: currentMonthCategorySpend,
+      previousMonthCategorySpend: previousMonthCategorySpend,
+      monthlyCategoryDelta: monthlyCategoryDelta,
+      monthlyCategoryDeltaPercent: monthlyCategoryDeltaPercent,
       currentCategorySpend: currentCategorySpend,
       previousCategorySpend: previousCategorySpend,
       categoryDelta: categoryDelta,
@@ -715,6 +773,25 @@ class FinovaAiEngine {
     return false;
   }
 
+  static String _monthLabel(DateTime date) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    return months[date.month - 1];
+  }
+
   static String _titleCase(String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty) return 'Miscellaneous';
@@ -770,6 +847,7 @@ String _normalizeCategoryKey(String key) {
   if (normalized.isEmpty) return 'other';
   return normalized;
 }
+
 
 
 

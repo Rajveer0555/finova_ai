@@ -30,16 +30,23 @@ final aiInsightProvider = Provider<AiInsightResult>((ref) {
   );
 
   final transactions = <AiInputTransaction>[];
+  DateTime? latestTransactionDate;
+
   for (final doc in snapshot.docs) {
     final data = doc.data();
-    final timestamp = data['date'];
-    final date = timestamp is Timestamp ? timestamp.toDate() : DateTime.now();
+    final date = _readDate(data['date']);
+    if (date == null) {
+      continue;
+    }
+    if (latestTransactionDate == null || date.isAfter(latestTransactionDate)) {
+      latestTransactionDate = date;
+    }
 
     transactions.add(
       AiInputTransaction(
         title: (data['title'] ?? '').toString(),
         categoryKey: (data['category'] ?? 'other').toString(),
-        amount: ((data['amount'] ?? 0) as num).toDouble(),
+        amount: _readAmount(data['amount']),
         date: date,
       ),
     );
@@ -49,5 +56,24 @@ final aiInsightProvider = Provider<AiInsightResult>((ref) {
     transactions: transactions,
     budgets: budgetMap,
     monthlyIncome: income,
+    now: latestTransactionDate ?? DateTime.now(),
   );
 });
+
+double _readAmount(dynamic value) {
+  if (value is num) {
+    return value.toDouble();
+  }
+
+  return double.tryParse(value?.toString() ?? '') ?? 0.0;
+}
+
+DateTime? _readDate(dynamic value) {
+  if (value is Timestamp) {
+    return value.toDate();
+  }
+  if (value is DateTime) {
+    return value;
+  }
+  return null;
+}

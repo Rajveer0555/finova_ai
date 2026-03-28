@@ -17,16 +17,21 @@ class AiInsightsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ai = ref.watch(aiInsightProvider);
     final screenWidth = MediaQuery.of(context).size.width;
-    final deltaAmount = ai.categoryDelta.abs();
+    final deltaAmount = ai.monthlyCategoryDelta.abs();
     final comparisonMax =
-        math.max(1.0, math.max(ai.previousCategorySpend, ai.currentCategorySpend))
-            .toDouble();
+        math.max(
+          1.0,
+          math.max(
+            ai.previousMonthCategorySpend,
+            ai.currentMonthCategorySpend,
+          ),
+        ).toDouble();
 
     final headline =
         ai.hasTransactions
-            ? ai.categoryDelta >= 0
-                ? 'You spent ${formatCurrency(deltaAmount)} more on ${ai.focusCategoryTitle} this month'
-                : 'You spent ${formatCurrency(deltaAmount)} less on ${ai.focusCategoryTitle} this month'
+            ? ai.monthlyCategoryDelta >= 0
+                ? 'You spent ${formatCurrency(deltaAmount)} more on ${ai.focusCategoryTitle} in ${ai.currentMonthLabel}'
+                : 'You spent ${formatCurrency(deltaAmount)} less on ${ai.focusCategoryTitle} in ${ai.currentMonthLabel}'
             : 'Add a few expenses to unlock your AI spending insights';
 
     final budgetHint =
@@ -60,7 +65,9 @@ class AiInsightsScreen extends ConsumerWidget {
               ),
             ),
             Text(
-              'Based on your last 30 days',
+              ai.hasTransactions
+                  ? '${ai.previousMonthLabel} vs ${ai.currentMonthLabel}'
+                  : 'Based on your recent spending',
               style: TextStyle(
                 color: Colors.grey.shade700,
                 fontSize: 12,
@@ -205,7 +212,10 @@ class AiInsightsScreen extends ConsumerWidget {
                                       showTitles: true,
                                       reservedSize: 24,
                                       getTitlesWidget: (value, meta) {
-                                        const labels = ['Last', 'This'];
+                                        final labels = [
+                                          ai.previousMonthLabel,
+                                          ai.currentMonthLabel,
+                                        ];
                                         final index = value.toInt();
                                         if (index < 0 || index >= labels.length) {
                                           return const SizedBox();
@@ -234,7 +244,7 @@ class AiInsightsScreen extends ConsumerWidget {
                                     x: 0,
                                     barRods: [
                                       BarChartRodData(
-                                        toY: ai.previousCategorySpend,
+                                        toY: ai.previousMonthCategorySpend,
                                         width: 26,
                                         color: const Color(0xFF4F80E1),
                                         borderRadius: BorderRadius.circular(8),
@@ -245,7 +255,7 @@ class AiInsightsScreen extends ConsumerWidget {
                                     x: 1,
                                     barRods: [
                                       BarChartRodData(
-                                        toY: ai.currentCategorySpend,
+                                        toY: ai.currentMonthCategorySpend,
                                         width: 26,
                                         color: const Color(0xFFFFB443),
                                         borderRadius: BorderRadius.circular(8),
@@ -271,7 +281,7 @@ class AiInsightsScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 10),
                                 Text(
-                                  '${formatCurrency(ai.previousCategorySpend)} -> ${formatCurrency(ai.currentCategorySpend)}',
+                                  '${formatCurrency(ai.previousMonthCategorySpend)} -> ${formatCurrency(ai.currentMonthCategorySpend)}',
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -280,12 +290,12 @@ class AiInsightsScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  '${ai.categoryDeltaPercent >= 0 ? '+' : '-'}${formatPercentage(ai.categoryDeltaPercent.abs())}',
+                                  '${ai.monthlyCategoryDeltaPercent >= 0 ? '+' : '-'}${formatPercentage(ai.monthlyCategoryDeltaPercent.abs())}',
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.w700,
                                     color:
-                                        ai.categoryDeltaPercent >= 0
+                                        ai.monthlyCategoryDeltaPercent >= 0
                                             ? const Color(0xFF4A90FF)
                                             : Colors.green,
                                     fontFamily: 'SFProDisplay',
@@ -293,18 +303,18 @@ class AiInsightsScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 10),
                                 Row(
-                                  children: const [
+                                  children: [
                                     Expanded(
                                       child: _LegendDot(
-                                        color: Color(0xFF4F80E1),
-                                        label: 'Last Month',
+                                        color: const Color(0xFF4F80E1),
+                                        label: ai.previousMonthLabel,
                                       ),
                                     ),
-                                    SizedBox(width: 8),
+                                    const SizedBox(width: 8),
                                     Expanded(
                                       child: _LegendDot(
-                                        color: Color(0xFFFFB443),
-                                        label: 'This Month',
+                                        color: const Color(0xFFFFB443),
+                                        label: ai.currentMonthLabel,
                                       ),
                                     ),
                                   ],
@@ -629,3 +639,5 @@ IconData _factorIcon(String title, String categoryKey) {
       return Icons.insights_rounded;
   }
 }
+
+

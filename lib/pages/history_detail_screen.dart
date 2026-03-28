@@ -29,7 +29,7 @@ class ExpenseDetailScreen extends ConsumerWidget {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(18),
                 ),
-                height: screenHeight * 0.18,
+                height: screenHeight * 0.20,
                 width: 280,
 
                 child: Column(

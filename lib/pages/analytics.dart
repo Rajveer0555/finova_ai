@@ -1,4 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:finova_ai/models/monthly_graph.dart';
 import 'package:finova_ai/pages/ai_prediction_screen.dart';
 import 'package:finova_ai/pages/statesScreens/error_state.dart';
 import 'package:finova_ai/pages/statesScreens/loading_state.dart';
@@ -8,6 +9,7 @@ import 'package:finova_ai/providers/analytics_provider.dart';
 import 'package:finova_ai/providers/connectivity_provider.dart';
 import 'package:finova_ai/providers/monthly_graph_provider.dart';
 import 'package:finova_ai/providers/transactions_stream_provider.dart';
+import 'package:finova_ai/services/finova_ai_engine.dart';
 import 'package:finova_ai/utils/formatters.dart';
 import 'package:finova_ai/utils/page_transitions.dart';
 import 'package:finova_ai/widgets/graph.dart';
@@ -66,9 +68,42 @@ class Analytics extends ConsumerWidget {
 
     return transactionsAsync.when(
       data: (snapshot) {
-        final analytics = ref.watch(analyticsProvider);
-        final ai = ref.watch(aiInsightProvider);
-        final graph = ref.watch(monthlyGraphProvider);
+        AnalyticsData analytics;
+        try {
+          analytics = ref.watch(analyticsProvider);
+        } catch (_) {
+          analytics = AnalyticsData(
+            totalSpent: 0,
+            avgPerMonth: 0,
+            categoryMap: const <String, double>{},
+            monthlyMap: const <String, double>{},
+            highestMonth: '',
+            highestValue: 0,
+            lowestMonth: '',
+            lowestValue: 0,
+          );
+        }
+
+        AiInsightResult ai;
+        try {
+          ai = ref.watch(aiInsightProvider);
+        } catch (_) {
+          ai = AiInsightResult.empty();
+        }
+
+        MonthlyGraphData graph;
+        try {
+          graph = ref.watch(monthlyGraphProvider);
+        } catch (_) {
+          graph = MonthlyGraphData(
+            values: List.filled(6, 0),
+            labels: List.filled(6, ''),
+            highestValue: 0,
+            highestMonth: '',
+            lowestValue: 0,
+            lowestMonth: '',
+          );
+        }
 
         final hasCategoryData = analytics.categoryMap.isNotEmpty;
         final pieData =

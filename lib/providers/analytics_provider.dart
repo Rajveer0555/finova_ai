@@ -1,5 +1,6 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:finova_ai/providers/transactions_stream_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AnalyticsData {
   final double totalSpent;
@@ -25,7 +26,6 @@ class AnalyticsData {
 
 final analyticsProvider = Provider<AnalyticsData>((ref) {
   final snapshotAsync = ref.watch(transactionsStreamProvider);
-
   final snapshot = snapshotAsync.value;
 
   if (snapshot == null) {
@@ -34,43 +34,44 @@ final analyticsProvider = Provider<AnalyticsData>((ref) {
       avgPerMonth: 0,
       categoryMap: {},
       monthlyMap: {},
-      highestMonth: "",
+      highestMonth: '',
       highestValue: 0,
-      lowestMonth: "",
+      lowestMonth: '',
       lowestValue: 0,
     );
   }
 
   double total = 0;
-  Map<String, double> category = {};
-  Map<String, double> monthly = {};
+  final category = <String, double>{};
+  final monthly = <String, double>{};
 
-  /// 🔹 Convert snapshot → documents
-  for (var doc in snapshot.docs) {
+  for (final doc in snapshot.docs) {
     final data = doc.data();
+    final amount = _readAmount(data['amount']);
+    final date = _readDate(data['date']);
+    if (date == null) {
+      continue;
+    }
 
-    double amount = (data['amount'] ?? 0).toDouble();
-    String categoryName = data['category'] ?? "other";
-
-    DateTime date = (data['date']).toDate();
-
+    final categoryName = _normalizeCategory(data['category']);
     total += amount;
 
-    /// CATEGORY
     category[categoryName] = (category[categoryName] ?? 0) + amount;
 
-    /// MONTHLY
-    String monthKey = "${date.year}-${date.month}";
+    final monthKey = '${date.year}-${date.month.toString().padLeft(2, '0')}';
     monthly[monthKey] = (monthly[monthKey] ?? 0) + amount;
   }
 
-  double avgMonth = monthly.isEmpty ? 0 : total / monthly.length;
+  final avgMonth = monthly.isEmpty ? 0.0 : total / monthly.length;
 
-  String highestMonth = "";
+  String highestMonth = '';
   double highestValue = 0;
+  String lowestMonth = '';
+  double lowestValue = 0;
 
-  String lowestMonth = "";
-  double lowestValue = double.infinity;
+  if (monthly.isNotEmpty) {
+    lowestValue = monthly.values.first;
+  }
 
   monthly.forEach((month, value) {
     if (value > highestValue) {
@@ -95,3 +96,29 @@ final analyticsProvider = Provider<AnalyticsData>((ref) {
     lowestValue: lowestValue,
   );
 });
+
+double _readAmount(dynamic value) {
+  if (value is num) {
+    return value.toDouble();
+  }
+
+  return double.tryParse(value?.toString() ?? '') ?? 0.0;
+}
+
+DateTime? _readDate(dynamic value) {
+  if (value is Timestamp) {
+    return value.toDate();
+  }
+  if (value is DateTime) {
+    return value;
+  }
+  return null;
+}
+
+String _normalizeCategory(dynamic value) {
+  final category = value?.toString().trim().toLowerCase() ?? 'other';
+  if (category == 'others' || category.isEmpty) {
+    return 'other';
+  }
+  return category;
+}

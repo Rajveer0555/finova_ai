@@ -1,72 +1,56 @@
-import 'package:finova_ai/models/monthly_graph.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:finova_ai/models/monthly_graph.dart';
 import 'package:finova_ai/providers/transactions_stream_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final lastSixMonthsExpenseProvider = Provider<List<double>>((ref) {
   final transactionsAsync = ref.watch(transactionsStreamProvider);
-
   final snapshot = transactionsAsync.value;
 
-  if (snapshot == null) return List.filled(6, 0);
+  if (snapshot == null) {
+    return List.filled(6, 0);
+  }
 
-  Map<String, double> monthlyTotals = {};
+  final referenceDate = _referenceDateFromSnapshot(snapshot);
+  final monthlyTotals = <String, double>{};
 
-  for (var doc in snapshot.docs) {
+  for (final doc in snapshot.docs) {
     final data = doc.data();
+    final amount = _readAmount(data['amount']);
+    final date = _readDate(data['date']);
+    if (date == null) {
+      continue;
+    }
 
-    double amount = (data['amount'] ?? 0).toDouble();
-
-    DateTime date = (data['date'] as Timestamp).toDate();
-
-    String key = "${date.year}-${date.month.toString().padLeft(2, '0')}";
-
+    final key = '${date.year}-${date.month.toString().padLeft(2, '0')}';
     monthlyTotals[key] = (monthlyTotals[key] ?? 0) + amount;
   }
 
-  /// generate last 6 months
-  List<double> result = [];
-
-  DateTime now = DateTime.now();
-
+  final result = <double>[];
   for (int i = 5; i >= 0; i--) {
-    DateTime month = DateTime(now.year, now.month - i, 1);
-
-    String key = "${month.year}-${month.month.toString().padLeft(2, '0')}";
-
+    final month = DateTime(referenceDate.year, referenceDate.month - i, 1);
+    final key = '${month.year}-${month.month.toString().padLeft(2, '0')}';
     result.add(monthlyTotals[key] ?? 0);
   }
 
   return result;
 });
+
 final lastSixMonthLabelsProvider = Provider<List<String>>((ref) {
-  List<String> labels = [];
+  final transactionsAsync = ref.watch(transactionsStreamProvider);
+  final snapshot = transactionsAsync.value;
+  final referenceDate =
+      snapshot == null ? DateTime.now() : _referenceDateFromSnapshot(snapshot);
 
-  DateTime now = DateTime.now();
-
+  final labels = <String>[];
   for (int i = 5; i >= 0; i--) {
-    DateTime month = DateTime(now.year, now.month - i);
-
-    labels.add(
-      [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ][month.month - 1],
-    );
+    final month = DateTime(referenceDate.year, referenceDate.month - i, 1);
+    labels.add(_monthName(month.month));
   }
 
   return labels;
 });
+
 final monthlyGraphProvider = Provider<MonthlyGraphData>((ref) {
   final transactionsAsync = ref.watch(transactionsStreamProvider);
   final snapshot = transactionsAsync.value;
@@ -82,55 +66,32 @@ final monthlyGraphProvider = Provider<MonthlyGraphData>((ref) {
     );
   }
 
-  Map<String, double> monthlyTotals = {};
+  final referenceDate = _referenceDateFromSnapshot(snapshot);
+  final monthlyTotals = <String, double>{};
 
-  for (var doc in snapshot.docs) {
+  for (final doc in snapshot.docs) {
     final data = doc.data();
+    final amount = _readAmount(data['amount']);
+    final date = _readDate(data['date']);
+    if (date == null) {
+      continue;
+    }
 
-    double amount = (data['amount'] ?? 0).toDouble();
-    DateTime date = (data['date'] as Timestamp).toDate();
-
-    String key = "${date.year}-${date.month.toString().padLeft(2, '0')}";
-
+    final key = '${date.year}-${date.month.toString().padLeft(2, '0')}';
     monthlyTotals[key] = (monthlyTotals[key] ?? 0) + amount;
   }
 
-  List<double> values = [];
-  List<String> labels = [];
-
-  DateTime now = DateTime.now();
-
+  final values = <double>[];
+  final labels = <String>[];
   for (int i = 5; i >= 0; i--) {
-    DateTime month = DateTime(now.year, now.month - i);
-
-    String key = "${month.year}-${month.month.toString().padLeft(2, '0')}";
-
-    double value = monthlyTotals[key] ?? 0;
-
-    values.add(value);
-
-    labels.add(
-      [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ][month.month - 1],
-    );
+    final month = DateTime(referenceDate.year, referenceDate.month - i, 1);
+    final key = '${month.year}-${month.month.toString().padLeft(2, '0')}';
+    values.add(monthlyTotals[key] ?? 0);
+    labels.add(_monthName(month.month));
   }
 
-  /// Highest & Lowest calculation
-  double highest = values.first;
-  double lowest = values.first;
-
+  double highest = 0;
+  double lowest = values.isEmpty ? 0 : values.first;
   int highestIndex = 0;
   int lowestIndex = 0;
 
@@ -155,3 +116,56 @@ final monthlyGraphProvider = Provider<MonthlyGraphData>((ref) {
     lowestMonth: labels[lowestIndex],
   );
 });
+
+DateTime _referenceDateFromSnapshot(QuerySnapshot<Map<String, dynamic>> snapshot) {
+  DateTime? latest;
+
+  for (final doc in snapshot.docs) {
+    final date = _readDate(doc.data()['date']);
+    if (date == null) {
+      continue;
+    }
+    if (latest == null || date.isAfter(latest)) {
+      latest = date;
+    }
+  }
+
+  return latest ?? DateTime.now();
+}
+
+double _readAmount(dynamic value) {
+  if (value is num) {
+    return value.toDouble();
+  }
+
+  return double.tryParse(value?.toString() ?? '') ?? 0.0;
+}
+
+DateTime? _readDate(dynamic value) {
+  if (value is Timestamp) {
+    return value.toDate();
+  }
+  if (value is DateTime) {
+    return value;
+  }
+  return null;
+}
+
+String _monthName(int month) {
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  return months[month - 1];
+}

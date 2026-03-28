@@ -9,6 +9,7 @@ import 'package:finova_ai/providers/category_provider.dart';
 import 'package:finova_ai/providers/connectivity_provider.dart';
 import 'package:finova_ai/providers/income_provider.dart';
 import 'package:finova_ai/providers/transactions_stream_provider.dart';
+import 'package:finova_ai/services/finova_ai_engine.dart';
 import 'package:finova_ai/utils/formatters.dart';
 import 'package:finova_ai/utils/page_transitions.dart';
 import 'package:finova_ai/widgets/mainscreen_catgerories.dart';
@@ -21,10 +22,6 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final now = DateTime.now();
-    final startOfCurrentMonth = DateTime(now.year, now.month, 1);
-    final startOfLastMonth = DateTime(now.year, now.month - 1, 1);
-
     final incomeAsync = ref.watch(monthlyIncomeProvider);
     final income = incomeAsync.maybeWhen(
       data: (value) => value,
@@ -41,7 +38,24 @@ class HomeScreen extends ConsumerWidget {
     return transactionsAsync.when(
       data: (snapshot) {
         final docs = snapshot.docs;
-        final ai = ref.watch(aiInsightProvider);
+        final referenceDate = _referenceDateFromDocs(docs);
+        final startOfCurrentMonth = DateTime(
+          referenceDate.year,
+          referenceDate.month,
+          1,
+        );
+        final startOfLastMonth = DateTime(
+          referenceDate.year,
+          referenceDate.month - 1,
+          1,
+        );
+        final activeMonthLabel = _formatMonthYear(referenceDate);
+        AiInsightResult ai;
+        try {
+          ai = ref.watch(aiInsightProvider);
+        } catch (_) {
+          ai = AiInsightResult.empty();
+        }
         double totalExpense = 0;
 
         final Map<String, double> categoryTotals = {};
@@ -50,9 +64,12 @@ class HomeScreen extends ConsumerWidget {
 
         for (final doc in docs) {
           final data = doc.data();
-          final amount = (data['amount'] as num).toDouble();
+          final amount = _readAmount(data['amount']);
           final category = data['category'].toString().toLowerCase();
-          final date = (data['date'] as Timestamp).toDate();
+          final date = _readDate(data['date']);
+          if (date == null) {
+            continue;
+          }
 
           if (
               date.isAfter(
@@ -125,8 +142,8 @@ class HomeScreen extends ConsumerWidget {
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                const Text(
-                                  "This month",
+                                Text(
+                                  activeMonthLabel,
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w300,
@@ -341,4 +358,59 @@ class HomeScreen extends ConsumerWidget {
       },
     );
   }
+}
+
+DateTime _referenceDateFromDocs(
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+) {
+  DateTime? latest;
+
+  for (final doc in docs) {
+    final date = _readDate(doc.data()['date']);
+    if (date == null) {
+      continue;
+    }
+    if (latest == null || date.isAfter(latest)) {
+      latest = date;
+    }
+  }
+
+  return latest ?? DateTime.now();
+}
+
+String _formatMonthYear(DateTime date) {
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  return '${months[date.month - 1]} ${date.year}';
+}
+
+double _readAmount(dynamic value) {
+  if (value is num) {
+    return value.toDouble();
+  }
+
+  return double.tryParse(value?.toString() ?? '') ?? 0.0;
+}
+
+DateTime? _readDate(dynamic value) {
+  if (value is Timestamp) {
+    return value.toDate();
+  }
+  if (value is DateTime) {
+    return value;
+  }
+  return null;
 }

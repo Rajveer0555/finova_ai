@@ -7,12 +7,18 @@ import 'package:intl/intl.dart';
 /// - 100000 -> "1,00,000"
 /// - 12345678 -> "1,23,45,678"
 String formatNumber(double value) {
+  if (!value.isFinite) {
+    value = 0;
+  }
   final formatter = NumberFormat.decimalPattern('en_IN');
   return formatter.format(value);
 }
 
 /// Formats a value as currency in Indian format without decimals.
 String formatCurrency(double value) {
+  if (!value.isFinite) {
+    value = 0;
+  }
   final formatter = NumberFormat.currency(
     locale: 'en_IN',
     symbol: '\u20B9',
@@ -25,5 +31,8 @@ String formatCurrency(double value) {
 ///
 /// Example: 2.345 -> "2.3%"
 String formatPercentage(double value, {int decimalDigits = 1}) {
+  if (!value.isFinite) {
+    value = 0;
+  }
   return "${value.toStringAsFixed(decimalDigits)}%";
 }
