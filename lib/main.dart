@@ -29,7 +29,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final appStatus = ref.watch(appFlowProvider);
 
-    Widget currentScreen;
+    late Widget currentScreen;
 
     switch (appStatus) {
       case AppStatus.splash:
@@ -71,6 +71,12 @@ class MyApp extends ConsumerWidget {
           },
         ),
       ),
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+          child: child!,
+        );
+      },
       home: AnimatedSwitcher(
         duration: const Duration(milliseconds: 500),
         switchInCurve: Curves.easeInOut,

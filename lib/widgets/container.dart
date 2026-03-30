@@ -68,7 +68,7 @@ class _Container2State extends ConsumerState<Container2> {
             SizedBox(height: screenHeight * 0.02),
             RichText(
               text: TextSpan(
-                text: 'Monthly Income',
+                text: 'Monthly Budget',
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 14,

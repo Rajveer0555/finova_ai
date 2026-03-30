@@ -303,7 +303,6 @@ class HomeScreen extends ConsumerWidget {
                           fontWeight: FontWeight.w400,
                         ),
                       ),
-                      const SizedBox(height: 2),
                       ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),

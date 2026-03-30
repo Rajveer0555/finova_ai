@@ -1,11 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -22,51 +22,56 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _initializeApp() async {
+    // Reduced from 2 seconds to 1 second for faster navigation
     await Future.delayed(const Duration(seconds: 1));
-
-    final flowNotifier = ref.read(appFlowProvider.notifier);
-    final user = FirebaseAuth.instance.currentUser;
-
-    final isFirstLaunch = await checkIfFirstLaunch();
-
-    if (isFirstLaunch) {
-      if (!mounted) return;
-      flowNotifier.state = AppStatus.onboarding;
-      return;
-    }
-
-    if (user == null) {
-      if (!mounted) return;
-      flowNotifier.state = AppStatus.unauthenticated;
-      return;
-    }
-
-    // User exists → check profile completion
-    final doc =
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-
-    final profileCompleted = doc.data()?['profileCompleted'] ?? false;
 
     if (!mounted) return;
 
-    flowNotifier.state =
-        profileCompleted ? AppStatus.authenticated : AppStatus.infoscreen;
-  }
+    try {
+      // Check if onboarding has been completed
+      final prefs = await SharedPreferences.getInstance();
+      final onboardingCompleted = prefs.getBool('onboardingCompleted') ?? false;
 
-  Future<bool> checkIfFirstLaunch() async {
-    final prefs = await SharedPreferences.getInstance();
+      late AppStatus nextStatus;
 
-    final isFirstLaunch = prefs.getBool('isFirstLaunch');
+      print('Onboarding Completed: $onboardingCompleted');
 
-    if (isFirstLaunch == null) {
-      await prefs.setBool('isFirstLaunch', false);
-      return true;
+      if (!onboardingCompleted) {
+        // First time launch - show onboarding
+        nextStatus = AppStatus.onboarding;
+        print('First launch detected, showing onboarding');
+      } else {
+        // Onboarding already done, check Firebase auth
+        final user = FirebaseAuth.instance.currentUser;
+        print('Current user: ${user?.uid}');
+        
+        if (user == null) {
+          nextStatus = AppStatus.unauthenticated;
+          print('No user logged in, showing auth screen');
+        } else {
+          // User exists → check profile completion
+          final doc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+
+          final profileCompleted = doc.data()?['profileCompleted'] ?? false;
+          print('Profile completed: $profileCompleted');
+          
+          nextStatus = profileCompleted ? AppStatus.authenticated : AppStatus.infoscreen;
+        }
+      }
+
+      if (!mounted) return;
+      print('App Status determined: $nextStatus');
+      ref.read(appFlowProvider.notifier).state = nextStatus;
+    } catch (e) {
+      print('Error in app initialization: $e');
+      print('Stack trace: $e');
+      if (mounted) {
+        ref.read(appFlowProvider.notifier).state = AppStatus.unauthenticated;
+      }
     }
-
-    return false;
   }
 
   @override

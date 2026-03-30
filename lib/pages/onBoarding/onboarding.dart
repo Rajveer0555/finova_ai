@@ -6,6 +6,7 @@ import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -63,9 +64,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      ElevatedButtonCust('Get Started', () {
-                        ref.read(appFlowProvider.notifier).state =
-                            AppStatus.unauthenticated;
+                      ElevatedButtonCust('Get Started', () async {
+                        // Mark onboarding as completed
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('onboardingCompleted', true);
+                        
+                        if (mounted) {
+                          ref.read(appFlowProvider.notifier).state =
+                              AppStatus.unauthenticated;
+                        }
                       }),
                     ],
                   ),

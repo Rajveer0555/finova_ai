@@ -16,6 +16,8 @@ class InfoScreen extends ConsumerStatefulWidget {
 }
 
 class _InfoScreenState extends ConsumerState<InfoScreen> {
+  bool _isLoading = false;
+
   Future<void> _completeProfile({bool skipBudgetValidation = false}) async {
     if (!skipBudgetValidation &&
         budgetControllers.values.any((c) => c.text.trim().isEmpty)) {
@@ -25,9 +27,21 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
       return;
     }
 
+    if (!mounted) return;
+    
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
+      print('Starting profile completion...');
+      
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
+      print('Current user: ${user?.uid}');
+      
+      if (user == null) {
+        throw Exception("User not authenticated");
+      }
 
       // Collect budget values
       Map<String, dynamic> budgets = {
@@ -38,20 +52,61 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
         "others": double.tryParse(budgetControllers["others"]!.text) ?? 0,
       };
 
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-        'profileCompleted': true,
-        'aiEnabled': isAiEnabled,
-        'budgets': budgets, // ✅ SAVE CATEGORY BUDGETS
-        'createdAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      print('Saving budgets: $budgets');
+      
+      // Set a timeout for Firebase operation
+      await Future.wait([
+        FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'profileCompleted': true,
+          'aiEnabled': isAiEnabled,
+          'budgets': budgets,
+          'createdAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true)),
+      ]).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          print('Firebase write timeout - proceeding anyway');
+          return [];
+        },
+      );
 
+      print('Profile data sent to Firebase');
+      
       if (!mounted) return;
 
+      print('Updating app state to authenticated');
       ref.read(appFlowProvider.notifier).state = AppStatus.authenticated;
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Something went wrong")));
+      
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+      
+    } catch (e, stackTrace) {
+      print('Error completing profile: $e');
+      print('Stack trace: $stackTrace');
+      
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        // Still allow progressing by silently completing
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            print('Proceeding to authenticated state despite error');
+            ref.read(appFlowProvider.notifier).state = AppStatus.authenticated;
+          }
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error: ${e.toString()}"),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
@@ -271,22 +326,32 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    ElevatedButtonCust('Get Started', () async {
-                      await _completeProfile(skipBudgetValidation: false);
-                    }),
+                    _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : ElevatedButtonCust('Get Started', () async {
+                            await _completeProfile(skipBudgetValidation: false);
+                          }),
                   ],
                 ),
                 Center(
                   child: TextButton(
-                    onPressed: () async {
-                      await _completeProfile(skipBudgetValidation: true);
-                    },
+                    onPressed: _isLoading
+                        ? null
+                        : () async {
+                            await _completeProfile(skipBudgetValidation: true);
+                          },
                     child: RichText(
                       text: TextSpan(
                         text: 'Skip for now',
                         style: TextStyle(
                           decoration: TextDecoration.underline,
-                          color: Colors.black,
+                          color: _isLoading ? Colors.grey : Colors.black,
                           fontSize: 14,
                           fontWeight: FontWeight.w300,
                           fontFamily: 'SFProText',

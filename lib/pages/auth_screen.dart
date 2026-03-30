@@ -1,6 +1,4 @@
 import 'package:finova_ai/pages/forget_password.dart';
-import 'package:finova_ai/pages/info_screen.dart';
-import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:finova_ai/providers/auth_ui_provider.dart';
 import 'package:flutter/material.dart';
@@ -73,18 +71,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
       ref.read(appFlowProvider.notifier).state =
           profileCompleted ? AppStatus.authenticated : AppStatus.infoscreen;
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder:
-              (_) =>
-                  profileCompleted
-                      ? const MainNavigation()
-                      : const InfoScreen(),
-        ),
-        (route) => false,
-      );
     } on FirebaseAuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -130,12 +116,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       if (!mounted) return;
 
       ref.read(appFlowProvider.notifier).state = AppStatus.infoscreen;
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const InfoScreen()),
-        (route) => false,
-      );
     } on FirebaseException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -178,18 +158,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
       ref.read(appFlowProvider.notifier).state =
           profileCompleted ? AppStatus.authenticated : AppStatus.infoscreen;
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder:
-              (_) =>
-                  profileCompleted
-                      ? const MainNavigation()
-                      : const InfoScreen(),
-        ),
-        (route) => false,
-      );
     } on FirebaseException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
