@@ -45,6 +45,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ProfilerHeader(),
                 SizedBox(height: screenHeight * 0.04),
                 AccountCard(),
+                SizedBox(height: screenHeight * 0.08),
               ],
             ),
           ],

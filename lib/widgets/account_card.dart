@@ -283,66 +283,6 @@ class AccountCard extends ConsumerWidget {
             child: Divider(),
           ),
           SizedBox(height: screenHeight * 0.01),
-          InkWell(
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('Logout'),
-                    content: const Text('Are you sure you want to logout?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () async {
-                          Navigator.pop(context);
-                          
-                          // Logout from Firebase
-                          await FirebaseAuth.instance.signOut();
-                          
-                          // Reset preferences
-                          final prefs = await SharedPreferences.getInstance();
-                          await prefs.remove('isFirstLaunch');
-                          await prefs.remove('onboardingCompleted');
-                          
-                          // Reset app state
-                          if (context.mounted) {
-                            ref.read(appFlowProvider.notifier).state = AppStatus.splash;
-                          }
-                        },
-                        child: const Text('Logout', style: TextStyle(color: Colors.red)),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-            child: Row(
-              children: [
-                SizedBox(width: screenWidth * 0.08),
-                Icon(Icons.logout_rounded, size: 30, color: Colors.red),
-                SizedBox(width: screenWidth * 0.08),
-                RichText(
-                  text: TextSpan(
-                    text: 'Logout',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'SFProText',
-                    ),
-                  ),
-                ),
-                Spacer(),
-                Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.red),
-                SizedBox(width: screenWidth * 0.08),
-              ],
-            ),
-          ),
-          SizedBox(height: screenHeight * 0.02),
         ],
       ),
     );
