@@ -5,6 +5,8 @@ import 'package:finova_ai/pages/statesScreens/error_state.dart';
 import 'package:finova_ai/pages/statesScreens/loading_state.dart';
 import 'package:finova_ai/pages/statesScreens/no_internet_screen.dart';
 import 'package:finova_ai/providers/ai_insight_provider.dart';
+import 'package:finova_ai/providers/bottom_nav_provider.dart';
+import 'package:finova_ai/providers/budget_provider.dart';
 import 'package:finova_ai/providers/category_provider.dart';
 import 'package:finova_ai/providers/connectivity_provider.dart';
 import 'package:finova_ai/providers/income_provider.dart';
@@ -29,6 +31,7 @@ class HomeScreen extends ConsumerWidget {
     );
 
     final transactionsAsync = ref.watch(transactionsStreamProvider);
+    final budgetAsync = ref.watch(budgetProvider);
     final connectivityAsync = ref.watch(connectivityProvider);
     final categories = ref.watch(categoriesProvider);
 
@@ -57,6 +60,19 @@ class HomeScreen extends ConsumerWidget {
           ai = AiInsightResult.empty();
         }
         double totalExpense = 0;
+        final rawBudgets = budgetAsync.value?.data()?['budgets'];
+        final normalizedBudgets = <String, double>{};
+        if (rawBudgets is Map) {
+          for (final entry in rawBudgets.entries) {
+            final key = _normalizeCategoryKey(entry.key);
+            final value = _readAmount(entry.value);
+            normalizedBudgets[key] = value;
+          }
+        }
+        final totalBudget = normalizedBudgets.values.fold<double>(
+          0.0,
+          (sum, value) => sum + value,
+        );
 
         final Map<String, double> categoryTotals = {};
         final Map<String, int> categoryCounts = {};
@@ -65,33 +81,35 @@ class HomeScreen extends ConsumerWidget {
         for (final doc in docs) {
           final data = doc.data();
           final amount = _readAmount(data['amount']);
-          final category = data['category'].toString().toLowerCase();
+          final category = _normalizeCategoryKey(data['category']);
           final date = _readDate(data['date']);
           if (date == null) {
             continue;
           }
 
-          if (
-              date.isAfter(
-                startOfCurrentMonth.subtract(const Duration(days: 1)),
-              )) {
+          if (date.isAfter(
+            startOfCurrentMonth.subtract(const Duration(days: 1)),
+          )) {
             totalExpense += amount;
             categoryTotals[category] = (categoryTotals[category] ?? 0) + amount;
             categoryCounts[category] = (categoryCounts[category] ?? 0) + 1;
           }
 
-          if (date.isAfter(startOfLastMonth.subtract(const Duration(days: 1))) &&
+          if (date.isAfter(
+                startOfLastMonth.subtract(const Duration(days: 1)),
+              ) &&
               date.isBefore(startOfCurrentMonth)) {
             lastMonthCategoryTotals[category] =
                 (lastMonthCategoryTotals[category] ?? 0) + amount;
           }
         }
 
+        final comparisonBase = totalBudget > 0 ? totalBudget : income;
         final double usage =
-            income == 0
+            comparisonBase == 0
                 ? 0.0
-                : (totalExpense / income).clamp(0.0, 1.0).toDouble();
-        final remaining = income - totalExpense;
+                : (totalExpense / comparisonBase).clamp(0.0, 1.0).toDouble();
+        final remaining = comparisonBase - totalExpense;
 
         return Scaffold(
           backgroundColor: Colors.white,
@@ -152,7 +170,14 @@ class HomeScreen extends ConsumerWidget {
                               ],
                             ),
                             const Spacer(),
-                            const UserAvatar(radius: 28),
+                            InkWell(
+                              onTap: () {
+                                ref
+                                    .read(bottomNavIndexProvider.notifier)
+                                    .state = 3;
+                              },
+                              child: const UserAvatar(radius: 28),
+                            ),
                           ],
                         ),
                         SizedBox(height: screenHeight * 0.02),
@@ -204,7 +229,7 @@ class HomeScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 10),
                                 Text(
-                                  "${formatCurrency(remaining)} remaining of ${formatCurrency(income)}",
+                                  "${formatCurrency(remaining)} remaining of ${formatCurrency(comparisonBase)}",
                                   style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w300,
@@ -219,7 +244,7 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: screenHeight * 0.02),
+                SizedBox(height: screenHeight * 0.03),
                 Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: screenWidth * 0.035,
@@ -288,7 +313,7 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: screenHeight * 0.025),
+                SizedBox(height: screenHeight * 0.01),
                 Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: screenWidth * 0.035,
@@ -296,6 +321,7 @@ class HomeScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const SizedBox(height: 6),
                       const Text(
                         "Categories",
                         style: TextStyle(
@@ -303,7 +329,9 @@ class HomeScreen extends ConsumerWidget {
                           fontWeight: FontWeight.w400,
                         ),
                       ),
+                      const SizedBox(height: 14),
                       ListView.builder(
+                        padding: EdgeInsets.zero,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: categories.length,
@@ -322,11 +350,16 @@ class HomeScreen extends ConsumerWidget {
                               category: category,
                               transactionCount: transactionCount,
                               totalAmount: totalAmount,
-                              onTap: () {},
+                              onTap: () {
+                                ref
+                                    .read(bottomNavIndexProvider.notifier)
+                                    .state = 2;
+                              },
                             ),
                           );
                         },
                       ),
+                      SizedBox(height: screenHeight * 0.16),
                     ],
                   ),
                 ),
@@ -335,7 +368,32 @@ class HomeScreen extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const LoadingState(),
+      loading:
+          () => Scaffold(
+            backgroundColor: Colors.white,
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(
+                    width: 26,
+                    height: 26,
+                    child: CircularProgressIndicator(strokeWidth: 2.5),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Loading your data',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => ref.invalidate(transactionsStreamProvider),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          ),
       error: (e, _) {
         return connectivityAsync.when(
           data: (connectivity) {
@@ -350,9 +408,10 @@ class HomeScreen extends ConsumerWidget {
             );
           },
           loading: () => const LoadingState(),
-          error: (_, __) => ErrorStateScreen(
-            onRetry: () => ref.invalidate(transactionsStreamProvider),
-          ),
+          error:
+              (_, __) => ErrorStateScreen(
+                onRetry: () => ref.invalidate(transactionsStreamProvider),
+              ),
         );
       },
     );
@@ -412,4 +471,12 @@ DateTime? _readDate(dynamic value) {
     return value;
   }
   return null;
+}
+
+String _normalizeCategoryKey(dynamic value) {
+  final normalized = value?.toString().trim().toLowerCase() ?? 'other';
+  if (normalized.isEmpty || normalized == 'others') {
+    return 'other';
+  }
+  return normalized;
 }

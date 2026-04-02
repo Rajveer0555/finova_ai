@@ -32,11 +32,23 @@ class FinovaBottomNav extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _navItem(Icons.home, 0, currentIndex, ref),
-                _navItem(CupertinoIcons.chart_bar_square, 1, currentIndex, ref),
+                _navItem(Icons.home, 'Home', 0, currentIndex, ref),
+                _navItem(
+                  CupertinoIcons.chart_bar_square,
+                  'Analytics',
+                  1,
+                  currentIndex,
+                  ref,
+                ),
                 const SizedBox(width: 60), // space for +
-                _navItem(CupertinoIcons.doc_plaintext, 2, currentIndex, ref),
-                _navItem(Icons.person, 3, currentIndex, ref),
+                _navItem(
+                  CupertinoIcons.doc_plaintext,
+                  'History',
+                  2,
+                  currentIndex,
+                  ref,
+                ),
+                _navItem(Icons.person, 'Profile', 3, currentIndex, ref),
               ],
             ),
           ),
@@ -92,7 +104,13 @@ class FinovaBottomNav extends ConsumerWidget {
     );
   }
 
-  Widget _navItem(IconData icon, int index, int currentIndex, WidgetRef ref) {
+  Widget _navItem(
+    IconData icon,
+    String label,
+    int index,
+    int currentIndex,
+    WidgetRef ref,
+  ) {
     final isActive = index == currentIndex;
 
     return GestureDetector(
@@ -102,20 +120,36 @@ class FinovaBottomNav extends ConsumerWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
           color: isActive ? Colors.lightBlue.shade50 : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
         ),
-        child: AnimatedScale(
-          scale: isActive ? 1.2 : 1.0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          child: Icon(
-            icon,
-            size: 24,
-            color: isActive ? Colors.blue : Colors.grey,
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedScale(
+              scale: isActive ? 1.12 : 1.0,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              child: Icon(
+                icon,
+                size: 22,
+                color: isActive ? Colors.blue : Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                height: 1,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                color: isActive ? Colors.blue : Colors.grey,
+                fontFamily: 'SFProText',
+              ),
+            ),
+          ],
         ),
       ),
     );

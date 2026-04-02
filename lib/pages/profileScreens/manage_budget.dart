@@ -1,4 +1,5 @@
 import 'package:finova_ai/providers/income_provider.dart';
+import 'package:finova_ai/providers/notification_settings_provider.dart';
 import 'package:finova_ai/widgets/alerts_container.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:finova_ai/widgets/expense_adjust_widget.dart';
@@ -7,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:finova_ai/models/app_notification_settings.dart';
 import 'package:finova_ai/utils/formatters.dart';
 
 class ManageBudgetScreen extends ConsumerStatefulWidget {
@@ -41,47 +43,105 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
   bool isLoading = true;
   Future<void> loadBudgetData() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
 
-    final userDoc = FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid);
+    try {
+      final userDoc = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid);
 
-    final userSnapshot = await userDoc.get();
-    final transactionSnapshot = await userDoc.collection('transactions').get();
+      final userSnapshot = await userDoc.get();
+      final transactionSnapshot = await userDoc.collection('transactions').get();
 
-    Map<String, double> tempBudgets = {};
-    Map<String, double> tempSpent = {};
+      final tempBudgets = <String, double>{};
+      final tempSpent = <String, double>{};
+      DateTime? latestTransactionDate;
 
-    /// Budgets
-    final data = userSnapshot.data();
-    if (data != null && data['budgets'] != null) {
-      tempBudgets = Map<String, double>.from(
-        (data['budgets'] as Map).map(
-          (k, v) => MapEntry(k, (v as num).toDouble()),
-        ),
+      final data = userSnapshot.data();
+      if (data != null && data['budgets'] != null) {
+        for (final entry in (data['budgets'] as Map).entries) {
+          final key = _normalizeCategoryKey(entry.key);
+          final value = _readAmount(entry.value);
+          tempBudgets[key] = value;
+        }
+      }
+
+      for (final category in categories) {
+        final key = category['key'] as String;
+        tempBudgets.putIfAbsent(key, () => 0.0);
+      }
+
+      for (var doc in transactionSnapshot.docs) {
+        final transaction = doc.data();
+        final date = _readDate(transaction['date']);
+        if (date == null) {
+          continue;
+        }
+
+        if (latestTransactionDate == null ||
+            date.isAfter(latestTransactionDate)) {
+          latestTransactionDate = date;
+        }
+      }
+
+      final referenceDate = latestTransactionDate ?? DateTime.now();
+      final startOfCurrentMonth = DateTime(
+        referenceDate.year,
+        referenceDate.month,
+        1,
       );
+      final nextMonth = DateTime(
+        referenceDate.year,
+        referenceDate.month + 1,
+        1,
+      );
+
+      for (var doc in transactionSnapshot.docs) {
+        final transaction = doc.data();
+        final date = _readDate(transaction['date']);
+        if (date == null ||
+            date.isBefore(startOfCurrentMonth) ||
+            !date.isBefore(nextMonth)) {
+          continue;
+        }
+
+        final category = _normalizeCategoryKey(transaction['category']);
+        final amount = _readAmount(transaction['amount']);
+        tempSpent[category] = (tempSpent[category] ?? 0.0) + amount;
+      }
+
+      if (!mounted) return;
+      setState(() {
+        budgets = tempBudgets;
+        spentPerCategory = tempSpent;
+        totalBudget = tempBudgets.values.fold<double>(
+          0.0,
+          (sum, value) => sum + value,
+        );
+        totalSpent = tempSpent.values.fold<double>(
+          0.0,
+          (sum, value) => sum + value,
+        );
+        isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        budgets = {
+          for (final category in categories) category['key'] as String: 0.0,
+        };
+        spentPerCategory = {};
+        totalBudget = 0.0;
+        totalSpent = 0.0;
+        isLoading = false;
+      });
     }
-
-    /// Spending
-    for (var doc in transactionSnapshot.docs) {
-      final transaction = doc.data();
-
-      String category = transaction['category'];
-      double amount = (transaction['amount'] as num).toDouble();
-
-      tempSpent[category] = (tempSpent[category] ?? 0) + amount;
-    }
-
-    setState(() {
-      budgets = tempBudgets;
-      spentPerCategory = tempSpent;
-
-      totalBudget = tempBudgets.values.fold(0, (acc, item) => acc + item);
-      totalSpent = tempSpent.values.fold(0, (acc, item) => acc + item);
-
-      isLoading = false;
-    });
   }
 
   @override
@@ -93,6 +153,11 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
   @override
   Widget build(BuildContext context) {
     final incomeAsync = ref.watch(monthlyIncomeProvider);
+    final notificationSettingsAsync = ref.watch(notificationSettingsProvider);
+    final notificationSettings = notificationSettingsAsync.maybeWhen(
+      data: (value) => value,
+      orElse: AppNotificationSettings.defaults,
+    );
 
     final income = incomeAsync.maybeWhen(
       data: (value) => value,
@@ -331,6 +396,14 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                   AlertsContainer(
                     title: 'Alert on Budget Exceed',
                     subTitle: 'Receive alerts when budget exceed',
+                    value: notificationSettings.budgetExceededEnabled,
+                    onChanged: (value) async {
+                      await _updateNotificationSettings(
+                        notificationSettings.copyWith(
+                          budgetExceededEnabled: value,
+                        ),
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 10),
@@ -338,6 +411,14 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                   AlertsContainer(
                     title: 'Alert on Category Limit',
                     subTitle: 'Receive alerts when category budget exceed',
+                    value: notificationSettings.categoryLimitEnabled,
+                    onChanged: (value) async {
+                      await _updateNotificationSettings(
+                        notificationSettings.copyWith(
+                          categoryLimitEnabled: value,
+                        ),
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 30),
@@ -374,6 +455,45 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
       ),
     );
   }
+
+  Future<void> _updateNotificationSettings(
+    AppNotificationSettings settings,
+  ) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return;
+    }
+
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+      'notificationSettings': settings.toMap(),
+    }, SetOptions(merge: true));
+  }
+}
+
+String _normalizeCategoryKey(dynamic value) {
+  final normalized = value?.toString().trim().toLowerCase() ?? 'other';
+  if (normalized.isEmpty || normalized == 'others') {
+    return 'other';
+  }
+  return normalized;
+}
+
+DateTime? _readDate(dynamic value) {
+  if (value is Timestamp) {
+    return value.toDate();
+  }
+  if (value is DateTime) {
+    return value;
+  }
+  return null;
+}
+
+double _readAmount(dynamic value) {
+  if (value is num) {
+    return value.toDouble();
+  }
+
+  return double.tryParse(value?.toString() ?? '') ?? 0.0;
 }
 
 Future<bool?> showAdjustBudgetBottomSheet(
@@ -534,6 +654,9 @@ Future<bool?> showAdjustBudgetBottomSheet(
                             );
 
                         budgets[categoryKey] = newBudget;
+                        if (categoryKey == 'other') {
+                          budgets.remove('others');
+                        }
 
                         await userDoc.update({"budgets": budgets});
 

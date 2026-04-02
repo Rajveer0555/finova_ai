@@ -69,7 +69,7 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
         ),
         surfaceTintColor: Colors.white,
         elevation: 2,
-        shadowColor: Colors.black,
+        shadowColor: Colors.black12,
         toolbarHeight: 64,
         title: const Text(
           "Help & Support",

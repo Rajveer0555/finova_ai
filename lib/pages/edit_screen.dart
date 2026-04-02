@@ -163,6 +163,9 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 2,
+        shadowColor: Colors.black12,
         title: const Text("Edit Expense"),
         centerTitle: true,
       ),

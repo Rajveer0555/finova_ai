@@ -116,16 +116,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       if (!mounted) return;
 
       ref.read(appFlowProvider.notifier).state = AppStatus.infoscreen;
-    } on FirebaseException catch (e) {
+    } on FirebaseAuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? "Firestore access failed")),
+          SnackBar(content: Text(e.message ?? "Auth error")),
         );
       }
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.message ?? "Auth error")));
+    } on FirebaseException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message ?? "Firestore access failed")));
+      }
     } finally {
       if (mounted) {
         setState(() => isLoading = false);
@@ -158,16 +160,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
       ref.read(appFlowProvider.notifier).state =
           profileCompleted ? AppStatus.authenticated : AppStatus.infoscreen;
-    } on FirebaseException catch (e) {
+    } on FirebaseAuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? "Firestore access failed")),
+          SnackBar(content: Text(e.message ?? "Login failed")),
         );
       }
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.message ?? "Login failed")));
+    } on FirebaseException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message ?? "Firestore access failed")));
+      }
     } finally {
       if (mounted) {
         setState(() => isLoading = false);

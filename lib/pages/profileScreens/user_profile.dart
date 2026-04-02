@@ -1,5 +1,7 @@
 import 'package:finova_ai/widgets/elevated_button.dart';
 import 'dart:io';
+import 'dart:ui' as ui;
+import 'package:crop/crop.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -46,9 +48,31 @@ class _UserProfileState extends ConsumerState<UserProfile> {
     );
 
     if (picked != null) {
-      setState(() {
-        imageFile = File(picked.path);
-      });
+      if (!mounted) return;
+      
+      final croppedImage = await Navigator.push<ui.Image>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => _CropImageScreen(
+            imageFile: File(picked.path),
+          ),
+        ),
+      );
+
+      if (croppedImage != null) {
+        // Convert ui.Image to File
+        final bytes = await croppedImage.toByteData(format: ui.ImageByteFormat.png);
+        if (bytes != null) {
+          final tempDir = Directory.systemTemp;
+          final file = File(
+            '${tempDir.path}/cropped_${DateTime.now().millisecondsSinceEpoch}.png',
+          );
+          await file.writeAsBytes(bytes.buffer.asUint8List());
+          setState(() {
+            imageFile = file;
+          });
+        }
+      }
     }
   }
 
@@ -163,9 +187,9 @@ class _UserProfileState extends ConsumerState<UserProfile> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           color: Colors.black,
         ),
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
+        elevation: 2,
+        shadowColor: Colors.black12,
+        surfaceTintColor: Colors.white,
         toolbarHeight: 58,
         title: const Text(
           "User Profile",
@@ -334,4 +358,105 @@ Widget _inputField(
       ),
     ),
   );
+}
+
+class _CropImageScreen extends StatefulWidget {
+  final File imageFile;
+
+  const _CropImageScreen({required this.imageFile});
+
+  @override
+  State<_CropImageScreen> createState() => _CropImageScreenState();
+}
+
+class _CropImageScreenState extends State<_CropImageScreen> {
+  late final controller = CropController(
+    aspectRatio: 1,
+  );
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.close),
+        ),
+        title: const Text(
+          'Crop Image',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        centerTitle: true,
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Crop(
+              controller: controller,
+              child: Image.file(widget.imageFile),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey.shade200,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B82F6),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () async {
+                      final croppedImage = await controller.crop();
+                      if (croppedImage != null) {
+                        if (mounted) {
+                          Navigator.pop(context, croppedImage);
+                        }
+                      }
+                    },
+                    child: const Text(
+                      'Done',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

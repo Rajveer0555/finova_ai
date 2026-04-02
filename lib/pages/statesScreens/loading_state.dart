@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'package:finova_ai/providers/app_flow_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class LoadingState extends ConsumerStatefulWidget {
   const LoadingState({super.key});
@@ -17,17 +15,16 @@ class _LoadingStateState extends ConsumerState<LoadingState> {
   int currentIndex = 0;
 
   final List<String> loadingTexts = [
-    "Loading your data",
-    "Analyzing your finances",
-    "Preparing AI insights",
-    "Almost there...",
+    'Loading your data',
+    'Analyzing your finances',
+    'Preparing AI insights',
+    'Almost there...',
   ];
 
   @override
   void initState() {
     super.initState();
 
-    // Change text every 2 seconds
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) return;
       if (currentIndex < loadingTexts.length - 1) {
@@ -35,13 +32,6 @@ class _LoadingStateState extends ConsumerState<LoadingState> {
           currentIndex++;
         });
       }
-    });
-
-    // After 6 seconds → move to Info screen
-    Future.delayed(const Duration(seconds: 6), () {
-      if (!mounted) return;
-      timer?.cancel();
-      ref.read(appFlowProvider.notifier).state = AppStatus.infoscreen;
     });
   }
 
@@ -57,85 +47,29 @@ class _LoadingStateState extends ConsumerState<LoadingState> {
       backgroundColor: Colors.white,
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            AnimatedScale(
-              scale: 1.0,
-              duration: const Duration(milliseconds: 1000),
-              curve: Curves.elasticOut,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedOpacity(
-                    opacity: 1.0,
-                    duration: const Duration(milliseconds: 1500),
-                    child: SvgPicture.asset(
-                      'assets/AppLogo.svg',
-                      width: 66,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-                  AnimatedOpacity(
-                    opacity: 1.0,
-                    duration: const Duration(milliseconds: 1500),
-                    child: RichText(
-                      text: TextSpan(
-                        text: "Finova Ai",
-                        style: GoogleFonts.unbounded(
-                          textStyle: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 44,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            SvgPicture.asset(
+              'assets/AppLogo.svg',
+              width: 42,
+              fit: BoxFit.contain,
             ),
-
-            const SizedBox(height: 20),
-
-            AnimatedOpacity(
-              opacity: 1.0,
-              duration: const Duration(milliseconds: 2000),
-              child: const CircularProgressIndicator(
+            const SizedBox(height: 18),
+            const SizedBox(
+              width: 26,
+              height: 26,
+              child: CircularProgressIndicator(
                 color: Color.fromARGB(255, 46, 150, 255),
-                strokeWidth: 3,
-                strokeAlign: 8,
+                strokeWidth: 2.5,
               ),
             ),
-
-            const SizedBox(height: 30),
-
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 500),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0.0, 0.5),
-                      end: Offset.zero,
-                    ).animate(animation),
-                    child: child,
-                  ),
-                );
-              },
-              child: RichText(
-                key: ValueKey(currentIndex),
-                text: TextSpan(
-                  text: loadingTexts[currentIndex],
-                  style: TextStyle(
-                    color: Colors.grey.shade500,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w300,
-                    fontFamily: 'SFDisplay',
-                  ),
-                ),
+            const SizedBox(height: 16),
+            Text(
+              loadingTexts[currentIndex],
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
               ),
             ),
           ],

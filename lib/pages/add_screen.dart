@@ -75,7 +75,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
         title: const Text("Add Expense"),
         centerTitle: true,
         backgroundColor: Colors.white,
-        elevation: 0,
+        surfaceTintColor: Colors.white,
+        elevation: 2,
+        shadowColor: Colors.black12,
       ),
       body: SingleChildScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,

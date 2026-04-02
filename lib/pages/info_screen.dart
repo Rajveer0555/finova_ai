@@ -49,7 +49,7 @@ class _InfoScreenState extends ConsumerState<InfoScreen> {
         "travel": double.tryParse(budgetControllers["travel"]!.text) ?? 0,
         "shopping": double.tryParse(budgetControllers["shopping"]!.text) ?? 0,
         "bills": double.tryParse(budgetControllers["bills"]!.text) ?? 0,
-        "others": double.tryParse(budgetControllers["others"]!.text) ?? 0,
+        "other": double.tryParse(budgetControllers["others"]!.text) ?? 0,
       };
 
       print('Saving budgets: $budgets');

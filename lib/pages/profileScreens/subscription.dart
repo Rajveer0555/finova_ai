@@ -29,7 +29,7 @@ class _SubscriptionScreenState extends ConsumerState<SubscriptionScreen> {
         ),
         surfaceTintColor: Colors.white,
         elevation: 2,
-        shadowColor: Colors.black,
+        shadowColor: Colors.black12,
         toolbarHeight: 64,
         title: const Text(
           "Subscription",

@@ -23,7 +23,7 @@ class _TermsConditionsState extends ConsumerState<TermsConditions> {
         ),
         surfaceTintColor: Colors.white,
         elevation: 2,
-        shadowColor: Colors.black,
+        shadowColor: Colors.black12,
         toolbarHeight: 64,
         title: const Text(
           "Terms & Conditions",

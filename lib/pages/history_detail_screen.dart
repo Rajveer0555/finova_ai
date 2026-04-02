@@ -119,6 +119,9 @@ class ExpenseDetailScreen extends ConsumerWidget {
         title: const Text("Expense Detail"),
         centerTitle: true,
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 2,
+        shadowColor: Colors.black12,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

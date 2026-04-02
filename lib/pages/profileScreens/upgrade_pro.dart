@@ -27,7 +27,7 @@ class _UpgradeProScreenState extends ConsumerState<UpgradeProScreen> {
         ),
         surfaceTintColor: Colors.white,
         elevation: 2,
-        shadowColor: Colors.black,
+        shadowColor: Colors.black12,
         toolbarHeight: 64,
         title: const Text(
           "Upgrade to Pro",

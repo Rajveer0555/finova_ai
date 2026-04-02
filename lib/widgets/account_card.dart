@@ -1,29 +1,35 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:finova_ai/models/app_notification_settings.dart';
 import 'package:finova_ai/pages/profileScreens/faq_screen.dart';
 import 'package:finova_ai/pages/profileScreens/manage_budget.dart';
 import 'package:finova_ai/pages/profileScreens/privacy_policy.dart';
 import 'package:finova_ai/pages/profileScreens/support_screen.dart';
 import 'package:finova_ai/pages/profileScreens/terms_condtions.dart';
 import 'package:finova_ai/pages/profileScreens/user_profile.dart';
-import 'package:finova_ai/providers/app_flow_providers.dart';
+import 'package:finova_ai/providers/notification_settings_provider.dart';
 import 'package:finova_ai/utils/page_transitions.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AccountCard extends ConsumerWidget {
   const AccountCard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    double screenHeight = MediaQuery.of(context).size.height;
-    double screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final settingsAsync = ref.watch(notificationSettingsProvider);
+    final settings = settingsAsync.maybeWhen(
+      data: (value) => value,
+      orElse: AppNotificationSettings.defaults,
+    );
 
     return Container(
       decoration: BoxDecoration(
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(color: Colors.black12, spreadRadius: 0.5, blurRadius: 0.5),
         ],
         color: Colors.white,
@@ -43,39 +49,10 @@ class AccountCard extends ConsumerWidget {
             child: Row(
               children: [
                 SizedBox(width: screenWidth * 0.08),
-                Icon(Icons.person_2_rounded, size: 30),
+                const Icon(Icons.person_2_rounded, size: 30),
                 SizedBox(width: screenWidth * 0.08),
-                RichText(
-                  text: TextSpan(
-                    text: 'User Profile',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'SFProText',
-                    ),
-                  ),
-                ),
-                Spacer(),
-                Icon(Icons.arrow_forward_ios_rounded, size: 16),
-                SizedBox(width: screenWidth * 0.08),
-              ],
-            ),
-          ),
-          SizedBox(height: screenHeight * 0.01),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-            child: Divider(),
-          ),
-          SizedBox(height: screenHeight * 0.004),
-          Row(
-            children: [
-              SizedBox(width: screenWidth * 0.08),
-              Icon(Icons.notifications_rounded, size: 30),
-              SizedBox(width: screenWidth * 0.08),
-              RichText(
-                text: TextSpan(
-                  text: 'Push Notification',
+                const Text(
+                  'User Profile',
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 16,
@@ -83,17 +60,44 @@ class AccountCard extends ConsumerWidget {
                     fontFamily: 'SFProText',
                   ),
                 ),
+                const Spacer(),
+                const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                SizedBox(width: screenWidth * 0.08),
+              ],
+            ),
+          ),
+          SizedBox(height: screenHeight * 0.01),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+            child: const Divider(),
+          ),
+          SizedBox(height: screenHeight * 0.004),
+          Row(
+            children: [
+              SizedBox(width: screenWidth * 0.08),
+              const Icon(Icons.notifications_rounded, size: 30),
+              SizedBox(width: screenWidth * 0.08),
+              const Text(
+                'Push Notification',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'SFProText',
+                ),
               ),
-              Spacer(),
+              const Spacer(),
               Transform.scale(
                 scale: 0.9,
                 child: CupertinoSwitch(
                   inactiveThumbColor: Colors.white,
                   inactiveTrackColor: Colors.grey,
                   activeTrackColor: const Color.fromARGB(255, 27, 255, 87),
-                  value: ref.watch(pushNotificationProvider),
-                  onChanged: (value) {
-                    ref.read(pushNotificationProvider.notifier).state = value;
+                  value: settings.pushEnabled,
+                  onChanged: (value) async {
+                    await _updateNotificationSettings(
+                      settings.copyWith(pushEnabled: value),
+                    );
                   },
                 ),
               ),
@@ -103,7 +107,7 @@ class AccountCard extends ConsumerWidget {
           SizedBox(height: screenHeight * 0.006),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-            child: Divider(),
+            child: const Divider(),
           ),
           SizedBox(height: screenHeight * 0.01),
           InkWell(
@@ -116,21 +120,19 @@ class AccountCard extends ConsumerWidget {
             child: Row(
               children: [
                 SizedBox(width: screenWidth * 0.08),
-                Icon(CupertinoIcons.money_dollar_circle_fill, size: 30),
+                const Icon(CupertinoIcons.money_dollar_circle_fill, size: 30),
                 SizedBox(width: screenWidth * 0.08),
-                RichText(
-                  text: TextSpan(
-                    text: 'Manage Budget',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'SFProText',
-                    ),
+                const Text(
+                  'Manage Budget',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'SFProText',
                   ),
                 ),
-                Spacer(),
-                Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                const Spacer(),
+                const Icon(Icons.arrow_forward_ios_rounded, size: 16),
                 SizedBox(width: screenWidth * 0.08),
               ],
             ),
@@ -138,7 +140,7 @@ class AccountCard extends ConsumerWidget {
           SizedBox(height: screenHeight * 0.01),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-            child: Divider(),
+            child: const Divider(),
           ),
           SizedBox(height: screenHeight * 0.01),
           InkWell(
@@ -151,21 +153,19 @@ class AccountCard extends ConsumerWidget {
             child: Row(
               children: [
                 SizedBox(width: screenWidth * 0.08),
-                Icon(Icons.quiz_rounded, size: 30),
+                const Icon(Icons.quiz_rounded, size: 30),
                 SizedBox(width: screenWidth * 0.08),
-                RichText(
-                  text: TextSpan(
-                    text: "FAQ's",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'SFProText',
-                    ),
+                const Text(
+                  "FAQ's",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'SFProText',
                   ),
                 ),
-                Spacer(),
-                Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                const Spacer(),
+                const Icon(Icons.arrow_forward_ios_rounded, size: 16),
                 SizedBox(width: screenWidth * 0.08),
               ],
             ),
@@ -173,7 +173,7 @@ class AccountCard extends ConsumerWidget {
           SizedBox(height: screenHeight * 0.01),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-            child: Divider(),
+            child: const Divider(),
           ),
           SizedBox(height: screenHeight * 0.01),
           InkWell(
@@ -186,21 +186,19 @@ class AccountCard extends ConsumerWidget {
             child: Row(
               children: [
                 SizedBox(width: screenWidth * 0.08),
-                Icon(Icons.support_agent_rounded, size: 30),
+                const Icon(Icons.support_agent_rounded, size: 30),
                 SizedBox(width: screenWidth * 0.08),
-                RichText(
-                  text: TextSpan(
-                    text: 'Help & Support',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'SFProText',
-                    ),
+                const Text(
+                  'Help & Support',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'SFProText',
                   ),
                 ),
-                Spacer(),
-                Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                const Spacer(),
+                const Icon(Icons.arrow_forward_ios_rounded, size: 16),
                 SizedBox(width: screenWidth * 0.08),
               ],
             ),
@@ -208,9 +206,8 @@ class AccountCard extends ConsumerWidget {
           SizedBox(height: screenHeight * 0.01),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-            child: Divider(),
+            child: const Divider(),
           ),
-
           SizedBox(height: screenHeight * 0.01),
           InkWell(
             onTap: () {
@@ -222,30 +219,27 @@ class AccountCard extends ConsumerWidget {
             child: Row(
               children: [
                 SizedBox(width: screenWidth * 0.08),
-                Icon(Icons.privacy_tip_rounded, size: 30),
+                const Icon(Icons.privacy_tip_rounded, size: 30),
                 SizedBox(width: screenWidth * 0.08),
-                RichText(
-                  text: TextSpan(
-                    text: 'Privacy Policy',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'SFProText',
-                    ),
+                const Text(
+                  'Privacy Policy',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'SFProText',
                   ),
                 ),
-                Spacer(),
-                Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                const Spacer(),
+                const Icon(Icons.arrow_forward_ios_rounded, size: 16),
                 SizedBox(width: screenWidth * 0.08),
               ],
             ),
           ),
-
           SizedBox(height: screenHeight * 0.01),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-            child: Divider(),
+            child: const Divider(),
           ),
           SizedBox(height: screenHeight * 0.01),
           InkWell(
@@ -258,35 +252,39 @@ class AccountCard extends ConsumerWidget {
             child: Row(
               children: [
                 SizedBox(width: screenWidth * 0.08),
-                Icon(Icons.article_rounded, size: 30),
+                const Icon(Icons.article_rounded, size: 30),
                 SizedBox(width: screenWidth * 0.08),
-                RichText(
-                  text: TextSpan(
-                    text: 'Terms & Conditions',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'SFProText',
-                    ),
+                const Text(
+                  'Terms & Conditions',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'SFProText',
                   ),
                 ),
-                Spacer(),
-                Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                const Spacer(),
+                const Icon(Icons.arrow_forward_ios_rounded, size: 16),
                 SizedBox(width: screenWidth * 0.08),
               ],
             ),
           ),
-          SizedBox(height: screenHeight * 0.01),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
-            child: Divider(),
-          ),
-          SizedBox(height: screenHeight * 0.01),
+          SizedBox(height: screenHeight * 0.02),
         ],
       ),
     );
   }
+}
+
+Future<void> _updateNotificationSettings(AppNotificationSettings settings) async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    return;
+  }
+
+  await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+    'notificationSettings': settings.toMap(),
+  }, SetOptions(merge: true));
 }
 
 void showChangePasswordBottomSheet(BuildContext context) {
@@ -316,7 +314,6 @@ class ChangePasswordBottomSheet extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Drag Handle
             Container(
               width: 40,
               height: 4,
@@ -325,26 +322,16 @@ class ChangePasswordBottomSheet extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
-
             const SizedBox(height: 16),
-
             const Text(
-              "Change Password",
+              'Change Password',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
             ),
-
             const SizedBox(height: 20),
-
             _inputField('Create New Password'),
-
             const SizedBox(height: 14),
-
-            // Confirm Password
             _inputField('Confirm New Password'),
-
             const SizedBox(height: 22),
-
-            // Save Button
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [ElevatedButtonCust('Save', () {})],
@@ -360,7 +347,6 @@ Widget _inputField(String hintText) {
   return SizedBox(
     width: 360,
     child: TextField(
-      // obscureText: isPassword,
       decoration: InputDecoration(
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

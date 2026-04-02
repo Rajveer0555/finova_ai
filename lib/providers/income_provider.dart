@@ -4,13 +4,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final monthlyIncomeProvider = StreamProvider<double>((ref) {
   final user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    return Stream.value(0.0);
+  }
 
   return FirebaseFirestore.instance
       .collection('users')
-      .doc(user!.uid)
+      .doc(user.uid)
       .snapshots()
       .map((doc) {
         final data = doc.data();
-        return (data?['monthlyIncome'] ?? 0).toDouble();
+        final raw = data?['monthlyIncome'];
+        if (raw is num) {
+          return raw.toDouble();
+        }
+        return double.tryParse(raw?.toString() ?? '') ?? 0.0;
       });
 });

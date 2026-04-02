@@ -4,6 +4,9 @@ import 'package:finova_ai/pages/main_navigation.dart';
 import 'package:finova_ai/pages/onBoarding/onboarding.dart';
 import 'package:finova_ai/pages/splash_screen.dart';
 import 'package:finova_ai/providers/app_flow_providers.dart';
+import 'package:finova_ai/services/notification_service.dart';
+import 'package:finova_ai/services/push_notification_service.dart';
+import 'package:finova_ai/widgets/notification_bootstrap.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -13,6 +16,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp();
+  await NotificationService.instance.init();
+  await PushNotificationService.instance.init();
 
   await Supabase.initialize(
     url: 'https://gkixzsxddipioyqwcbtr.supabase.co',
@@ -20,7 +25,7 @@ void main() async {
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdraXh6c3hkZGlwaW95cXdjYnRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3ODg2NTEsImV4cCI6MjA4ODM2NDY1MX0.w-h9Wbn0A5XfbuYD6B9o_z7qz4Klw54FXF3G2JLizGk',
   );
 
-  runApp(ProviderScope(child: const MyApp()));
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends ConsumerWidget {
@@ -74,7 +79,7 @@ class MyApp extends ConsumerWidget {
       builder: (context, child) {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-          child: child!,
+          child: NotificationBootstrap(child: child!),
         );
       },
       home: AnimatedSwitcher(

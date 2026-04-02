@@ -20,7 +20,7 @@ final aiInsightProvider = Provider<AiInsightResult>((ref) {
   final rawBudgets = budgetDoc?.data()?['budgets'];
   if (rawBudgets is Map) {
     for (final entry in rawBudgets.entries) {
-      budgetMap[entry.key.toString()] = (entry.value as num?)?.toDouble() ?? 0;
+      budgetMap[_normalizeCategoryKey(entry.key)] = _readAmount(entry.value);
     }
   }
 
@@ -45,27 +45,47 @@ final aiInsightProvider = Provider<AiInsightResult>((ref) {
     transactions.add(
       AiInputTransaction(
         title: (data['title'] ?? '').toString(),
-        categoryKey: (data['category'] ?? 'other').toString(),
+        categoryKey: _normalizeCategoryKey(data['category']),
         amount: _readAmount(data['amount']),
         date: date,
       ),
     );
   }
 
-  return FinovaAiEngine.build(
-    transactions: transactions,
-    budgets: budgetMap,
-    monthlyIncome: income,
-    now: latestTransactionDate ?? DateTime.now(),
-  );
+  try {
+    return FinovaAiEngine.build(
+      transactions: transactions,
+      budgets: budgetMap,
+      monthlyIncome: income,
+      now: latestTransactionDate ?? DateTime.now(),
+    );
+  } catch (_) {
+    try {
+      return FinovaAiEngine.build(
+        transactions: transactions,
+        budgets: const <String, double>{},
+        monthlyIncome: 0.0,
+        now: latestTransactionDate ?? DateTime.now(),
+      );
+    } catch (_) {
+      return AiInsightResult.empty();
+    }
+  }
 });
 
 double _readAmount(dynamic value) {
+  if (value is num && value.isFinite) {
+    return value.toDouble();
+  }
   if (value is num) {
     return value.toDouble();
   }
 
-  return double.tryParse(value?.toString() ?? '') ?? 0.0;
+  final parsed = double.tryParse(value?.toString() ?? '') ?? 0.0;
+  if (!parsed.isFinite) {
+    return 0.0;
+  }
+  return parsed;
 }
 
 DateTime? _readDate(dynamic value) {
@@ -76,4 +96,12 @@ DateTime? _readDate(dynamic value) {
     return value;
   }
   return null;
+}
+
+String _normalizeCategoryKey(dynamic value) {
+  final normalized = value?.toString().trim().toLowerCase() ?? 'other';
+  if (normalized.isEmpty || normalized == 'others') {
+    return 'other';
+  }
+  return normalized;
 }

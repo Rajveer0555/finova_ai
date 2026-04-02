@@ -280,25 +280,35 @@ class AiInsightsScreen extends ConsumerWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 10),
-                                Text(
-                                  '${formatCurrency(ai.previousMonthCategorySpend)} -> ${formatCurrency(ai.currentMonthCategorySpend)}',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    fontFamily: 'SFProText',
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    '${formatCurrency(ai.previousMonthCategorySpend)} -> ${formatCurrency(ai.currentMonthCategorySpend)}',
+                                    maxLines: 1,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      fontFamily: 'SFProText',
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 6),
-                                Text(
-                                  '${ai.monthlyCategoryDeltaPercent >= 0 ? '+' : '-'}${formatPercentage(ai.monthlyCategoryDeltaPercent.abs())}',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w700,
-                                    color:
-                                        ai.monthlyCategoryDeltaPercent >= 0
-                                            ? const Color(0xFF4A90FF)
-                                            : Colors.green,
-                                    fontFamily: 'SFProDisplay',
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    '${ai.monthlyCategoryDeltaPercent >= 0 ? '+' : '-'}${formatPercentage(ai.monthlyCategoryDeltaPercent.abs())}',
+                                    maxLines: 1,
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w700,
+                                      color:
+                                          ai.monthlyCategoryDeltaPercent >= 0
+                                              ? const Color(0xFF4A90FF)
+                                              : Colors.green,
+                                      fontFamily: 'SFProDisplay',
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 10),
@@ -587,12 +597,17 @@ class _FactorTile extends StatelessWidget {
               ),
             ),
           ),
-          Text(
-            '+${formatCurrency(amount)}',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'SFProText',
+          Flexible(
+            child: Text(
+              '+${formatCurrency(amount)}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'SFProText',
+              ),
             ),
           ),
         ],

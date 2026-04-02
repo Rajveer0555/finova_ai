@@ -105,28 +105,32 @@ class AiPredictionScreen extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: formatCurrency(ai.predictedNextMonthSpend),
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w700,
-                                    fontFamily: 'SFProDisplay',
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: formatCurrency(ai.predictedNextMonthSpend),
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w700,
+                                      fontFamily: 'SFProDisplay',
+                                    ),
                                   ),
-                                ),
-                                const TextSpan(
-                                  text: ' next month',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    fontFamily: 'SFProText',
+                                  const TextSpan(
+                                    text: ' next month',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      fontFamily: 'SFProText',
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -407,16 +411,21 @@ class _ForecastRow extends StatelessWidget {
               ),
             ),
           ),
-          Text(
-            '${item.changeAmount >= 0 ? '+' : '-'}${formatCurrency(item.changeAmount.abs())}',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color:
-                  item.changeAmount >= 0
-                      ? const Color(0xFF4A90FF)
-                      : Colors.green,
-              fontFamily: 'SFProText',
+          Flexible(
+            child: Text(
+              '${item.changeAmount >= 0 ? '+' : '-'}${formatCurrency(item.changeAmount.abs())}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color:
+                    item.changeAmount >= 0
+                        ? const Color(0xFF4A90FF)
+                        : Colors.green,
+                fontFamily: 'SFProText',
+              ),
             ),
           ),
         ],
