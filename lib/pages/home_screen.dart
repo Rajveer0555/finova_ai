@@ -104,12 +104,21 @@ class HomeScreen extends ConsumerWidget {
           }
         }
 
-        final comparisonBase = totalBudget > 0 ? totalBudget : income;
         final double usage =
-            comparisonBase == 0
+            income <= 0
                 ? 0.0
-                : (totalExpense / comparisonBase).clamp(0.0, 1.0).toDouble();
-        final remaining = comparisonBase - totalExpense;
+                : (totalExpense / income).clamp(0.0, 1.0).toDouble();
+        final incomeDifference = income - totalExpense;
+        final String incomeStatusText;
+        if (income <= 0) {
+          incomeStatusText = "Set your monthly income to track remaining";
+        } else if (incomeDifference >= 0) {
+          incomeStatusText =
+              "${formatCurrency(incomeDifference)} remaining from income of ${formatCurrency(income)}";
+        } else {
+          incomeStatusText =
+              "${formatCurrency(incomeDifference.abs())} more than income of ${formatCurrency(income)}";
+        }
 
         return Scaffold(
           backgroundColor: Colors.white,
@@ -229,7 +238,7 @@ class HomeScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 10),
                                 Text(
-                                  "${formatCurrency(remaining)} remaining of ${formatCurrency(comparisonBase)}",
+                                  incomeStatusText,
                                   style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w300,

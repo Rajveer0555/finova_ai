@@ -112,22 +112,24 @@ class NotificationService {
       return;
     }
 
-    await _scheduleDailyReminder();
+    await _scheduleDailyReminder(
+      hour: settings.reminderHour,
+      minute: settings.reminderMinute,
+    );
     await _scheduleMonthlySummary(transactions: transactions);
   }
 
-  Future<void> _scheduleDailyReminder() async {
-    final scheduledDate = _nextTimeOfDay(hour: 20, minute: 0);
+  Future<void> _scheduleDailyReminder({
+    required int hour,
+    required int minute,
+  }) async {
+    final scheduledDate = _nextTimeOfDay(hour: hour, minute: minute);
 
-    await _plugin.zonedSchedule(
-      _dailyReminderId,
-      'Track today\'s expenses',
-      'Add today\'s spending to keep your budgets and AI insights accurate.',
-      scheduledDate,
-      _notificationDetails(),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+    await _scheduleZonedNotification(
+      id: _dailyReminderId,
+      title: 'Track today\'s expenses',
+      body: 'Add today\'s spending to keep your budgets and AI insights accurate.',
+      scheduledDate: scheduledDate,
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
@@ -171,16 +173,32 @@ class NotificationService {
             : 'You spent ${formatCurrency(total)} in $monthLabel. Open Finova AI to review your monthly trends.'
         : 'No expenses were recorded in $monthLabel. Start the new month by tracking every spend.';
 
+    await _scheduleZonedNotification(
+      id: _monthlySummaryId,
+      title: title,
+      body: body,
+      scheduledDate: _nextMonthlySummaryTime(hour: 9, minute: 0),
+      matchDateTimeComponents: DateTimeComponents.dayOfMonthAndTime,
+    );
+  }
+
+  Future<void> _scheduleZonedNotification({
+    required int id,
+    required String title,
+    required String body,
+    required tz.TZDateTime scheduledDate,
+    required DateTimeComponents matchDateTimeComponents,
+  }) async {
     await _plugin.zonedSchedule(
-      _monthlySummaryId,
+      id,
       title,
       body,
-      _nextMonthlySummaryTime(hour: 9, minute: 0),
+      scheduledDate,
       _notificationDetails(),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.dayOfMonthAndTime,
+      matchDateTimeComponents: matchDateTimeComponents,
     );
   }
 
@@ -204,20 +222,27 @@ class NotificationService {
     final monthKey = _currentMonthKey();
     final prefs = await SharedPreferences.getInstance();
 
-    if (settings.budgetExceededEnabled &&
-        monthlyIncome > 0 &&
-        totalSpent > monthlyIncome) {
-      final budgetAlertKey = 'budget_alert_${userId}_$monthKey';
-      final hasShown = prefs.getBool(budgetAlertKey) ?? false;
+    if (settings.budgetExceededEnabled && monthlyIncome > 0) {
+      final budgetAlertKey = 'budget_alert_band_${userId}_$monthKey';
+      if (totalSpent > monthlyIncome) {
+        final budgetBand = _overrunBand(spent: totalSpent, limit: monthlyIncome);
+        final lastBudgetBand = prefs.getInt(budgetAlertKey) ?? 0;
 
-      if (!hasShown) {
-        await _plugin.show(
-          1001,
-          'Budget exceeded',
-          'You have spent ${formatCurrency(totalSpent)} out of ${formatCurrency(monthlyIncome)} this month.',
-          _notificationDetails(),
-        );
-        await prefs.setBool(budgetAlertKey, true);
+        if (budgetBand > lastBudgetBand) {
+          final exceededBy = totalSpent - monthlyIncome;
+          final percentage = ((totalSpent / monthlyIncome) * 100)
+              .toStringAsFixed(0);
+
+          await _plugin.show(
+            1001,
+            'Budget exceeded',
+            'You are ${formatCurrency(exceededBy)} over income at $percentage% used this month.',
+            _notificationDetails(),
+          );
+          await prefs.setInt(budgetAlertKey, budgetBand);
+        }
+      } else {
+        await prefs.remove(budgetAlertKey);
       }
     }
 
@@ -228,29 +253,44 @@ class NotificationService {
     for (final entry in budgets.entries) {
       final categoryKey = entry.key.toLowerCase();
       final budget = entry.value;
+      final categoryAlertKey =
+          'category_alert_band_${userId}_${monthKey}_$categoryKey';
+
       if (budget <= 0) {
+        await prefs.remove(categoryAlertKey);
         continue;
       }
 
       final spent = spentPerCategory[categoryKey] ?? 0.0;
-      if (spent <= budget) {
-        continue;
-      }
+      if (spent > budget) {
+        final categoryBand = _overrunBand(spent: spent, limit: budget);
+        final lastCategoryBand = prefs.getInt(categoryAlertKey) ?? 0;
 
-      final categoryAlertKey = 'category_alert_${userId}_${monthKey}_$categoryKey';
-      final hasShown = prefs.getBool(categoryAlertKey) ?? false;
-      if (hasShown) {
-        continue;
-      }
+        if (categoryBand > lastCategoryBand) {
+          final exceededBy = spent - budget;
+          final percentage = ((spent / budget) * 100).toStringAsFixed(0);
 
-      await _plugin.show(
-        2000 + (categoryKey.hashCode.abs() % 500),
-        '${_titleCase(categoryKey)} budget exceeded',
-        'You have spent ${formatCurrency(spent)} against a ${formatCurrency(budget)} ${_titleCase(categoryKey).toLowerCase()} budget.',
-        _notificationDetails(),
-      );
-      await prefs.setBool(categoryAlertKey, true);
+          await _plugin.show(
+            2000 + (categoryKey.hashCode.abs() % 500),
+            '${_titleCase(categoryKey)} budget exceeded',
+            '${_titleCase(categoryKey)} is ${formatCurrency(exceededBy)} over budget at $percentage% used this month.',
+            _notificationDetails(),
+          );
+          await prefs.setInt(categoryAlertKey, categoryBand);
+        }
+      } else {
+        await prefs.remove(categoryAlertKey);
+      }
     }
+  }
+
+  int _overrunBand({required double spent, required double limit}) {
+    if (limit <= 0 || spent <= limit) {
+      return 0;
+    }
+
+    final usageRatio = spent / limit;
+    return (usageRatio * 10).floor();
   }
 
   NotificationDetails _notificationDetails() {
@@ -338,3 +378,14 @@ class NotificationService {
     return normalized[0].toUpperCase() + normalized.substring(1);
   }
 }
+
+
+
+
+
+
+
+
+
+
+

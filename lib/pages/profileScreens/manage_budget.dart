@@ -1,14 +1,10 @@
 import 'package:finova_ai/providers/income_provider.dart';
-import 'package:finova_ai/providers/notification_settings_provider.dart';
-import 'package:finova_ai/widgets/alerts_container.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:finova_ai/widgets/expense_adjust_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:finova_ai/models/app_notification_settings.dart';
 import 'package:finova_ai/utils/formatters.dart';
 
 class ManageBudgetScreen extends ConsumerStatefulWidget {
@@ -153,16 +149,29 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
   @override
   Widget build(BuildContext context) {
     final incomeAsync = ref.watch(monthlyIncomeProvider);
-    final notificationSettingsAsync = ref.watch(notificationSettingsProvider);
-    final notificationSettings = notificationSettingsAsync.maybeWhen(
-      data: (value) => value,
-      orElse: AppNotificationSettings.defaults,
-    );
 
     final income = incomeAsync.maybeWhen(
       data: (value) => value,
       orElse: () => 0.0,
     );
+    final double incomeUsage =
+        income <= 0 ? 0.0 : (totalSpent / income).clamp(0.0, 1.0).toDouble();
+    final double incomeUsagePercent =
+        income <= 0 ? 0.0 : ((totalSpent / income) * 100);
+    final Color incomeUsageColor =
+        income <= 0 || incomeUsage < 0.5
+            ? const Color.fromARGB(255, 100, 159, 255)
+            : incomeUsage < 0.8
+            ? Colors.orange
+            : Colors.red;
+    final double remainingIncome = income - totalSpent;
+    final bool isOverIncome = remainingIncome < 0;
+    final String remainingIncomeLabel =
+        isOverIncome
+            ? "${formatCurrency(remainingIncome.abs())} Over budget"
+            : "${formatCurrency(remainingIncome)} Remaining";
+    final Color remainingIncomeColor =
+        isOverIncome ? Colors.red : Colors.green;
     if (isLoading) {
       return const Scaffold(
         backgroundColor: Colors.white,
@@ -284,12 +293,9 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                           LinearProgressIndicator(
                             borderRadius: BorderRadius.circular(12),
                             minHeight: 14,
-                            value:
-                                income == 0
-                                    ? 0
-                                    : (totalSpent / income).clamp(0, 1),
+                            value: incomeUsage,
                             backgroundColor: Colors.grey.shade300,
-                            color: Color.fromARGB(255, 100, 159, 255),
+                            color: incomeUsageColor,
                           ),
                           SizedBox(height: 8),
                           Row(
@@ -298,12 +304,12 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                               Row(
                                 children: [
                                   Text(
-                                    "${((income == 0 ? 0 : (totalSpent / income)) * 100).toStringAsFixed(1)}% ",
+                                    "${incomeUsagePercent.toStringAsFixed(1)}% ",
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
                                       fontFamily: 'SFProText',
-                                      color: Color.fromARGB(255, 100, 159, 255),
+                                      color: incomeUsageColor,
                                     ),
                                   ),
                                   Text(
@@ -318,12 +324,12 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                                 ],
                               ),
                               Text(
-                                "${formatCurrency(income - totalSpent)} Remaining",
+                                remainingIncomeLabel,
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                   fontFamily: 'SFProText',
-                                  color: Colors.green,
+                                  color: remainingIncomeColor,
                                 ),
                               ),
                             ],
@@ -378,49 +384,6 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
                       );
                     },
                   ),
-
-                  const SizedBox(height: 20),
-
-                  /// ALERTS
-                  const Text(
-                    "Alerts",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'SFProText',
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  AlertsContainer(
-                    title: 'Alert on Budget Exceed',
-                    subTitle: 'Receive alerts when budget exceed',
-                    value: notificationSettings.budgetExceededEnabled,
-                    onChanged: (value) async {
-                      await _updateNotificationSettings(
-                        notificationSettings.copyWith(
-                          budgetExceededEnabled: value,
-                        ),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  AlertsContainer(
-                    title: 'Alert on Category Limit',
-                    subTitle: 'Receive alerts when category budget exceed',
-                    value: notificationSettings.categoryLimitEnabled,
-                    onChanged: (value) async {
-                      await _updateNotificationSettings(
-                        notificationSettings.copyWith(
-                          categoryLimitEnabled: value,
-                        ),
-                      );
-                    },
-                  ),
-
                   const SizedBox(height: 30),
                 ],
               ),
@@ -454,19 +417,6 @@ class _ManageBudgetScreenState extends ConsumerState<ManageBudgetScreen> {
         ],
       ),
     );
-  }
-
-  Future<void> _updateNotificationSettings(
-    AppNotificationSettings settings,
-  ) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return;
-    }
-
-    await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-      'notificationSettings': settings.toMap(),
-    }, SetOptions(merge: true));
   }
 }
 

@@ -24,8 +24,9 @@ exports.sendAiInsightAlerts = onSchedule(
       const token = typeof userData.fcmToken === 'string' ? userData.fcmToken : '';
       const aiEnabled = userData.aiEnabled !== false;
       const pushEnabled = settings.pushEnabled !== false;
+      const aiAlertsEnabled = settings.aiAlertsEnabled !== false;
 
-      if (!token || !aiEnabled || !pushEnabled) {
+      if (!token || !aiEnabled || !pushEnabled || !aiAlertsEnabled) {
         continue;
       }
 
@@ -146,86 +147,82 @@ function buildAiSignal({transactions, budgets, monthlyIncome}) {
   const currentTotals = sumByCategory(last30);
   const previousTotals = sumByCategory(previous30);
   const allTotals = sumByCategory(transactions);
-  const focusCategoryKey = pickFocusCategory(currentTotals, previousTotals, allTotals);
-  const currentAmount = currentTotals[focusCategoryKey] || 0;
-  const previousAmount = previousTotals[focusCategoryKey] || 0;
   const totalCurrent = sumAmounts(last30);
   const totalPrevious = sumAmounts(previous30);
+  const monthsCovered = historyMonths(transactions, now);
   const predictedNext = predictNextMonthSpend({
     current30Total: totalCurrent,
     previous30Total: totalPrevious,
-    historicalAverage: sumAmounts(transactions) / historyMonths(transactions, now),
+    historicalAverage: sumAmounts(transactions) / monthsCovered,
     monthlyIncome,
   });
 
-  const categoryBudget = budgets[focusCategoryKey] || 0;
-  const trendDelta = currentAmount - previousAmount;
-  const trendPercent =
-    previousAmount > 0 ? (trendDelta / previousAmount) * 100 : currentAmount > 0 ? 100 : 0;
-  const predictedCategory = predictCategoryAmount({
-    categoryKey: focusCategoryKey,
-    currentTotals,
-    previousTotals,
-    allTotals,
-    predictedNext,
-    monthsCovered: historyMonths(transactions, now),
-  });
-
-  if (trendDelta >= 400 && trendPercent >= 20) {
-    return {
-      key: `trend_${focusCategoryKey}`,
-      categoryKey: focusCategoryKey,
-      route: 'ai_insights',
-      title: 'AI spending alert',
-      body: `${titleCase(focusCategoryKey)} spending is up ${Math.abs(trendPercent).toFixed(0)}%. You spent ${formatCurrency(currentAmount)} in the last 30 days.`,
-    };
-  }
-
-  if (categoryBudget > 0 && predictedCategory > categoryBudget * 1.1) {
-    return {
-      key: `budget_risk_${focusCategoryKey}`,
-      categoryKey: focusCategoryKey,
-      route: 'ai_prediction',
-      title: 'AI budget risk detected',
-      body: `${titleCase(focusCategoryKey)} may reach ${formatCurrency(predictedCategory)} next month, above your ${formatCurrency(categoryBudget)} budget.`,
-    };
-  }
-
-  if (monthlyIncome > 0 && predictedNext > monthlyIncome * 1.05) {
-    return {
-      key: 'income_risk',
-      categoryKey: focusCategoryKey,
-      route: 'ai_prediction',
-      title: 'AI forecast warning',
-      body: `Your next 30 days may reach ${formatCurrency(predictedNext)}, which is above your recorded income of ${formatCurrency(monthlyIncome)}.`,
-    };
-  }
-
-  return null;
-}
-
-function pickFocusCategory(currentTotals, previousTotals, allTotals) {
-  const keys = new Set([
+  const categoryKeys = new Set([
     ...Object.keys(currentTotals),
     ...Object.keys(previousTotals),
     ...Object.keys(allTotals),
+    ...Object.keys(budgets),
   ]);
+  const candidates = [];
 
-  let bestKey = 'food';
-  let bestScore = Number.NEGATIVE_INFINITY;
+  for (const categoryKey of categoryKeys) {
+    const currentAmount = currentTotals[categoryKey] || 0;
+    const previousAmount = previousTotals[categoryKey] || 0;
+    const categoryBudget = budgets[categoryKey] || 0;
+    const trendDelta = currentAmount - previousAmount;
+    const trendPercent =
+      previousAmount > 0 ? (trendDelta / previousAmount) * 100 : currentAmount > 0 ? 100 : 0;
+    const predictedCategory = predictCategoryAmount({
+      categoryKey,
+      currentTotals,
+      previousTotals,
+      allTotals,
+      predictedNext,
+      monthsCovered,
+    });
 
-  for (const key of keys) {
-    const current = currentTotals[key] || 0;
-    const previous = previousTotals[key] || 0;
-    const delta = current - previous;
-    const score = delta > 0 ? delta + current * 0.2 : current * 0.6;
-    if (score > bestScore) {
-      bestScore = score;
-      bestKey = key;
+    if (trendDelta >= 400 && trendPercent >= 20) {
+      candidates.push({
+        score: trendDelta + trendPercent * 8,
+        key: `trend_${categoryKey}`,
+        categoryKey,
+        route: 'ai_insights',
+        title: 'AI spending alert',
+        body: `${titleCase(categoryKey)} spending is up ${Math.abs(trendPercent).toFixed(0)}%. You spent ${formatCurrency(currentAmount)} in the last 30 days.`,
+      });
+    }
+
+    if (categoryBudget > 0 && predictedCategory > categoryBudget * 1.08) {
+      candidates.push({
+        score: (predictedCategory - categoryBudget) + predictedCategory * 0.2,
+        key: `budget_risk_${categoryKey}`,
+        categoryKey,
+        route: 'ai_prediction',
+        title: 'AI budget risk detected',
+        body: `${titleCase(categoryKey)} may reach ${formatCurrency(predictedCategory)} next month, above your ${formatCurrency(categoryBudget)} budget.`,
+      });
     }
   }
 
-  return bestKey;
+  if (monthlyIncome > 0 && predictedNext > monthlyIncome * 1.03) {
+    candidates.push({
+      score: predictedNext - monthlyIncome + predictedNext * 0.15,
+      key: 'income_risk',
+      categoryKey: 'overall',
+      route: 'ai_prediction',
+      title: 'AI forecast warning',
+      body: `Your next 30 days may reach ${formatCurrency(predictedNext)}, above your recorded income of ${formatCurrency(monthlyIncome)}.`,
+    });
+  }
+
+  if (!candidates.length) {
+    return null;
+  }
+
+  candidates.sort((a, b) => b.score - a.score);
+  const topSignal = candidates[0];
+  delete topSignal.score;
+  return topSignal;
 }
 
 function predictNextMonthSpend({
@@ -375,3 +372,6 @@ function todayKey() {
   const day = String(now.getDate()).padStart(2, '0');
   return `${now.getFullYear()}-${month}-${day}`;
 }
+
+
+

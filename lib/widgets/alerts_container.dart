@@ -5,7 +5,7 @@ class AlertsContainer extends StatelessWidget {
   final String title;
   final String subTitle;
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool>? onChanged;
 
   const AlertsContainer({
     super.key,

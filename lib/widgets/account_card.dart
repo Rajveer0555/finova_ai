@@ -1,15 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:finova_ai/models/app_notification_settings.dart';
 import 'package:finova_ai/pages/profileScreens/faq_screen.dart';
 import 'package:finova_ai/pages/profileScreens/manage_budget.dart';
+import 'package:finova_ai/pages/profileScreens/notification_settings_screen.dart';
 import 'package:finova_ai/pages/profileScreens/privacy_policy.dart';
 import 'package:finova_ai/pages/profileScreens/support_screen.dart';
 import 'package:finova_ai/pages/profileScreens/terms_condtions.dart';
 import 'package:finova_ai/pages/profileScreens/user_profile.dart';
-import 'package:finova_ai/providers/notification_settings_provider.dart';
 import 'package:finova_ai/utils/page_transitions.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,11 +18,6 @@ class AccountCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    final settingsAsync = ref.watch(notificationSettingsProvider);
-    final settings = settingsAsync.maybeWhen(
-      data: (value) => value,
-      orElse: AppNotificationSettings.defaults,
-    );
 
     return Container(
       decoration: BoxDecoration(
@@ -71,40 +63,35 @@ class AccountCard extends ConsumerWidget {
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
             child: const Divider(),
           ),
-          SizedBox(height: screenHeight * 0.004),
-          Row(
-            children: [
-              SizedBox(width: screenWidth * 0.08),
-              const Icon(Icons.notifications_rounded, size: 30),
-              SizedBox(width: screenWidth * 0.08),
-              const Text(
-                'Push Notification',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'SFProText',
+          SizedBox(height: screenHeight * 0.01),
+          InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                buildSlideFromRightRoute(const NotificationSettingsScreen()),
+              );
+            },
+            child: Row(
+              children: [
+                SizedBox(width: screenWidth * 0.08),
+                const Icon(Icons.notifications_rounded, size: 30),
+                SizedBox(width: screenWidth * 0.08),
+                const Text(
+                  'Push Notification',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'SFProText',
+                  ),
                 ),
-              ),
-              const Spacer(),
-              Transform.scale(
-                scale: 0.9,
-                child: CupertinoSwitch(
-                  inactiveThumbColor: Colors.white,
-                  inactiveTrackColor: Colors.grey,
-                  activeTrackColor: const Color.fromARGB(255, 27, 255, 87),
-                  value: settings.pushEnabled,
-                  onChanged: (value) async {
-                    await _updateNotificationSettings(
-                      settings.copyWith(pushEnabled: value),
-                    );
-                  },
-                ),
-              ),
-              SizedBox(width: screenWidth * 0.06),
-            ],
+                const Spacer(),
+                const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                SizedBox(width: screenWidth * 0.08),
+              ],
+            ),
           ),
-          SizedBox(height: screenHeight * 0.006),
+          SizedBox(height: screenHeight * 0.01),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
             child: const Divider(),
@@ -274,17 +261,6 @@ class AccountCard extends ConsumerWidget {
       ),
     );
   }
-}
-
-Future<void> _updateNotificationSettings(AppNotificationSettings settings) async {
-  final user = FirebaseAuth.instance.currentUser;
-  if (user == null) {
-    return;
-  }
-
-  await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-    'notificationSettings': settings.toMap(),
-  }, SetOptions(merge: true));
 }
 
 void showChangePasswordBottomSheet(BuildContext context) {
