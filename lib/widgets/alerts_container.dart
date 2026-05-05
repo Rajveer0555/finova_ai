@@ -33,41 +33,51 @@ class AlertsContainer extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
         child: Row(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: screenHeight * 0.015),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 14,
-                    fontFamily: 'SFProText',
-                    fontWeight: FontWeight.w600,
-                  ),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: screenHeight * 0.015),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontFamily: 'SFProText',
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.001),
+                    Text(
+                      subTitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 10,
+                        fontFamily: 'SFProText',
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: screenHeight * 0.001),
-                Text(
-                  subTitle,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 10,
-                    fontFamily: 'SFProText',
-                    fontWeight: FontWeight.w300,
-                  ),
-                ),
-                SizedBox(height: screenHeight * 0.02),
-              ],
+              ),
             ),
-            const Spacer(),
-            Transform.scale(
-              scale: 0.75,
-              child: CupertinoSwitch(
-                inactiveThumbColor: Colors.white,
-                inactiveTrackColor: Colors.grey,
-                activeTrackColor: const Color.fromARGB(255, 100, 159, 255),
-                value: value,
-                onChanged: onChanged,
+            const SizedBox(width: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Transform.scale(
+                scale: 0.75,
+                child: CupertinoSwitch(
+                  inactiveThumbColor: Colors.white,
+                  inactiveTrackColor: Colors.grey,
+                  activeTrackColor: const Color.fromARGB(255, 100, 159, 255),
+                  value: value,
+                  onChanged: onChanged,
+                ),
               ),
             ),
           ],

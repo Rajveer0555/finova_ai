@@ -75,3 +75,4 @@ class PushNotificationService {
     }, SetOptions(merge: true));
   }
 }
+

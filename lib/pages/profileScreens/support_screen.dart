@@ -1,4 +1,5 @@
 import 'package:finova_ai/pages/profileScreens/faq_screen.dart';
+import 'package:finova_ai/pages/profileScreens/support_chat_screen.dart';
 import 'package:finova_ai/utils/page_transitions.dart';
 import 'package:finova_ai/widgets/help_card.dart';
 import 'package:flutter/material.dart';
@@ -13,20 +14,6 @@ class SupportScreen extends ConsumerStatefulWidget {
 }
 
 class _SupportScreenState extends ConsumerState<SupportScreen> {
-  Future<void> _contactSupport() async {
-    final Uri emailUri = Uri.parse(
-      'mailto:rivexstudio22@gmail.com?subject=${Uri.encodeComponent('Contact Support')}',
-    );
-    try {
-      await launchUrl(emailUri);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not launch email app')),
-      );
-    }
-  }
-
   Future<void> _emailSupport() async {
     final Uri emailUri = Uri.parse(
       'mailto:rivexstudio22@gmail.com?subject=${Uri.encodeComponent('Email Support')}',
@@ -144,9 +131,14 @@ class _SupportScreenState extends ConsumerState<SupportScreen> {
               SizedBox(height: 10),
               HelpCard(
                 "Contact Support",
-                "Chat with our support team",
+                "Chat with Finova support bot",
                 "assets/comments.png",
-                () => _contactSupport(),
+                () {
+                  Navigator.push(
+                    context,
+                    buildSlideFromRightRoute(const SupportChatScreen()),
+                  );
+                },
               ),
 
               SizedBox(height: 10),

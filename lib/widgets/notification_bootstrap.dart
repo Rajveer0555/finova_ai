@@ -58,10 +58,12 @@ class _NotificationBootstrapState extends ConsumerState<NotificationBootstrap> {
         return;
       }
 
-      final settings = ref.read(notificationSettingsProvider).maybeWhen(
-        data: (value) => value,
-        orElse: AppNotificationSettings.defaults,
-      );
+      final settings = ref
+          .read(notificationSettingsProvider)
+          .maybeWhen(
+            data: (value) => value,
+            orElse: AppNotificationSettings.defaults,
+          );
 
       await NotificationService.instance.init();
       await PushNotificationService.instance.init();
@@ -88,10 +90,9 @@ class _NotificationBootstrapState extends ConsumerState<NotificationBootstrap> {
       );
 
       final budgetDoc = ref.read(budgetProvider).value;
-      final income = ref.read(monthlyIncomeProvider).maybeWhen(
-        data: (value) => value,
-        orElse: () => 0.0,
-      );
+      final income = ref
+          .read(monthlyIncomeProvider)
+          .maybeWhen(data: (value) => value, orElse: () => 0.0);
 
       if (budgetDoc == null || transactions == null) {
         return;
@@ -160,6 +161,7 @@ class _NotificationBootstrapState extends ConsumerState<NotificationBootstrap> {
     _permissionRequest = () async {
       try {
         await NotificationService.instance.requestPermissions();
+        await PushNotificationService.instance.requestPermissions();
       } catch (_) {
         // Avoid crashing startup if the OS is already showing the permission dialog.
       }
@@ -178,5 +180,3 @@ String _normalizeCategoryKey(dynamic value) {
   }
   return normalized;
 }
-
-

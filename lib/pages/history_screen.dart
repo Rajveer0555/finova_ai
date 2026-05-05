@@ -3,16 +3,17 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:finova_ai/models/category_selector_model.dart';
 import 'package:finova_ai/models/payment_method.dart';
 import 'package:finova_ai/pages/statesScreens/error_state.dart';
-import 'package:finova_ai/pages/statesScreens/loading_state.dart';
 import 'package:finova_ai/pages/statesScreens/no_internet_screen.dart';
 import 'package:finova_ai/providers/connectivity_provider.dart';
 import 'package:finova_ai/providers/history_filter_provider.dart';
 import 'package:finova_ai/providers/transactions_stream_provider.dart';
 import 'package:finova_ai/utils/formatters.dart';
+import 'package:finova_ai/utils/picker_theme.dart';
 import 'package:finova_ai/widgets/category_selector.dart';
 import 'package:finova_ai/widgets/month_history_card.dart';
 import 'package:finova_ai/widgets/outlined_btn.dart';
 import 'package:finova_ai/widgets/payment_methodsheet.dart';
+import 'package:finova_ai/widgets/shimmer_skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -234,6 +235,7 @@ class HistoryScreen extends ConsumerWidget {
                             return MonthHistoryCard(
                               monthKey: e.key,
                               transactions: e.value,
+                              initiallyExpanded: e.key == currentMonthKey,
                             );
                           },
                         ),
@@ -243,7 +245,7 @@ class HistoryScreen extends ConsumerWidget {
         );
       },
 
-      loading: () => const LoadingState(),
+      loading: () => const _HistorySkeletonState(),
 
       error: (e, _) {
         return connectivityAsync.when(
@@ -258,10 +260,11 @@ class HistoryScreen extends ConsumerWidget {
               );
             }
           },
-          loading: () => const LoadingState(),
-          error: (_, __) => ErrorStateScreen(
-            onRetry: () => ref.invalidate(transactionsStreamProvider),
-          ),
+          loading: () => const _HistorySkeletonState(),
+          error:
+              (_, __) => ErrorStateScreen(
+                onRetry: () => ref.invalidate(transactionsStreamProvider),
+              ),
         );
       },
     );
@@ -314,6 +317,7 @@ void showDateRangeSheet(BuildContext context, WidgetRef ref) async {
     context: context,
     firstDate: DateTime(2020),
     lastDate: DateTime.now(),
+    builder: finovaPickerTheme,
   );
 
   if (range != null) {
@@ -361,5 +365,138 @@ String _paymentMethodIcon(String? method) {
       return 'assets/ewallet.png';
     default:
       return 'assets/money.png';
+  }
+}
+
+class _HistorySkeletonState extends StatelessWidget {
+  const _HistorySkeletonState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: ShimmerSkeleton(
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Color(0xFF4A90FF),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(18),
+                  bottomRight: Radius.circular(18),
+                ),
+              ),
+              child: const Padding(
+                padding: EdgeInsets.fromLTRB(20, 72, 20, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonBox(height: 26, width: 90, radius: 8),
+                    SizedBox(height: 14),
+                    SkeletonBox(height: 34, width: 180, radius: 12),
+                    SizedBox(height: 10),
+                    SkeletonBox(height: 12, width: 140, radius: 8),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(18, 18, 18, 120),
+                child: Column(
+                  children: [
+                    Container(
+                      height: 58,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 8,
+                            spreadRadius: 0.5,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    for (int i = 0; i < 3; i++) ...[
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: SkeletonBox(
+                            height: 18,
+                            width: i == 0 ? 110 : 90,
+                            radius: 8,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 8,
+                              spreadRadius: 0.5,
+                            ),
+                          ],
+                        ),
+                        child: const Column(
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 18,
+                                  backgroundColor: Color(0xFFE9EDF3),
+                                ),
+                                SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      SkeletonBox(
+                                        height: 14,
+                                        width: 130,
+                                        radius: 8,
+                                      ),
+                                      SizedBox(height: 8),
+                                      SkeletonBox(
+                                        height: 12,
+                                        width: 180,
+                                        radius: 8,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                SkeletonBox(height: 16, width: 60, radius: 8),
+                              ],
+                            ),
+                            SizedBox(height: 14),
+                            Row(
+                              children: [
+                                SkeletonBox(height: 12, width: 80, radius: 8),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

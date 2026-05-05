@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "1034108295430-8b84cfkt6kau17jqti6191ned2860dfh.apps.googleusercontent.com",
+          "client_id": "1034108295430-541q5aplv3rf6bace2tmftvrm3chibv4.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.finova_ai",
-            "certificate_hash": "e4908b24fd4d45b5623249884c0ef494a965a82e"
+            "certificate_hash": "7711468bfc833333fb005be7fc2af20233ab3f3d"
           }
         },
         {

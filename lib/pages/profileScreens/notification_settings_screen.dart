@@ -1,8 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:finova_ai/models/app_notification_settings.dart';
 import 'package:finova_ai/providers/notification_settings_provider.dart';
+import 'package:finova_ai/services/notification_service.dart';
+import 'package:finova_ai/utils/picker_theme.dart';
 import 'package:finova_ai/widgets/alerts_container.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,9 +47,41 @@ class NotificationSettingsScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _MasterNotificationCard(settings: settings),
+            _MasterNotificationCard(
+              settings: settings,
+              onChanged: (value) async {
+                await _applySettings(
+                  ref,
+                  settings.copyWith(pushEnabled: value),
+                );
+              },
+            ),
             const SizedBox(height: 20),
-            _ReminderTimeCard(settings: settings),
+            _ReminderTimeCard(
+              settings: settings,
+              onTap: () async {
+                if (!settings.pushEnabled) return;
+
+                final selected = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay(
+                    hour: settings.reminderHour,
+                    minute: settings.reminderMinute,
+                  ),
+                  builder: finovaPickerTheme,
+                );
+
+                if (selected == null) return;
+
+                await _applySettings(
+                  ref,
+                  settings.copyWith(
+                    reminderHour: selected.hour,
+                    reminderMinute: selected.minute,
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: 20),
             const Text(
               'Alerts',
@@ -67,7 +99,8 @@ class NotificationSettingsScreen extends ConsumerWidget {
               onChanged:
                   settings.pushEnabled
                       ? (value) async {
-                        await _updateNotificationSettings(
+                        await _applySettings(
+                          ref,
                           settings.copyWith(budgetExceededEnabled: value),
                         );
                       }
@@ -81,7 +114,8 @@ class NotificationSettingsScreen extends ConsumerWidget {
               onChanged:
                   settings.pushEnabled
                       ? (value) async {
-                        await _updateNotificationSettings(
+                        await _applySettings(
+                          ref,
                           settings.copyWith(categoryLimitEnabled: value),
                         );
                       }
@@ -95,7 +129,8 @@ class NotificationSettingsScreen extends ConsumerWidget {
               onChanged:
                   settings.pushEnabled
                       ? (value) async {
-                        await _updateNotificationSettings(
+                        await _applySettings(
+                          ref,
                           settings.copyWith(aiAlertsEnabled: value),
                         );
                       }
@@ -118,12 +153,41 @@ class NotificationSettingsScreen extends ConsumerWidget {
       ),
     );
   }
+
+  Future<void> _applySettings(
+    WidgetRef ref,
+    AppNotificationSettings settings,
+  ) async {
+    // Optimistic update — persists across navigation via the notifier.
+    await ref
+        .read(notificationSettingsProvider.notifier)
+        .updateSettings(settings);
+
+    // Schedule / cancel notifications based on the new settings.
+    await NotificationService.instance.init();
+    if (!settings.pushEnabled) {
+      await NotificationService.instance.cancelAllNotifications();
+      return;
+    }
+
+    await NotificationService.instance.requestPermissions();
+    await NotificationService.instance.syncScheduledNotifications(
+      settings: settings,
+      transactions: const [],
+    );
+  }
 }
 
+// ──────────────────────────────────────────────────────────────────────────────
+
 class _MasterNotificationCard extends StatelessWidget {
-  const _MasterNotificationCard({required this.settings});
+  const _MasterNotificationCard({
+    required this.settings,
+    required this.onChanged,
+  });
 
   final AppNotificationSettings settings;
+  final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -174,11 +238,7 @@ class _MasterNotificationCard extends StatelessWidget {
                 inactiveTrackColor: Colors.grey,
                 activeTrackColor: const Color.fromARGB(255, 27, 255, 87),
                 value: settings.pushEnabled,
-                onChanged: (value) async {
-                  await _updateNotificationSettings(
-                    settings.copyWith(pushEnabled: value),
-                  );
-                },
+                onChanged: onChanged,
               ),
             ),
           ],
@@ -188,10 +248,13 @@ class _MasterNotificationCard extends StatelessWidget {
   }
 }
 
+// ──────────────────────────────────────────────────────────────────────────────
+
 class _ReminderTimeCard extends StatelessWidget {
-  const _ReminderTimeCard({required this.settings});
+  const _ReminderTimeCard({required this.settings, required this.onTap});
 
   final AppNotificationSettings settings;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -202,29 +265,7 @@ class _ReminderTimeCard extends StatelessWidget {
 
     return InkWell(
       borderRadius: BorderRadius.circular(18),
-      onTap:
-          settings.pushEnabled
-              ? () async {
-                final selected = await showTimePicker(
-                  context: context,
-                  initialTime: TimeOfDay(
-                    hour: settings.reminderHour,
-                    minute: settings.reminderMinute,
-                  ),
-                );
-
-                if (selected == null) {
-                  return;
-                }
-
-                await _updateNotificationSettings(
-                  settings.copyWith(
-                    reminderHour: selected.hour,
-                    reminderMinute: selected.minute,
-                  ),
-                );
-              }
-              : null,
+      onTap: settings.pushEnabled ? onTap : null,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -285,15 +326,4 @@ class _ReminderTimeCard extends StatelessWidget {
       ),
     );
   }
-}
-
-Future<void> _updateNotificationSettings(AppNotificationSettings settings) async {
-  final user = FirebaseAuth.instance.currentUser;
-  if (user == null) {
-    return;
-  }
-
-  await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-    'notificationSettings': settings.toMap(),
-  }, SetOptions(merge: true));
 }

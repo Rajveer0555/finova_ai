@@ -4,6 +4,7 @@ import 'package:finova_ai/models/transactions_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:finova_ai/providers/history_provider.dart';
+import 'package:finova_ai/utils/picker_theme.dart';
 import 'package:finova_ai/widgets/category_selector.dart';
 import 'package:finova_ai/widgets/elevated_button.dart';
 import 'package:finova_ai/widgets/payment_methodsheet.dart';
@@ -319,7 +320,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                     .read(transactionsProvider.notifier)
                     .addTransaction(newTransaction);
 
-                if (!mounted) return;
+                if (!context.mounted) return;
                 Navigator.pop(context, newTransaction);
               }),
             ],
@@ -335,13 +336,16 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       initialDate: selectedDateTime,
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
+      builder: finovaPickerTheme,
     );
 
     if (pickedDate == null) return;
+    if (!mounted) return;
 
     TimeOfDay? pickedTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
+      builder: finovaPickerTheme,
     );
 
     if (pickedTime == null) return;

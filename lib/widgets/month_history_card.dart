@@ -8,11 +8,13 @@ import 'package:intl/intl.dart';
 class MonthHistoryCard extends StatefulWidget {
   final String monthKey;
   final List<QueryDocumentSnapshot> transactions;
+  final bool initiallyExpanded;
 
   const MonthHistoryCard({
     super.key,
     required this.monthKey,
     required this.transactions,
+    this.initiallyExpanded = false,
   });
 
   @override
@@ -20,7 +22,21 @@ class MonthHistoryCard extends StatefulWidget {
 }
 
 class _MonthHistoryCardState extends State<MonthHistoryCard> {
-  bool isExpanded = true;
+  late bool isExpanded;
+
+  @override
+  void initState() {
+    super.initState();
+    isExpanded = widget.initiallyExpanded;
+  }
+
+  @override
+  void didUpdateWidget(covariant MonthHistoryCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.monthKey != widget.monthKey) {
+      isExpanded = widget.initiallyExpanded;
+    }
+  }
 
   double get totalAmount => widget.transactions.fold(
     0,

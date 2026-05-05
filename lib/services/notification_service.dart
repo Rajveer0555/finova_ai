@@ -112,6 +112,9 @@ class NotificationService {
       return;
     }
 
+    await _plugin.cancel(_dailyReminderId);
+    await _plugin.cancel(_monthlySummaryId);
+
     await _scheduleDailyReminder(
       hour: settings.reminderHour,
       minute: settings.reminderMinute,
@@ -128,7 +131,8 @@ class NotificationService {
     await _scheduleZonedNotification(
       id: _dailyReminderId,
       title: 'Track today\'s expenses',
-      body: 'Add today\'s spending to keep your budgets and AI insights accurate.',
+      body:
+          'Add today\'s spending to keep your budgets and AI insights accurate.',
       scheduledDate: scheduledDate,
       matchDateTimeComponents: DateTimeComponents.time,
     );
@@ -149,7 +153,8 @@ class NotificationService {
       if (date == null) {
         continue;
       }
-      if (date.isBefore(previousMonthStart) || !date.isBefore(currentMonthStart)) {
+      if (date.isBefore(previousMonthStart) ||
+          !date.isBefore(currentMonthStart)) {
         continue;
       }
 
@@ -160,18 +165,20 @@ class NotificationService {
     }
 
     final monthLabel = _monthLabel(previousMonthStart);
-    final topCategoryEntry = categoryTotals.entries.isEmpty
-        ? null
-        : (categoryTotals.entries.toList()
-          ..sort((a, b) => b.value.compareTo(a.value)))
-            .first;
+    final topCategoryEntry =
+        categoryTotals.entries.isEmpty
+            ? null
+            : (categoryTotals.entries.toList()
+                  ..sort((a, b) => b.value.compareTo(a.value)))
+                .first;
 
     final title = '$monthLabel Summary';
-    final body = total > 0
-        ? topCategoryEntry != null
-            ? 'You spent ${formatCurrency(total)} in $monthLabel. ${_titleCase(topCategoryEntry.key)} led at ${formatCurrency(topCategoryEntry.value)}.'
-            : 'You spent ${formatCurrency(total)} in $monthLabel. Open Finova AI to review your monthly trends.'
-        : 'No expenses were recorded in $monthLabel. Start the new month by tracking every spend.';
+    final body =
+        total > 0
+            ? topCategoryEntry != null
+                ? 'You spent ${formatCurrency(total)} in $monthLabel. ${_titleCase(topCategoryEntry.key)} led at ${formatCurrency(topCategoryEntry.value)}.'
+                : 'You spent ${formatCurrency(total)} in $monthLabel. Open Finova AI to review your monthly trends.'
+            : 'No expenses were recorded in $monthLabel. Start the new month by tracking every spend.';
 
     await _scheduleZonedNotification(
       id: _monthlySummaryId,
@@ -225,7 +232,10 @@ class NotificationService {
     if (settings.budgetExceededEnabled && monthlyIncome > 0) {
       final budgetAlertKey = 'budget_alert_band_${userId}_$monthKey';
       if (totalSpent > monthlyIncome) {
-        final budgetBand = _overrunBand(spent: totalSpent, limit: monthlyIncome);
+        final budgetBand = _overrunBand(
+          spent: totalSpent,
+          limit: monthlyIncome,
+        );
         final lastBudgetBand = prefs.getInt(budgetAlertKey) ?? 0;
 
         if (budgetBand > lastBudgetBand) {
@@ -301,7 +311,7 @@ class NotificationService {
         channelDescription: _channel.description,
         importance: Importance.high,
         priority: Priority.high,
-        icon: '@mipmap/ic_launcher',
+        icon: '@drawable/ic_stat_finova_notification',
       ),
       iOS: const DarwinNotificationDetails(),
     );
@@ -309,7 +319,14 @@ class NotificationService {
 
   tz.TZDateTime _nextTimeOfDay({required int hour, required int minute}) {
     final now = tz.TZDateTime.now(tz.local);
-    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    var scheduled = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
     if (!scheduled.isAfter(now)) {
       scheduled = scheduled.add(const Duration(days: 1));
     }
@@ -321,9 +338,23 @@ class NotificationService {
     required int minute,
   }) {
     final now = tz.TZDateTime.now(tz.local);
-    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, 1, hour, minute);
+    var scheduled = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      1,
+      hour,
+      minute,
+    );
     if (!scheduled.isAfter(now)) {
-      scheduled = tz.TZDateTime(tz.local, now.year, now.month + 1, 1, hour, minute);
+      scheduled = tz.TZDateTime(
+        tz.local,
+        now.year,
+        now.month + 1,
+        1,
+        hour,
+        minute,
+      );
     }
     return scheduled;
   }
@@ -378,14 +409,3 @@ class NotificationService {
     return normalized[0].toUpperCase() + normalized.substring(1);
   }
 }
-
-
-
-
-
-
-
-
-
-
-

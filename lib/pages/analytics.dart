@@ -13,6 +13,7 @@ import 'package:finova_ai/services/finova_ai_engine.dart';
 import 'package:finova_ai/utils/formatters.dart';
 import 'package:finova_ai/utils/page_transitions.dart';
 import 'package:finova_ai/widgets/graph.dart';
+import 'package:finova_ai/widgets/shimmer_skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pie_chart/pie_chart.dart';
@@ -444,7 +445,7 @@ class Analytics extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const LoadingState(),
+      loading: () => const _AnalyticsSkeletonState(),
       error: (e, _) {
         return connectivityAsync.when(
           data: (connectivity) {
@@ -458,7 +459,7 @@ class Analytics extends ConsumerWidget {
               onRetry: () => ref.invalidate(transactionsStreamProvider),
             );
           },
-          loading: () => const LoadingState(),
+          loading: () => const _AnalyticsSkeletonState(),
           error: (_, __) => ErrorStateScreen(
             onRetry: () => ref.invalidate(transactionsStreamProvider),
           ),
@@ -516,6 +517,64 @@ class _SummaryCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 6),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AnalyticsSkeletonState extends StatelessWidget {
+  const _AnalyticsSkeletonState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey.shade50,
+      body: ShimmerSkeleton(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(18, 64, 18, 120),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SkeletonBox(height: 26, width: 120, radius: 8),
+              const SizedBox(height: 22),
+              Container(
+                height: 170,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: const [
+                  Expanded(
+                    child: SkeletonBox(height: 118, width: double.infinity),
+                  ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: SkeletonBox(height: 118, width: double.infinity),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                height: 220,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                height: 110,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(22),
+                ),
+              ),
             ],
           ),
         ),
