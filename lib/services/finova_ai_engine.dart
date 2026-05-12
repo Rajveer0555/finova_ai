@@ -54,6 +54,10 @@ class AiInsightResult {
   final String focusCategoryTitle;
   final String currentMonthLabel;
   final String previousMonthLabel;
+  final double currentMonthSpend;
+  final double previousMonthSpend;
+  final double monthlyDelta;
+  final double monthlyDeltaPercent;
   final double currentMonthCategorySpend;
   final double previousMonthCategorySpend;
   final double monthlyCategoryDelta;
@@ -82,6 +86,10 @@ class AiInsightResult {
     required this.focusCategoryTitle,
     required this.currentMonthLabel,
     required this.previousMonthLabel,
+    required this.currentMonthSpend,
+    required this.previousMonthSpend,
+    required this.monthlyDelta,
+    required this.monthlyDeltaPercent,
     required this.currentMonthCategorySpend,
     required this.previousMonthCategorySpend,
     required this.monthlyCategoryDelta,
@@ -112,6 +120,10 @@ class AiInsightResult {
       focusCategoryTitle: 'Food',
       currentMonthLabel: 'This Month',
       previousMonthLabel: 'Last Month',
+      currentMonthSpend: 0,
+      previousMonthSpend: 0,
+      monthlyDelta: 0,
+      monthlyDeltaPercent: 0,
       currentMonthCategorySpend: 0,
       previousMonthCategorySpend: 0,
       monthlyCategoryDelta: 0,
@@ -192,7 +204,9 @@ class FinovaAiEngine {
     final previousWindowStart = currentNow.subtract(const Duration(days: 60));
 
     final last30 =
-        transactions.where((tx) => !tx.date.isBefore(currentWindowStart)).toList();
+        transactions
+            .where((tx) => !tx.date.isBefore(currentWindowStart))
+            .toList();
     final previous30 =
         transactions
             .where(
@@ -206,15 +220,13 @@ class FinovaAiEngine {
     final allTimeCategoryTotals = _sumByCategory(transactions);
     final historyMonths = _historyMonthsCovered(transactions, currentNow);
 
-    final focusCategoryKey = _pickFocusCategory(
-      currentCategoryTotals: currentCategoryTotals,
-      previousCategoryTotals: previousCategoryTotals,
-      overallCategoryTotals: allTimeCategoryTotals,
-    );
-    final focusCategoryTitle = aiCategoryTitle(focusCategoryKey);
     final currentMonthStart = DateTime(currentNow.year, currentNow.month, 1);
     final nextMonthStart = DateTime(currentNow.year, currentNow.month + 1, 1);
-    final previousMonthStart = DateTime(currentNow.year, currentNow.month - 1, 1);
+    final previousMonthStart = DateTime(
+      currentNow.year,
+      currentNow.month - 1,
+      1,
+    );
     final currentMonthTransactions =
         transactions
             .where(
@@ -232,7 +244,28 @@ class FinovaAiEngine {
             )
             .toList();
     final currentMonthCategoryTotals = _sumByCategory(currentMonthTransactions);
-    final previousMonthCategoryTotals = _sumByCategory(previousMonthTransactions);
+    final previousMonthCategoryTotals = _sumByCategory(
+      previousMonthTransactions,
+    );
+    final currentMonthSpend = currentMonthTransactions.fold<double>(
+      0,
+      (sum, tx) => sum + tx.amount,
+    );
+    final previousMonthSpend = previousMonthTransactions.fold<double>(
+      0,
+      (sum, tx) => sum + tx.amount,
+    );
+    final monthlyDelta = currentMonthSpend - previousMonthSpend;
+    final monthlyDeltaPercent =
+        previousMonthSpend > 0
+            ? (monthlyDelta / previousMonthSpend) * 100
+            : (currentMonthSpend > 0 ? 100.0 : 0.0);
+    final focusCategoryKey = _pickFocusCategory(
+      currentCategoryTotals: currentMonthCategoryTotals,
+      previousCategoryTotals: previousMonthCategoryTotals,
+      overallCategoryTotals: allTimeCategoryTotals,
+    );
+    final focusCategoryTitle = aiCategoryTitle(focusCategoryKey);
     final currentMonthCategorySpend =
         currentMonthCategoryTotals[focusCategoryKey] ?? 0.0;
     final previousMonthCategorySpend =
@@ -247,7 +280,8 @@ class FinovaAiEngine {
     final previousMonthLabel = _monthLabel(previousMonthStart);
 
     final currentCategorySpend = currentCategoryTotals[focusCategoryKey] ?? 0.0;
-    final previousCategorySpend = previousCategoryTotals[focusCategoryKey] ?? 0.0;
+    final previousCategorySpend =
+        previousCategoryTotals[focusCategoryKey] ?? 0.0;
     final categoryDelta = currentCategorySpend - previousCategorySpend;
     final categoryDeltaPercent =
         previousCategorySpend > 0
@@ -255,7 +289,10 @@ class FinovaAiEngine {
             : (currentCategorySpend > 0 ? 100.0 : 0.0);
 
     final current30Total = last30.fold<double>(0, (sum, tx) => sum + tx.amount);
-    final previous30Total = previous30.fold<double>(0, (sum, tx) => sum + tx.amount);
+    final previous30Total = previous30.fold<double>(
+      0,
+      (sum, tx) => sum + tx.amount,
+    );
     final totalChangePercent =
         previous30Total > 0
             ? ((current30Total - previous30Total) / previous30Total) * 100
@@ -294,17 +331,21 @@ class FinovaAiEngine {
     }
     final currentCategoryBudget = normalizedBudgets[focusCategoryKey] ?? 0.0;
     final suggestedCategoryBudget =
-        math.max(
-          currentCategoryBudget,
-          math.max(
-            predictedFocusAmount * 1.08,
-            currentCategorySpend > 0 ? currentCategorySpend * 1.05 : 0.0,
-          ),
-        ).toDouble();
+        math
+            .max(
+              currentCategoryBudget,
+              math.max(
+                predictedFocusAmount * 1.08,
+                currentCategorySpend > 0 ? currentCategorySpend * 1.05 : 0.0,
+              ),
+            )
+            .toDouble();
 
     final focusTransactions =
         last30
-            .where((tx) => _normalizeCategoryKey(tx.categoryKey) == focusCategoryKey)
+            .where(
+              (tx) => _normalizeCategoryKey(tx.categoryKey) == focusCategoryKey,
+            )
             .toList();
     final topFactors = _buildTopFactors(focusCategoryKey, focusTransactions);
     final confidence = _buildConfidence(
@@ -345,6 +386,10 @@ class FinovaAiEngine {
       focusCategoryTitle: focusCategoryTitle,
       currentMonthLabel: currentMonthLabel,
       previousMonthLabel: previousMonthLabel,
+      currentMonthSpend: currentMonthSpend,
+      previousMonthSpend: previousMonthSpend,
+      monthlyDelta: monthlyDelta,
+      monthlyDeltaPercent: monthlyDeltaPercent,
       currentMonthCategorySpend: currentMonthCategorySpend,
       previousMonthCategorySpend: previousMonthCategorySpend,
       monthlyCategoryDelta: monthlyCategoryDelta,
@@ -369,7 +414,9 @@ class FinovaAiEngine {
     );
   }
 
-  static Map<String, double> _sumByCategory(List<AiInputTransaction> transactions) {
+  static Map<String, double> _sumByCategory(
+    List<AiInputTransaction> transactions,
+  ) {
     final totals = <String, double>{};
     for (final tx in transactions) {
       final key = _normalizeCategoryKey(tx.categoryKey);
@@ -431,9 +478,11 @@ class FinovaAiEngine {
         (historicalMonthlyAverage * 0.20);
 
     final baseline = math.max(current30Total, historicalMonthlyAverage);
-    final floor = math.max(current30Total * 0.78, historicalMonthlyAverage * 0.7);
-    final ceiling =
-        monthlyIncome > 0 ? monthlyIncome * 1.15 : baseline * 1.45;
+    final floor = math.max(
+      current30Total * 0.78,
+      historicalMonthlyAverage * 0.7,
+    );
+    final ceiling = monthlyIncome > 0 ? monthlyIncome * 1.15 : baseline * 1.45;
 
     prediction = prediction.clamp(floor, ceiling).toDouble();
     return prediction;
@@ -459,8 +508,7 @@ class FinovaAiEngine {
       final weekEnd = weekStart.add(const Duration(days: 7));
       return transactions
           .where(
-            (tx) =>
-                !tx.date.isBefore(weekStart) && tx.date.isBefore(weekEnd),
+            (tx) => !tx.date.isBefore(weekStart) && tx.date.isBefore(weekEnd),
           )
           .fold<double>(0, (sum, tx) => sum + tx.amount);
     });
@@ -537,8 +585,10 @@ class FinovaAiEngine {
       return const [];
     }
 
-    final rawTotal =
-        rawPredictions.values.fold<double>(0.0, (sum, value) => sum + value);
+    final rawTotal = rawPredictions.values.fold<double>(
+      0.0,
+      (sum, value) => sum + value,
+    );
     if (rawTotal <= 0) {
       return const [];
     }
@@ -567,8 +617,7 @@ class FinovaAiEngine {
     }
 
     categories.sort((a, b) {
-      final byMovement =
-          b.changeAmount.abs().compareTo(a.changeAmount.abs());
+      final byMovement = b.changeAmount.abs().compareTo(a.changeAmount.abs());
       if (byMovement != 0) {
         return byMovement;
       }
@@ -590,7 +639,10 @@ class FinovaAiEngine {
       }
     }
 
-    final total = overallCategoryTotals.values.fold<double>(0, (sum, v) => sum + v);
+    final total = overallCategoryTotals.values.fold<double>(
+      0,
+      (sum, v) => sum + v,
+    );
     if (total <= 0) return 0;
     final share = (overallCategoryTotals[key] ?? 0.0) / total;
     return predictedNextMonthSpend * share;
@@ -638,7 +690,12 @@ class FinovaAiEngine {
     final title = rawTitle.trim().toLowerCase();
     switch (categoryKey) {
       case 'food':
-        if (_containsAny(title, ['zomato', 'swiggy', 'uber eats', 'delivery'])) {
+        if (_containsAny(title, [
+          'zomato',
+          'swiggy',
+          'uber eats',
+          'delivery',
+        ])) {
           return 'Delivery Apps';
         }
         if (_containsAny(title, ['cafe', 'coffee', 'tea', 'starbucks'])) {
@@ -717,12 +774,17 @@ class FinovaAiEngine {
     if (weekendShare >= 0.45) {
       points.add('Most of this spending happened on weekends.');
     } else if (topFactors.isNotEmpty) {
-      points.add('${topFactors.first.title} is the biggest driver inside this category.');
+      points.add(
+        '${topFactors.first.title} is the biggest driver inside this category.',
+      );
     } else {
-      points.add('Multiple transactions in this category pushed the total higher.');
+      points.add(
+        'Multiple transactions in this category pushed the total higher.',
+      );
     }
 
-    if (currentCategoryBudget > 0 && predictedFocusAmount > currentCategoryBudget) {
+    if (currentCategoryBudget > 0 &&
+        predictedFocusAmount > currentCategoryBudget) {
       points.add(
         'At the current pace, next month could exceed your ${focusCategoryTitle.toLowerCase()} budget by ${formatCurrency(predictedFocusAmount - currentCategoryBudget)}.',
       );
@@ -731,7 +793,9 @@ class FinovaAiEngine {
         'A budget near ${formatCurrency(suggestedCategoryBudget)} can help you control ${focusCategoryTitle.toLowerCase()} spending.',
       );
     } else if (monthlyIncome > 0 && predictedNextMonthSpend > monthlyIncome) {
-      points.add('Your projected monthly spend is close to your recorded income.');
+      points.add(
+        'Your projected monthly spend is close to your recorded income.',
+      );
     }
 
     return points.take(3).toList();
@@ -847,8 +911,3 @@ String _normalizeCategoryKey(String key) {
   if (normalized.isEmpty) return 'other';
   return normalized;
 }
-
-
-
-
-

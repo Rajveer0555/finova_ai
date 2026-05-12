@@ -17,21 +17,17 @@ class AiInsightsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ai = ref.watch(aiInsightProvider);
     final screenWidth = MediaQuery.of(context).size.width;
-    final deltaAmount = ai.monthlyCategoryDelta.abs();
+    final deltaAmount = ai.monthlyDelta.abs();
     final comparisonMax =
-        math.max(
-          1.0,
-          math.max(
-            ai.previousMonthCategorySpend,
-            ai.currentMonthCategorySpend,
-          ),
-        ).toDouble();
+        math
+            .max(1.0, math.max(ai.previousMonthSpend, ai.currentMonthSpend))
+            .toDouble();
 
     final headline =
         ai.hasTransactions
-            ? ai.monthlyCategoryDelta >= 0
-                ? 'You spent ${formatCurrency(deltaAmount)} more on ${ai.focusCategoryTitle} in ${ai.currentMonthLabel}'
-                : 'You spent ${formatCurrency(deltaAmount)} less on ${ai.focusCategoryTitle} in ${ai.currentMonthLabel}'
+            ? ai.monthlyDelta >= 0
+                ? 'You spent ${formatCurrency(deltaAmount)} more in ${ai.currentMonthLabel}'
+                : 'You spent ${formatCurrency(deltaAmount)} less in ${ai.currentMonthLabel}'
             : 'Add a few expenses to unlock your AI spending insights';
 
     final budgetHint =
@@ -217,11 +213,14 @@ class AiInsightsScreen extends ConsumerWidget {
                                           ai.currentMonthLabel,
                                         ];
                                         final index = value.toInt();
-                                        if (index < 0 || index >= labels.length) {
+                                        if (index < 0 ||
+                                            index >= labels.length) {
                                           return const SizedBox();
                                         }
                                         return Padding(
-                                          padding: const EdgeInsets.only(top: 8),
+                                          padding: const EdgeInsets.only(
+                                            top: 8,
+                                          ),
                                           child: FittedBox(
                                             fit: BoxFit.scaleDown,
                                             child: Text(
@@ -244,7 +243,7 @@ class AiInsightsScreen extends ConsumerWidget {
                                     x: 0,
                                     barRods: [
                                       BarChartRodData(
-                                        toY: ai.previousMonthCategorySpend,
+                                        toY: ai.previousMonthSpend,
                                         width: 26,
                                         color: const Color(0xFF4F80E1),
                                         borderRadius: BorderRadius.circular(8),
@@ -255,7 +254,7 @@ class AiInsightsScreen extends ConsumerWidget {
                                     x: 1,
                                     barRods: [
                                       BarChartRodData(
-                                        toY: ai.currentMonthCategorySpend,
+                                        toY: ai.currentMonthSpend,
                                         width: 26,
                                         color: const Color(0xFFFFB443),
                                         borderRadius: BorderRadius.circular(8),
@@ -272,7 +271,7 @@ class AiInsightsScreen extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  ai.focusCategoryTitle,
+                                  'Total Spend',
                                   style: const TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600,
@@ -284,7 +283,7 @@ class AiInsightsScreen extends ConsumerWidget {
                                   fit: BoxFit.scaleDown,
                                   alignment: Alignment.centerLeft,
                                   child: Text(
-                                    '${formatCurrency(ai.previousMonthCategorySpend)} -> ${formatCurrency(ai.currentMonthCategorySpend)}',
+                                    '${formatCurrency(ai.previousMonthSpend)} -> ${formatCurrency(ai.currentMonthSpend)}',
                                     maxLines: 1,
                                     style: const TextStyle(
                                       fontSize: 16,
@@ -298,13 +297,13 @@ class AiInsightsScreen extends ConsumerWidget {
                                   fit: BoxFit.scaleDown,
                                   alignment: Alignment.centerLeft,
                                   child: Text(
-                                    '${ai.monthlyCategoryDeltaPercent >= 0 ? '+' : '-'}${formatPercentage(ai.monthlyCategoryDeltaPercent.abs())}',
+                                    '${ai.monthlyDeltaPercent >= 0 ? '+' : '-'}${formatPercentage(ai.monthlyDeltaPercent.abs())}',
                                     maxLines: 1,
                                     style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.w700,
                                       color:
-                                          ai.monthlyCategoryDeltaPercent >= 0
+                                          ai.monthlyDeltaPercent >= 0
                                               ? const Color(0xFF4A90FF)
                                               : Colors.green,
                                       fontFamily: 'SFProDisplay',
@@ -462,10 +461,7 @@ class AiInsightsScreen extends ConsumerWidget {
             decoration: const BoxDecoration(
               color: Colors.white,
               boxShadow: [
-                BoxShadow(
-                  color: Color.fromRGBO(0, 0, 0, 0.05),
-                  blurRadius: 12,
-                ),
+                BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.05), blurRadius: 12),
               ],
             ),
             child: ElevatedButtonCust('Next', () {
@@ -628,18 +624,21 @@ String _confidenceLabel(int confidence) {
 
 IconData _factorIcon(String title, String categoryKey) {
   final normalizedTitle = title.toLowerCase();
-  if (normalizedTitle.contains('delivery')) return Icons.delivery_dining_rounded;
+  if (normalizedTitle.contains('delivery'))
+    return Icons.delivery_dining_rounded;
   if (normalizedTitle.contains('cafe') || normalizedTitle.contains('coffee')) {
     return Icons.local_cafe_rounded;
   }
-  if (normalizedTitle.contains('dining') || normalizedTitle.contains('restaurant')) {
+  if (normalizedTitle.contains('dining') ||
+      normalizedTitle.contains('restaurant')) {
     return Icons.restaurant_rounded;
   }
   if (normalizedTitle.contains('flight')) return Icons.flight_takeoff_rounded;
   if (normalizedTitle.contains('fuel')) return Icons.local_gas_station_rounded;
   if (normalizedTitle.contains('fashion')) return Icons.checkroom_rounded;
   if (normalizedTitle.contains('rent')) return Icons.home_rounded;
-  if (normalizedTitle.contains('utilities')) return Icons.lightbulb_outline_rounded;
+  if (normalizedTitle.contains('utilities'))
+    return Icons.lightbulb_outline_rounded;
 
   switch (categoryKey) {
     case 'food':
@@ -654,5 +653,3 @@ IconData _factorIcon(String title, String categoryKey) {
       return Icons.insights_rounded;
   }
 }
-
-

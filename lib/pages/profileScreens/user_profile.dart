@@ -1,4 +1,5 @@
 import 'package:finova_ai/widgets/elevated_button.dart';
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:crop/crop.dart';
@@ -19,26 +20,49 @@ class UserProfile extends ConsumerStatefulWidget {
 class _UserProfileState extends ConsumerState<UserProfile> {
   Future<void> loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    final doc =
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-
-    final data = doc.data();
-
-    if (data != null) {
-      nameController.text = data['name'] ?? '';
-      emailController.text = data['email'] ?? '';
-      phoneController.text = data['phone'] ?? '';
-      imageUrl = data['profileImage'];
+    if (user == null) {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+      return;
     }
 
-    setState(() {
-      isLoading = false;
-    });
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get()
+          .timeout(const Duration(seconds: 12));
+
+      final data = doc.data();
+
+      if (data != null) {
+        nameController.text = data['name'] ?? '';
+        emailController.text = data['email'] ?? user.email ?? '';
+        phoneController.text = data['phone'] ?? '';
+        imageUrl = data['profileImage'];
+      } else {
+        emailController.text = user.email ?? '';
+      }
+    } catch (_) {
+      emailController.text = user.email ?? '';
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Could not load profile. You can still edit it."),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> pickImage() async {
@@ -49,19 +73,19 @@ class _UserProfileState extends ConsumerState<UserProfile> {
 
     if (picked != null) {
       if (!mounted) return;
-      
+
       final croppedImage = await Navigator.push<ui.Image>(
         context,
         MaterialPageRoute(
-          builder: (context) => _CropImageScreen(
-            imageFile: File(picked.path),
-          ),
+          builder: (context) => _CropImageScreen(imageFile: File(picked.path)),
         ),
       );
 
       if (croppedImage != null) {
         // Convert ui.Image to File
-        final bytes = await croppedImage.toByteData(format: ui.ImageByteFormat.png);
+        final bytes = await croppedImage.toByteData(
+          format: ui.ImageByteFormat.png,
+        );
         if (bytes != null) {
           final tempDir = Directory.systemTemp;
           final file = File(
@@ -96,12 +120,12 @@ class _UserProfileState extends ConsumerState<UserProfile> {
     try {
       String? uploadedImage = await uploadImage();
 
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         "name": nameController.text.trim(),
         "email": emailController.text.trim(),
         "phone": phoneController.text.trim(),
         "profileImage": uploadedImage ?? imageUrl,
-      });
+      }, SetOptions(merge: true));
 
       if (!mounted) return;
 
@@ -116,9 +140,9 @@ class _UserProfileState extends ConsumerState<UserProfile> {
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Could not update profile")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Could not update profile")));
     } finally {
       if (mounted) {
         setState(() {
@@ -136,9 +160,19 @@ class _UserProfileState extends ConsumerState<UserProfile> {
     final user = FirebaseAuth.instance.currentUser;
 
     final fileName =
-        '${user!.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+        '${user!.uid}/${DateTime.now().millisecondsSinceEpoch}.png';
 
-    await supabase.storage.from('profile-images').upload(fileName, imageFile!);
+    await supabase.storage
+        .from('profile-images')
+        .upload(
+          fileName,
+          imageFile!,
+          fileOptions: const FileOptions(
+            cacheControl: '3600',
+            contentType: 'image/png',
+            upsert: true,
+          ),
+        );
 
     final imageUrl = supabase.storage
         .from('profile-images')
@@ -225,24 +259,15 @@ class _UserProfileState extends ConsumerState<UserProfile> {
                           backgroundColor: Colors.grey.shade200,
                         ),
 
-                        CircleAvatar(
-                          radius: 60,
-                          backgroundColor: Colors.grey.shade300,
-                          backgroundImage:
-                              imageFile != null
-                                  ? FileImage(imageFile!)
-                                  : (imageUrl != null && imageUrl!.isNotEmpty
-                                      ? NetworkImage(imageUrl!)
-                                      : null),
-                          child:
-                              imageFile == null &&
-                                      (imageUrl == null || imageUrl!.isEmpty)
-                                  ? const Icon(
-                                    Icons.person,
-                                    size: 40,
-                                    color: Colors.grey,
-                                  )
-                                  : null,
+                        ClipOval(
+                          child: SizedBox(
+                            width: 120,
+                            height: 120,
+                            child: _ProfileImagePreview(
+                              imageFile: imageFile,
+                              imageUrl: imageUrl,
+                            ),
+                          ),
                         ),
 
                         Positioned(
@@ -316,6 +341,59 @@ class _UserProfileState extends ConsumerState<UserProfile> {
   }
 }
 
+class _ProfileImagePreview extends StatelessWidget {
+  final File? imageFile;
+  final String? imageUrl;
+
+  const _ProfileImagePreview({required this.imageFile, required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    if (imageFile != null) {
+      return Image.file(
+        imageFile!,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => const _ProfileImageFallback(),
+      );
+    }
+
+    if (imageUrl != null && imageUrl!.isNotEmpty) {
+      return Image.network(
+        imageUrl!,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              value:
+                  progress.expectedTotalBytes == null
+                      ? null
+                      : progress.cumulativeBytesLoaded /
+                          progress.expectedTotalBytes!,
+            ),
+          );
+        },
+        errorBuilder: (_, __, ___) => const _ProfileImageFallback(),
+      );
+    }
+
+    return const _ProfileImageFallback();
+  }
+}
+
+class _ProfileImageFallback extends StatelessWidget {
+  const _ProfileImageFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.grey.shade300,
+      child: const Icon(Icons.person, size: 40, color: Colors.grey),
+    );
+  }
+}
+
 Widget _label(String text) {
   return Align(
     alignment: Alignment.centerLeft,
@@ -370,9 +448,7 @@ class _CropImageScreen extends StatefulWidget {
 }
 
 class _CropImageScreenState extends State<_CropImageScreen> {
-  late final controller = CropController(
-    aspectRatio: 1,
-  );
+  late final controller = CropController(aspectRatio: 1);
 
   @override
   void dispose() {
@@ -391,10 +467,7 @@ class _CropImageScreenState extends State<_CropImageScreen> {
         ),
         title: const Text(
           'Crop Image',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         elevation: 0,
         backgroundColor: Colors.white,
@@ -440,10 +513,8 @@ class _CropImageScreenState extends State<_CropImageScreen> {
                     ),
                     onPressed: () async {
                       final croppedImage = await controller.crop();
-                      if (croppedImage != null) {
-                        if (mounted) {
-                          Navigator.pop(context, croppedImage);
-                        }
+                      if (croppedImage != null && context.mounted) {
+                        Navigator.pop(context, croppedImage);
                       }
                     },
                     child: const Text(

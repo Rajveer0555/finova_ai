@@ -9,35 +9,63 @@ class UserAvatar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final userProfile = ref.watch(userProfileProvider);
 
     return userProfile.when(
       data: (user) {
+        final imageUrl = user?.image;
 
-        return CircleAvatar(
-          radius: radius,
-          backgroundColor: Colors.grey.shade300,
-          backgroundImage: (user?.image != null && user!.image!.isNotEmpty)
-              ? NetworkImage(user.image!)
-              : null,
-          child: (user?.image == null || user!.image!.isEmpty)
-              ? const Icon(Icons.person, color: Colors.white)
-              : null,
+        return ClipOval(
+          child: SizedBox(
+            width: radius * 2,
+            height: radius * 2,
+            child:
+                imageUrl != null && imageUrl.isNotEmpty
+                    ? Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, progress) {
+                        if (progress == null) return child;
+                        return _AvatarFallback(radius: radius, isLoading: true);
+                      },
+                      errorBuilder:
+                          (_, __, ___) => _AvatarFallback(radius: radius),
+                    )
+                    : _AvatarFallback(radius: radius),
+          ),
         );
       },
 
-      loading: () => CircleAvatar(
-        radius: radius,
-        backgroundColor: Colors.grey.shade200,
-        child: const CircularProgressIndicator(strokeWidth: 2),
-      ),
+      loading: () => _AvatarFallback(radius: radius, isLoading: true),
 
-      error: (e, _) => CircleAvatar(
-        radius: radius,
-        backgroundColor: Colors.grey.shade300,
-        child: const Icon(Icons.error),
-      ),
+      error: (e, _) => _AvatarFallback(radius: radius, showError: true),
+    );
+  }
+}
+
+class _AvatarFallback extends StatelessWidget {
+  final double radius;
+  final bool isLoading;
+  final bool showError;
+
+  const _AvatarFallback({
+    required this.radius,
+    this.isLoading = false,
+    this.showError = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: Colors.grey.shade300,
+      child:
+          isLoading
+              ? const CircularProgressIndicator(strokeWidth: 2)
+              : Icon(
+                showError ? Icons.error : Icons.person,
+                color: Colors.white,
+              ),
     );
   }
 }

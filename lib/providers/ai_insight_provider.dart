@@ -30,16 +30,12 @@ final aiInsightProvider = Provider<AiInsightResult>((ref) {
   );
 
   final transactions = <AiInputTransaction>[];
-  DateTime? latestTransactionDate;
 
   for (final doc in snapshot.docs) {
     final data = doc.data();
     final date = _readDate(data['date']);
     if (date == null) {
       continue;
-    }
-    if (latestTransactionDate == null || date.isAfter(latestTransactionDate)) {
-      latestTransactionDate = date;
     }
 
     transactions.add(
@@ -57,7 +53,7 @@ final aiInsightProvider = Provider<AiInsightResult>((ref) {
       transactions: transactions,
       budgets: budgetMap,
       monthlyIncome: income,
-      now: latestTransactionDate ?? DateTime.now(),
+      now: DateTime.now(),
     );
   } catch (_) {
     try {
@@ -65,7 +61,7 @@ final aiInsightProvider = Provider<AiInsightResult>((ref) {
         transactions: transactions,
         budgets: const <String, double>{},
         monthlyIncome: 0.0,
-        now: latestTransactionDate ?? DateTime.now(),
+        now: DateTime.now(),
       );
     } catch (_) {
       return AiInsightResult.empty();

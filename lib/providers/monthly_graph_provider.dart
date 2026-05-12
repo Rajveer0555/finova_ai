@@ -11,7 +11,7 @@ final lastSixMonthsExpenseProvider = Provider<List<double>>((ref) {
     return List.filled(6, 0);
   }
 
-  final referenceDate = _referenceDateFromSnapshot(snapshot);
+  final referenceDate = DateTime.now();
   final monthlyTotals = <String, double>{};
 
   for (final doc in snapshot.docs) {
@@ -37,10 +37,7 @@ final lastSixMonthsExpenseProvider = Provider<List<double>>((ref) {
 });
 
 final lastSixMonthLabelsProvider = Provider<List<String>>((ref) {
-  final transactionsAsync = ref.watch(transactionsStreamProvider);
-  final snapshot = transactionsAsync.value;
-  final referenceDate =
-      snapshot == null ? DateTime.now() : _referenceDateFromSnapshot(snapshot);
+  final referenceDate = DateTime.now();
 
   final labels = <String>[];
   for (int i = 5; i >= 0; i--) {
@@ -66,7 +63,7 @@ final monthlyGraphProvider = Provider<MonthlyGraphData>((ref) {
     );
   }
 
-  final referenceDate = _referenceDateFromSnapshot(snapshot);
+  final referenceDate = DateTime.now();
   final monthlyTotals = <String, double>{};
 
   for (final doc in snapshot.docs) {
@@ -116,22 +113,6 @@ final monthlyGraphProvider = Provider<MonthlyGraphData>((ref) {
     lowestMonth: labels[lowestIndex],
   );
 });
-
-DateTime _referenceDateFromSnapshot(QuerySnapshot<Map<String, dynamic>> snapshot) {
-  DateTime? latest;
-
-  for (final doc in snapshot.docs) {
-    final date = _readDate(doc.data()['date']);
-    if (date == null) {
-      continue;
-    }
-    if (latest == null || date.isAfter(latest)) {
-      latest = date;
-    }
-  }
-
-  return latest ?? DateTime.now();
-}
 
 double _readAmount(dynamic value) {
   if (value is num) {

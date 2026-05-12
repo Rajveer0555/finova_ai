@@ -112,7 +112,10 @@ void main() {
         (item) => item.categoryKey == 'food',
       );
 
-      expect(foodForecast.predictedAmount, greaterThan(foodForecast.recentAmount));
+      expect(
+        foodForecast.predictedAmount,
+        greaterThan(foodForecast.recentAmount),
+      );
       expect(foodForecast.changeAmount, greaterThan(0));
       expect(
         foodForecast.changeAmount,
@@ -169,6 +172,50 @@ void main() {
       expect(foodForecast.recentAmount, 1000);
       expect(foodForecast.predictedAmount, lessThan(foodForecast.recentAmount));
       expect(foodForecast.changeAmount, lessThan(0));
+    });
+
+    test('uses real calendar months for insight comparison', () {
+      final result = FinovaAiEngine.build(
+        transactions: [
+          tx(
+            title: 'April grocery',
+            category: 'shopping',
+            amount: 3000,
+            date: DateTime(2026, 4, 12),
+          ),
+          tx(
+            title: 'April dinner',
+            category: 'food',
+            amount: 700,
+            date: DateTime(2026, 4, 18),
+          ),
+          tx(
+            title: 'May grocery',
+            category: 'shopping',
+            amount: 1200,
+            date: DateTime(2026, 5, 3),
+          ),
+          tx(
+            title: 'Old dinner',
+            category: 'food',
+            amount: 5000,
+            date: DateTime(2026, 2, 1),
+          ),
+        ],
+        budgets: const {},
+        monthlyIncome: 10000,
+        now: DateTime(2026, 5, 12),
+      );
+
+      expect(result.currentMonthLabel, 'May');
+      expect(result.previousMonthLabel, 'Apr');
+      expect(result.focusCategoryKey, 'shopping');
+      expect(result.currentMonthSpend, 1200);
+      expect(result.previousMonthSpend, 3700);
+      expect(result.monthlyDelta, -2500);
+      expect(result.currentMonthCategorySpend, 1200);
+      expect(result.previousMonthCategorySpend, 3000);
+      expect(result.monthlyCategoryDelta, -1800);
     });
   });
 }
